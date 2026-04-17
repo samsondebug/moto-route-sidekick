@@ -80,10 +80,12 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   nav.tabs button[data-view="plan"]::before{content:"🗺️"}
   nav.tabs button[data-view="garage"]::before{content:"🔧"}
   nav.tabs button[data-view="rides"]::before{content:"📋"}
+  nav.tabs button[data-view="music"]::before{content:"🎵"}
   nav.tabs button[data-view="more"]::before{content:"•••"}
   nav.tabs button[data-view="weather"],
   nav.tabs button[data-view="fuel"],
   nav.tabs button[data-view="group"],
+  nav.tabs button[data-view="music"],
   nav.tabs button[data-view="settings"]{display:none}
   nav.tabs button[data-view="more"]{display:flex}
   main{padding-bottom:calc(60px + var(--safe-bottom))}
@@ -312,6 +314,17 @@ a:hover{text-decoration:underline}
 .bike-chip{flex:0 0 auto;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px}
 .bike-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .bike-chip.add{background:transparent;border:1px dashed var(--border-strong);color:var(--muted)}
+/* V4.1: Music tab chip row (vibe/genre) */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip-row .bike-chip{flex:0 0 auto}
+/* V4.1: Spotify track list */
+.track-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.track-row:last-child{border-bottom:0}
+.track-row .t-art{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--surface-3);flex-shrink:0}
+.track-row .t-meta{flex:1;min-width:0}
+.track-row .t-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-row .t-art-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-row .t-dur{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* V3: LARGE ROOM CODE / SHARE */
 .room-code-big{font-family:ui-monospace,SFMono-Regular,monospace;font-size:clamp(48px,14vw,88px);font-weight:900;letter-spacing:.15em;text-align:center;color:var(--accent);padding:20px 0;line-height:1;user-select:all;-webkit-user-select:all}
@@ -387,6 +400,7 @@ a:hover{text-decoration:underline}
   <button data-view="garage" role="tab">Garage</button>
   <button data-view="rides" role="tab">Rides</button>
   <button data-view="group" role="tab">Group</button>
+  <button data-view="music" role="tab">Music</button>
   <button data-view="settings" role="tab">Settings</button>
   <button data-view="more" role="tab" id="moreTabBtn" style="display:none">More</button>
 </nav>
@@ -399,6 +413,7 @@ a:hover{text-decoration:underline}
       <button data-more-view="weather">☀️ Weather</button>
       <button data-more-view="fuel">⛽ Fuel</button>
       <button data-more-view="group">👥 Group</button>
+      <button data-more-view="music">🎵 Music</button>
       <button data-more-view="settings">⚙️ Settings</button>
       <button class="close" id="moreCloseBtn">Cancel</button>
     </div>
@@ -675,6 +690,67 @@ a:hover{text-decoration:underline}
   </div>
 </section>
 
+<!-- ============ MUSIC (Spotify Ride Playlist) ============ -->
+<section id="view-music" class="view" role="tabpanel" aria-label="Music">
+  <h2>Ride Playlist</h2>
+
+  <div class="card accent">
+    <h3>🎵 Spotify</h3>
+    <div id="spotifyStatusLine" class="tiny muted">Not connected.</div>
+    <div class="row mt-12">
+      <button class="btn" id="spotifyConnectBtn">Connect Spotify</button>
+      <button class="btn ghost hide" id="spotifyDisconnectBtn">Disconnect</button>
+    </div>
+    <p class="tiny muted mt-12" id="spotifyHelp">Requires a free Spotify Developer Client ID. <a href="#" id="spotifyHelpLink">How to set up (1 min)</a></p>
+  </div>
+
+  <div class="card">
+    <h3>Vibe</h3>
+    <p class="tiny muted">What's the ride feel? This shapes the energy + tempo.</p>
+    <div id="vibeChips" class="chip-row mt-8">
+      <button class="bike-chip" data-vibe="send">🔥 Send It</button>
+      <button class="bike-chip" data-vibe="cruise">🌞 Cruise</button>
+      <button class="bike-chip" data-vibe="twisties">🌀 Twisties</button>
+      <button class="bike-chip" data-vibe="sunset">🌇 Sunset</button>
+      <button class="bike-chip" data-vibe="night">🌙 Night Ride</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Genre Lean</h3>
+    <p class="tiny muted">Pick one or more. Or pick none = surprise me.</p>
+    <div id="genreChips" class="chip-row mt-8">
+      <button class="bike-chip" data-genre="metal">Metal</button>
+      <button class="bike-chip" data-genre="punk">Punk</button>
+      <button class="bike-chip" data-genre="rock">Rock</button>
+      <button class="bike-chip" data-genre="hiphop">Hip-Hop</button>
+      <button class="bike-chip" data-genre="electronic">Electronic</button>
+      <button class="bike-chip" data-genre="country">Country</button>
+      <button class="bike-chip" data-genre="blues">Blues</button>
+      <button class="bike-chip" data-genre="indie">Indie</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Energy</h3>
+    <label class="field">
+      <span class="lbl" id="energyLbl">Chill ↔ Redline: <span id="energyVal">5</span>/10</span>
+      <input type="range" id="energySlider" min="1" max="10" value="5" step="1">
+    </label>
+    <p class="tiny muted mt-12">1–3 = chill/ambient · 4–6 = mid-tempo · 7–8 = driving · 9–10 = full send</p>
+  </div>
+
+  <div class="card">
+    <h3>Generate</h3>
+    <div id="musicRouteInfo" class="tiny muted">Plan a route first — playlist length auto-matches ride duration.</div>
+    <div class="row mt-12">
+      <button class="btn" id="generatePlaylistBtn" disabled>Build Ride Playlist</button>
+      <button class="btn ghost" id="previewPlaylistBtn" disabled>Preview Only</button>
+    </div>
+    <div id="playlistResult" class="mt-12"></div>
+  </div>
+</section>
+
 <!-- ============ SETTINGS ============ -->
 <section id="view-settings" class="view" role="tabpanel" aria-label="Settings">
   <h2>Settings</h2>
@@ -728,6 +804,27 @@ a:hover{text-decoration:underline}
   </div>
 
   <div class="card">
+    <h3>🎵 Spotify</h3>
+    <p class="tiny muted">Connect once — BDS builds a Spotify playlist matched to your ride. Requires your own free Spotify Developer Client ID (5-min setup, personal use only).</p>
+    <label class="field"><span class="lbl">Spotify Client ID</span><input type="text" id="spotifyClientIdInput" placeholder="e.g. 7e8d2..." autocomplete="off"></label>
+    <div class="row mt-12">
+      <button class="btn" id="spotifyClientIdSave">Save</button>
+      <button class="btn ghost" id="spotifyClientIdClear">Clear</button>
+      <span id="spotifyClientIdPill" class="pill">Not configured</span>
+    </div>
+    <details class="mt-12"><summary class="tiny muted" style="cursor:pointer">Setup instructions (1 minute)</summary>
+      <ol class="tiny muted" style="padding-left:20px;line-height:1.6">
+        <li>Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a> and log in with your Spotify account.</li>
+        <li>Click <b>Create app</b>. Name it anything (e.g. "BDS Ride Playlist").</li>
+        <li>Set <b>Redirect URI</b> to exactly: <code style="background:#000;padding:2px 4px;border-radius:4px;font-size:11px" id="spotifyRedirectUriHint">https://bad-decision-sidekick.vercel.app/</code></li>
+        <li>For "Which API/SDKs are you planning to use?" check <b>Web API</b>.</li>
+        <li>Save → open the app → Settings → copy the <b>Client ID</b> → paste above.</li>
+        <li>Requires Spotify Premium (Spotify's 2025 policy).</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
     <h3>📡 Live Sync (Group Rides)</h3>
     <p class="tiny muted">Paste your own Supabase project URL + anon key for real-time pin sharing in Group rooms. Stored locally on this device only.</p>
     <label class="field"><span class="lbl">Supabase Project URL</span><input type="url" id="supaUrl" placeholder="https://xxxxx.supabase.co"></label>
@@ -761,7 +858,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17e</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v4.1 · <span id="buildId">2026.04.17f</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -793,7 +890,12 @@ const K = {
   bike: 'bds_bike', bikes: 'bds_bikes', activeBike: 'bds_active_bike',
   rides: 'bds_rides', routes: 'bds_routes', settings: 'bds_settings',
   badges: 'bds_badges', maint: 'bds_maint', room: 'bds_room', lastRide: 'bds_last_ride',
-  liveSnapshot: 'bds_live_ride' // V3: resume-in-progress
+  liveSnapshot: 'bds_live_ride', // V3: resume-in-progress
+  // V4.1: Spotify ride playlists
+  spotifyClientId: 'bds_spotify_client_id',
+  spotifyToken: 'bds_spotify_token', // { access_token, refresh_token, expires_at, user_id }
+  spotifyPkce: 'bds_spotify_pkce', // transient code_verifier
+  musicPrefs: 'bds_music_prefs'   // { vibe, genres:[], energy }
 };
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
 const lsSet = (k, v) => {
@@ -3118,8 +3220,418 @@ async function boot() {
 }
 boot();
 
+/* ======================== V4.1: SPOTIFY RIDE PLAYLIST ======================== */
+const Spotify = (() => {
+  const AUTH_HOST = 'https://accounts.spotify.com';
+  const API = 'https://api.spotify.com/v1';
+  const SCOPES = 'playlist-modify-private playlist-modify-public user-read-private user-read-email';
+
+  // Use origin + '/' — must match the Redirect URI registered in Spotify Dashboard.
+  const redirectUri = () => location.origin + '/';
+
+  const getClientId = () => lsGet(K.spotifyClientId, '') || '';
+  const setClientId = id => { if (id) localStorage.setItem(K.spotifyClientId, JSON.stringify(id)); else localStorage.removeItem(K.spotifyClientId); };
+
+  const getToken = () => lsGet(K.spotifyToken, null);
+  const setToken = t => { if (t) lsSet(K.spotifyToken, t); else localStorage.removeItem(K.spotifyToken); };
+
+  const isConnected = () => {
+    const t = getToken();
+    return !!(t && t.access_token);
+  };
+
+  // --- PKCE helpers ---
+  const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const randomVerifier = (len = 96) => {
+    const a = new Uint8Array(len); crypto.getRandomValues(a);
+    const s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let out = '';
+    for (let i=0;i<len;i++) out += s[a[i] % s.length];
+    return out;
+  };
+  const sha256b64 = async v => b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
+
+  async function beginAuth() {
+    const clientId = getClientId();
+    if (!clientId) { toast('Add your Spotify Client ID in Settings → Spotify first.'); switchTo('settings'); return; }
+    const verifier = randomVerifier();
+    const challenge = await sha256b64(verifier);
+    const state = randomVerifier(24);
+    lsSet(K.spotifyPkce, { verifier, state, ts: Date.now() });
+    const params = new URLSearchParams({
+      response_type: 'code', client_id: clientId, scope: SCOPES,
+      code_challenge_method: 'S256', code_challenge: challenge,
+      redirect_uri: redirectUri(), state
+    });
+    location.href = AUTH_HOST + '/authorize?' + params.toString();
+  }
+
+  async function handleCallback() {
+    const q = new URLSearchParams(location.search);
+    const code = q.get('code'); const state = q.get('state'); const err = q.get('error');
+    if (err) { toast('Spotify auth denied: ' + err, 4000); clean(); return false; }
+    if (!code) return false;
+    const pkce = lsGet(K.spotifyPkce, null);
+    if (!pkce || pkce.state !== state) { toast('Spotify auth state mismatch.'); clean(); return false; }
+    localStorage.removeItem(K.spotifyPkce);
+    try {
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code, redirect_uri: redirectUri(),
+        client_id: getClientId(),
+        code_verifier: pkce.verifier
+      });
+      const res = await fetch(AUTH_HOST + '/api/token', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error_description || data.error || 'token exchange failed');
+      const me = await fetch(API + '/me', { headers: { Authorization: 'Bearer ' + data.access_token } }).then(r=>r.json());
+      setToken({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_at: Date.now() + (data.expires_in * 1000) - 30000,
+        user_id: me.id, user_name: me.display_name || me.id
+      });
+      toast('Spotify connected as ' + (me.display_name || me.id));
+      clean();
+      return true;
+    } catch (e) {
+      toast('Spotify auth failed: ' + e.message, 5000);
+      clean();
+      return false;
+    }
+  }
+
+  function clean() {
+    // strip ?code=&state= from the URL without reloading
+    const url = new URL(location.href);
+    url.searchParams.delete('code'); url.searchParams.delete('state'); url.searchParams.delete('error');
+    history.replaceState({}, '', url.pathname + (url.search ? '?' + url.searchParams : '') + url.hash);
+  }
+
+  async function refreshIfNeeded() {
+    const t = getToken(); if (!t) return null;
+    if (Date.now() < t.expires_at) return t.access_token;
+    if (!t.refresh_token) return null;
+    try {
+      const body = new URLSearchParams({
+        grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: getClientId()
+      });
+      const res = await fetch(AUTH_HOST + '/api/token', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error_description || 'refresh failed');
+      setToken({
+        ...t,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token || t.refresh_token,
+        expires_at: Date.now() + (data.expires_in * 1000) - 30000
+      });
+      return data.access_token;
+    } catch (e) { setToken(null); return null; }
+  }
+
+  async function api(path, opts = {}) {
+    const token = await refreshIfNeeded();
+    if (!token) throw new Error('not connected');
+    const res = await fetch(API + path, {
+      ...opts,
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error('Spotify ' + res.status + ': ' + t.slice(0,120));
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function search(q, limit = 50) {
+    const enc = encodeURIComponent(q);
+    return api(`/search?q=${enc}&type=track&limit=${limit}`);
+  }
+
+  async function createPlaylist(name, description, isPublic = false) {
+    const t = getToken();
+    return api(`/users/${t.user_id}/playlists`, {
+      method: 'POST',
+      body: JSON.stringify({ name, description, public: isPublic })
+    });
+  }
+
+  async function addTracks(playlistId, uris) {
+    // Spotify caps at 100 per call
+    for (let i=0; i<uris.length; i+=100) {
+      await api(`/playlists/${playlistId}/tracks`, {
+        method: 'POST',
+        body: JSON.stringify({ uris: uris.slice(i, i+100) })
+      });
+    }
+  }
+
+  return { beginAuth, handleCallback, isConnected, getToken, setToken, getClientId, setClientId, search, createPlaylist, addTracks, api };
+})();
+
+/* --- Query-builder: maps vibe + genres + energy into search queries --- */
+function buildSpotifyQueries(vibe, genres, energy) {
+  // Vibe descriptors (mood words that work well in Spotify full-text search)
+  const vibeMap = {
+    send:     { words:['driving','high energy','adrenaline','aggressive','heavy'], eBase:8 },
+    cruise:   { words:['feel good','summer','road trip','groove','classic'],       eBase:5 },
+    twisties: { words:['driving','rhythmic','focus','motivation'],                 eBase:7 },
+    sunset:   { words:['chill','mellow','vibes','sunset','smooth'],                eBase:4 },
+    night:    { words:['dark','night','midnight','synthwave','atmospheric'],       eBase:5 }
+  };
+  const v = vibeMap[vibe] || vibeMap.cruise;
+
+  // Genre tokens (Spotify "genre:" filter works for specific known genres)
+  const genreMap = {
+    metal:'metal', punk:'punk', rock:'rock', hiphop:'hip-hop',
+    electronic:'electronic', country:'country', blues:'blues', indie:'indie'
+  };
+  const selected = (genres && genres.length) ? genres.map(g=>genreMap[g]).filter(Boolean) : [];
+
+  // Energy-to-tempo words
+  const eWord = energy >= 9 ? 'aggressive high-energy' :
+                energy >= 7 ? 'driving high-energy' :
+                energy >= 4 ? 'mid-tempo' :
+                             'mellow chill';
+
+  // Build 3-5 complementary queries so we have diverse recall without recommendations API
+  const queries = [];
+  if (selected.length) {
+    for (const g of selected) {
+      queries.push(`${v.words[0]} genre:${g}`);
+      queries.push(`${eWord} genre:${g}`);
+    }
+  } else {
+    queries.push(`${v.words[0]} ${eWord}`);
+    queries.push(`${v.words[1]} motorcycle`);
+    queries.push(`${v.words[2]} road`);
+  }
+  // Always add a "motorcycle riding" flavor query for thematic glue
+  queries.push('motorcycle riding ' + (v.words[0] || 'driving'));
+  return queries.slice(0, 5);
+}
+
+async function generateRidePlaylist({ create = true } = {}) {
+  if (!Spotify.isConnected()) { toast('Connect Spotify first.'); return; }
+  const prefs = lsGet(K.musicPrefs, { vibe:'cruise', genres:[], energy:5 });
+  if (!prefs.vibe) { toast('Pick a vibe first.'); return; }
+
+  const rtDur = State.currentRoute.durationMin || 0;
+  const targetCount = rtDur > 0 ? Math.max(8, Math.min(80, Math.round(rtDur / 3.5))) : 25;
+
+  const btn = $('#generatePlaylistBtn');
+  const pv  = $('#previewPlaylistBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Searching…'; }
+  if (pv)  { pv.disabled = true; }
+  const out = $('#playlistResult');
+  if (out) out.innerHTML = '<span class="tiny muted">Hunting tracks on Spotify…</span>';
+
+  try {
+    const queries = buildSpotifyQueries(prefs.vibe, prefs.genres, prefs.energy);
+    const pool = new Map(); // id -> track
+    for (const q of queries) {
+      try {
+        const r = await Spotify.search(q, 50);
+        const tracks = (r && r.tracks && r.tracks.items) || [];
+        for (const t of tracks) {
+          if (!t || !t.uri || t.is_local) continue;
+          if (!pool.has(t.id)) pool.set(t.id, t);
+        }
+      } catch(e) { console.warn('[spotify] search failed:', q, e.message); }
+    }
+    if (!pool.size) {
+      if (out) out.innerHTML = '<span class="tiny muted">No tracks found. Try a different vibe or genre.</span>';
+      return;
+    }
+
+    // Shuffle + pick targetCount
+    const arr = Array.from(pool.values());
+    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    const chosen = arr.slice(0, targetCount);
+
+    // Render preview
+    if (out) {
+      out.innerHTML = chosen.map(t => {
+        const art = (t.album && t.album.images && t.album.images[2] && t.album.images[2].url) || '';
+        const artists = (t.artists||[]).map(a=>a.name).join(', ');
+        const mins = Math.floor(t.duration_ms/60000), secs = Math.round((t.duration_ms%60000)/1000).toString().padStart(2,'0');
+        return `<div class="track-row">${art?`<img class="t-art" src="${art}" alt="">`:'<div class="t-art"></div>'}<div class="t-meta"><div class="t-name">${esc(t.name)}</div><div class="t-art-name">${esc(artists)}</div></div><div class="t-dur">${mins}:${secs}</div></div>`;
+      }).join('');
+    }
+
+    if (!create) {
+      toast(`Preview: ${chosen.length} tracks — tap Build to save to Spotify.`, 3500);
+      return;
+    }
+
+    // Create playlist
+    const vibeLabel = { send:'Send It', cruise:'Cruise', twisties:'Twisties', sunset:'Sunset', night:'Night Ride' }[prefs.vibe] || prefs.vibe;
+    const rtName = State.currentRoute.name || 'Ride';
+    const desc = `Built by Bad Decision Sidekick — ${vibeLabel} vibe · energy ${prefs.energy}/10 · ${rtDur ? Math.round(rtDur)+'min' : '~'+Math.round(chosen.length*3.5)+'min'} · ${new Date().toLocaleDateString()}`;
+    const playlistName = `BDS • ${vibeLabel} • ${rtName}`;
+    if (btn) btn.textContent = 'Creating playlist…';
+    const pl = await Spotify.createPlaylist(playlistName, desc, false);
+    if (btn) btn.textContent = 'Adding tracks…';
+    await Spotify.addTracks(pl.id, chosen.map(t=>t.uri));
+    const spUrl = pl.external_urls && pl.external_urls.spotify;
+    if (out) {
+      const header = `<div class="mt-12" style="padding:10px 12px;background:var(--surface-2);border:1px solid var(--accent);border-radius:8px"><div style="font-weight:700">✅ Playlist created</div><div class="tiny muted">${esc(playlistName)}</div><a class="btn mt-12" style="display:inline-block" href="${spUrl}" target="_blank" rel="noopener">Open in Spotify</a></div>`;
+      out.innerHTML = header + out.innerHTML;
+    }
+    toast('Playlist saved to your Spotify.', 4000);
+  } catch (e) {
+    toast('Playlist build failed: ' + e.message, 5000);
+    if (out) out.innerHTML = `<span class="tiny muted">Error: ${esc(e.message)}</span>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Build Ride Playlist'; }
+    if (pv)  { pv.disabled = false; }
+  }
+}
+
+/* --- Music tab UI wiring --- */
+function renderSpotifyStatus() {
+  const line = $('#spotifyStatusLine');
+  const connect = $('#spotifyConnectBtn');
+  const disconnect = $('#spotifyDisconnectBtn');
+  const cid = Spotify.getClientId();
+  const tok = Spotify.getToken();
+  if (!cid) {
+    if (line) line.textContent = 'Not configured. Add your Spotify Client ID in Settings.';
+    if (connect) connect.textContent = 'Configure in Settings';
+    if (disconnect) disconnect.classList.add('hide');
+  } else if (!tok) {
+    if (line) line.textContent = 'Client ID set. Tap Connect to log in to Spotify.';
+    if (connect) { connect.textContent = 'Connect Spotify'; connect.disabled = false; }
+    if (disconnect) disconnect.classList.add('hide');
+  } else {
+    if (line) line.innerHTML = `✅ Connected as <b>${esc(tok.user_name || tok.user_id)}</b>.`;
+    if (connect) { connect.textContent = 'Reconnect'; connect.disabled = false; }
+    if (disconnect) disconnect.classList.remove('hide');
+  }
+  // Settings pill
+  const pill = $('#spotifyClientIdPill');
+  if (pill) {
+    pill.textContent = cid ? 'Configured' : 'Not configured';
+    pill.style.background = cid ? 'rgba(35,209,139,.15)' : 'transparent';
+    pill.style.borderColor = cid ? 'var(--ok)' : 'var(--border)';
+    pill.style.color = cid ? 'var(--ok)' : 'var(--muted)';
+  }
+  if ($('#spotifyClientIdInput')) $('#spotifyClientIdInput').value = cid;
+  const uriHint = $('#spotifyRedirectUriHint');
+  if (uriHint) uriHint.textContent = location.origin + '/';
+}
+
+function renderMusicPrefs() {
+  const prefs = lsGet(K.musicPrefs, { vibe:'cruise', genres:[], energy:5 });
+  document.querySelectorAll('#vibeChips .bike-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.vibe === prefs.vibe);
+  });
+  document.querySelectorAll('#genreChips .bike-chip').forEach(el => {
+    el.classList.toggle('active', (prefs.genres||[]).includes(el.dataset.genre));
+  });
+  const slider = $('#energySlider');
+  if (slider) slider.value = prefs.energy;
+  const eVal = $('#energyVal'); if (eVal) eVal.textContent = prefs.energy;
+
+  // Route info + enable generate button
+  const info = $('#musicRouteInfo');
+  const rtDur = State.currentRoute.durationMin || 0;
+  const count = rtDur > 0 ? Math.max(8, Math.min(80, Math.round(rtDur / 3.5))) : 25;
+  if (info) {
+    if (rtDur > 0) {
+      info.innerHTML = `Route: <b>${Math.round(State.currentRoute.distMi)} mi · ${Math.round(rtDur)}min</b> → ~<b>${count} tracks</b>.`;
+    } else {
+      info.textContent = 'No route planned — will build a ~25-track default. Plan a route to match duration.';
+    }
+  }
+  const genBtn = $('#generatePlaylistBtn');
+  const pvBtn = $('#previewPlaylistBtn');
+  const ok = Spotify.isConnected() && !!prefs.vibe;
+  if (genBtn) genBtn.disabled = !ok;
+  if (pvBtn)  pvBtn.disabled  = !ok;
+}
+
+function saveMusicPrefs(patch) {
+  const prefs = lsGet(K.musicPrefs, { vibe:'cruise', genres:[], energy:5 });
+  Object.assign(prefs, patch);
+  lsSet(K.musicPrefs, prefs);
+  renderMusicPrefs();
+}
+
+// Chip click handlers (single-select vibe, multi-select genres)
+document.querySelectorAll('#vibeChips .bike-chip').forEach(el => {
+  el.addEventListener('click', () => saveMusicPrefs({ vibe: el.dataset.vibe }));
+});
+document.querySelectorAll('#genreChips .bike-chip').forEach(el => {
+  el.addEventListener('click', () => {
+    const prefs = lsGet(K.musicPrefs, { vibe:'cruise', genres:[], energy:5 });
+    const set = new Set(prefs.genres || []);
+    if (set.has(el.dataset.genre)) set.delete(el.dataset.genre); else set.add(el.dataset.genre);
+    saveMusicPrefs({ genres: Array.from(set) });
+  });
+});
+$('#energySlider')?.addEventListener('input', e => {
+  const v = parseInt(e.target.value, 10) || 5;
+  $('#energyVal').textContent = v;
+  saveMusicPrefs({ energy: v });
+});
+
+$('#spotifyConnectBtn')?.addEventListener('click', () => {
+  if (!Spotify.getClientId()) { switchTo('settings'); toast('Set Client ID in Settings first.'); return; }
+  Spotify.beginAuth();
+});
+$('#spotifyDisconnectBtn')?.addEventListener('click', () => {
+  Spotify.setToken(null);
+  renderSpotifyStatus(); renderMusicPrefs();
+  toast('Spotify disconnected.');
+});
+$('#spotifyHelpLink')?.addEventListener('click', (e) => { e.preventDefault(); switchTo('settings'); });
+
+$('#generatePlaylistBtn')?.addEventListener('click', () => generateRidePlaylist({ create: true }));
+$('#previewPlaylistBtn')?.addEventListener('click',  () => generateRidePlaylist({ create: false }));
+
+// Settings: Client ID save/clear
+$('#spotifyClientIdSave')?.addEventListener('click', () => {
+  const v = $('#spotifyClientIdInput')?.value.trim();
+  if (!v) { toast('Paste your Client ID.'); return; }
+  Spotify.setClientId(v);
+  renderSpotifyStatus();
+  toast('Client ID saved. Go to Music tab and Connect.');
+});
+$('#spotifyClientIdClear')?.addEventListener('click', () => {
+  Spotify.setClientId('');
+  Spotify.setToken(null);
+  renderSpotifyStatus();
+  toast('Spotify config cleared.');
+});
+
+// Refresh music UI whenever the route recalculates or we switch into Music tab
+const _origSwitchTo_music = switchTo;
+// We can't monkey-patch switchTo reliably, so also trigger on tab click:
+document.querySelectorAll('nav.tabs button, .more-sheet [data-more-view]').forEach(b => {
+  b.addEventListener('click', () => {
+    const v = b.dataset.view || b.dataset.moreView;
+    if (v === 'music') { renderSpotifyStatus(); renderMusicPrefs(); }
+  });
+});
+
+// Handle OAuth callback on page load + initial render
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get('code') && q.get('state')) {
+    const ok = await Spotify.handleCallback();
+    if (ok) { renderSpotifyStatus(); renderMusicPrefs(); switchTo('music'); return; }
+  }
+  // Initial paint for Music tab
+  try { renderSpotifyStatus(); renderMusicPrefs(); } catch(_) {}
+})();
+
 // Expose for debugging
-window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop };
+window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop, Spotify, generateRidePlaylist };
 
 })();
 </script>
