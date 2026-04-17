@@ -81,11 +81,13 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   nav.tabs button[data-view="garage"]::before{content:"🔧"}
   nav.tabs button[data-view="rides"]::before{content:"📋"}
   nav.tabs button[data-view="music"]::before{content:"🎵"}
+  nav.tabs button[data-view="challenges"]::before{content:"🏆"}
   nav.tabs button[data-view="more"]::before{content:"•••"}
   nav.tabs button[data-view="weather"],
   nav.tabs button[data-view="fuel"],
   nav.tabs button[data-view="group"],
   nav.tabs button[data-view="music"],
+  nav.tabs button[data-view="challenges"],
   nav.tabs button[data-view="settings"]{display:none}
   nav.tabs button[data-view="more"]{display:flex}
   main{padding-bottom:calc(60px + var(--safe-bottom))}
@@ -319,6 +321,59 @@ a:hover{text-decoration:underline}
 .chip-row .bike-chip{flex:0 0 auto}
 /* V4.1: Spotify track list */
 .track-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+
+/* V4.2: POI chip toggles (Plan tab) */
+.poi-chip{background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);
+  padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:transform .08s ease,background .12s ease}
+.poi-chip:hover{transform:translateY(-1px)}
+.poi-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.poi-chip[data-type="fuel"].active{background:#00b8ff;border-color:#00b8ff}
+.poi-chip[data-type="cafe"].active{background:#ff7a00;border-color:#ff7a00}
+.poi-chip[data-type="view"].active{background:#23d18b;border-color:#23d18b}
+.poi-chip[data-type="rest"].active{background:#a66bff;border-color:#a66bff}
+
+/* V4.2: POI list rows */
+.poi-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:8px}
+.poi-row .poi-ico{width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px}
+.poi-row .poi-body{flex:1;min-width:0}
+.poi-row .poi-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.poi-row .poi-meta{font-size:11px;color:var(--muted)}
+.poi-row button{background:var(--accent);color:#fff;border:0;border-radius:8px;
+  padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+
+/* V4.2: Challenges cards */
+.chal-card{background:var(--surface-2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.chal-card .chal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.chal-card .chal-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text)}
+.chal-card .chal-badge{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;background:var(--surface-3);color:var(--muted);border:1px solid var(--border)}
+.chal-card .chal-badge.live{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chal-card .chal-badge.done{background:var(--ok);color:#0a0a0a;border-color:var(--ok)}
+.chal-card .chal-prog{height:10px;background:var(--surface-3);border-radius:6px;overflow:hidden;margin:8px 0 6px}
+.chal-card .chal-fill{height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .3s ease}
+.chal-card .chal-val{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.chal-card .chal-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.chal-card .chal-target{font-size:11px;color:var(--muted);font-weight:600}
+.lb-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:6px}
+.lb-row .lb-rank{font-size:18px;font-weight:900;width:28px;text-align:center;color:var(--accent-2)}
+.lb-row .lb-rank.gold{color:#ffcc33}
+.lb-row .lb-rank.silver{color:#c0c0c0}
+.lb-row .lb-rank.bronze{color:#cd7f32}
+.lb-row .lb-label{flex:1;min-width:0}
+.lb-row .lb-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-row .lb-meta{font-size:11px;color:var(--muted)}
+.lb-row .lb-val{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.streak-dots{display:flex;gap:3px;margin-top:8px}
+.streak-dot{flex:1;height:8px;border-radius:2px;background:var(--surface-3)}
+.streak-dot.ridden{background:var(--accent)}
+.streak-dot.today{box-shadow:0 0 0 2px var(--accent-2) inset}
 .track-row:last-child{border-bottom:0}
 .track-row .t-art{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--surface-3);flex-shrink:0}
 .track-row .t-meta{flex:1;min-width:0}
@@ -401,6 +456,7 @@ a:hover{text-decoration:underline}
   <button data-view="rides" role="tab">Rides</button>
   <button data-view="group" role="tab">Group</button>
   <button data-view="music" role="tab">Music</button>
+  <button data-view="challenges" role="tab">Challenges</button>
   <button data-view="settings" role="tab">Settings</button>
   <button data-view="more" role="tab" id="moreTabBtn" style="display:none">More</button>
 </nav>
@@ -414,6 +470,7 @@ a:hover{text-decoration:underline}
       <button data-more-view="fuel">⛽ Fuel</button>
       <button data-more-view="group">👥 Group</button>
       <button data-more-view="music">🎵 Music</button>
+      <button data-more-view="challenges">🏆 Challenges</button>
       <button data-more-view="settings">⚙️ Settings</button>
       <button class="close" id="moreCloseBtn">Cancel</button>
     </div>
@@ -525,6 +582,24 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>Weather Along the Route</h3>
     <div id="wxRibbon" class="wx-ribbon"><span class="tiny muted">Plan a route to see segment weather.</span></div>
+  </div>
+
+  <!-- V4.2: Points of Interest -->
+  <div class="card">
+    <h3>📍 Points of Interest</h3>
+    <p class="tiny muted">Tap categories to find stops along your route — fuel, biker cafes, overlooks, rest areas.</p>
+    <div id="poiChips" class="chip-row mt-8">
+      <button class="poi-chip active" data-type="fuel">⛽ Fuel</button>
+      <button class="poi-chip active" data-type="cafe">☕ Cafe</button>
+      <button class="poi-chip active" data-type="view">🌄 View</button>
+      <button class="poi-chip" data-type="rest">🛌 Rest Stop</button>
+    </div>
+    <div class="row mt-12">
+      <button class="btn warn" id="findPoiBtn" style="flex:1">Find POIs Along Route</button>
+      <button class="btn ghost" id="clearPoiBtn">Clear Pins</button>
+    </div>
+    <div id="poiList" class="mt-12"><span class="tiny muted">Plan a route, pick categories, then tap the button.</span></div>
+    <p class="tiny muted mt-12">Data: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>. Sampled every ~10mi within ~1km of the line.</p>
   </div>
 
   <div class="card">
@@ -751,6 +826,44 @@ a:hover{text-decoration:underline}
   </div>
 </section>
 
+<!-- ============ V4.2: CHALLENGES ============ -->
+<section id="view-challenges" class="view" role="tabpanel" aria-label="Challenges">
+  <h2>Challenges</h2>
+  <p class="tiny muted" style="margin:-6px 0 12px">Rack up miles, chase streaks, discover new roads. Challenges reset automatically — personal bests stick forever.</p>
+
+  <div class="card">
+    <h3>📅 This Week</h3>
+    <div id="chalWeekly"></div>
+  </div>
+
+  <div class="card">
+    <h3>🗓️ This Month</h3>
+    <div id="chalMonthly"></div>
+  </div>
+
+  <div class="card">
+    <h3>🔥 Streak</h3>
+    <div id="chalStreak"></div>
+  </div>
+
+  <div class="card">
+    <h3>🗺️ Exploration</h3>
+    <div id="chalExploration"></div>
+  </div>
+
+  <div class="card">
+    <h3>🏅 Personal Bests</h3>
+    <p class="tiny muted">All-time records — beat these to climb the leaderboard.</p>
+    <div id="chalPersonalBests" class="mt-12"></div>
+  </div>
+
+  <div class="card">
+    <h3>📊 Weekly Leaderboard</h3>
+    <p class="tiny muted">Your last 10 weeks ranked by total distance.</p>
+    <div id="chalWeeklyBoard" class="mt-12"></div>
+  </div>
+</section>
+
 <!-- ============ SETTINGS ============ -->
 <section id="view-settings" class="view" role="tabpanel" aria-label="Settings">
   <h2>Settings</h2>
@@ -858,7 +971,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v4.1 · <span id="buildId">2026.04.17f</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v4.2 · <span id="buildId">2026.04.17g</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -895,7 +1008,12 @@ const K = {
   spotifyClientId: 'bds_spotify_client_id',
   spotifyToken: 'bds_spotify_token', // { access_token, refresh_token, expires_at, user_id }
   spotifyPkce: 'bds_spotify_pkce', // transient code_verifier
-  musicPrefs: 'bds_music_prefs'   // { vibe, genres:[], energy }
+  musicPrefs: 'bds_music_prefs',  // { vibe, genres:[], energy }
+  // V4.2: POIs + Challenges
+  poiPrefs: 'bds_poi_prefs',      // { types: { fuel:true, cafe:true, view:true, rest:false } }
+  poiCache: 'bds_poi_cache',      // { [routeHash]: { ts, pois: [] } }
+  chalPbs: 'bds_chal_pbs',        // { weekMi, monthMi, longestRide, longestStreak, poiTypes:[], roadHashes:[] }
+  exploredRoads: 'bds_explored_roads' // { [hash]: firstSeenTs }
 };
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
 const lsSet = (k, v) => {
@@ -3220,6 +3338,440 @@ async function boot() {
 }
 boot();
 
+/* ======================== V4.2: POINTS OF INTEREST (OSM) ======================== */
+const OVERPASS_MIRRORS_V42 = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+];
+
+// Overpass selector per POI type. Keep each compact — one OSM key per type.
+const POI_DEF = {
+  fuel: { label:'Fuel',   emoji:'⛽', color:'#00b8ff', filter:'["amenity"="fuel"]' },
+  cafe: { label:'Cafe',   emoji:'☕', color:'#ff7a00', filter:'["amenity"~"^(cafe|restaurant|biergarten|pub|bar)$"]' },
+  view: { label:'View',   emoji:'🌄', color:'#23d18b', filter:'["tourism"="viewpoint"]' },
+  rest: { label:'Rest',   emoji:'🛌', color:'#a66bff', filter:'["highway"="rest_area"]' }
+};
+
+let _poiMarkers = [];
+let _poiCurrent = []; // list of POIs currently rendered
+
+function getPoiPrefs() {
+  return lsGet(K.poiPrefs, { types:{ fuel:true, cafe:true, view:true, rest:false } });
+}
+function savePoiPrefs(p) { lsSet(K.poiPrefs, p); }
+
+// Hash a route geometry to a short string for caching
+function routeHash(geo) {
+  if (!geo || !geo.length) return '';
+  const pts = [geo[0], geo[Math.floor(geo.length/2)], geo[geo.length-1]];
+  return pts.map(p => (p[0]*1e3|0) + ',' + (p[1]*1e3|0)).join('|');
+}
+
+function clearPoiMarkers() {
+  _poiMarkers.forEach(m => { try { map.removeLayer(m); } catch(_) {} });
+  _poiMarkers = [];
+  _poiCurrent = [];
+}
+
+async function findPOIs() {
+  const geo = State.currentRoute.geometry;
+  if (!geo || geo.length < 2) { toast('Plan a route first.'); return; }
+  const prefs = getPoiPrefs();
+  const activeTypes = Object.entries(prefs.types).filter(([,v]) => v).map(([k]) => k);
+  if (!activeTypes.length) { toast('Pick at least one POI category.'); return; }
+
+  const btn = $('#findPoiBtn');
+  const listEl = $('#poiList');
+  btn.disabled = true; btn.textContent = 'Searching OSM…';
+
+  // Check cache (1hr TTL)
+  const rhash = routeHash(geo);
+  const cacheKey = rhash + ':' + activeTypes.sort().join(',');
+  const cache = lsGet(K.poiCache, {});
+  const cached = cache[cacheKey];
+  if (cached && (Date.now() - cached.ts) < 3600000) {
+    renderPOIs(cached.pois);
+    toast(`Loaded ${cached.pois.length} POIs (cached)`);
+    btn.disabled = false; btn.textContent = 'Find POIs Along Route';
+    return;
+  }
+
+  try {
+    // Sample every ~10mi along route; 8 samples max to keep Overpass fast
+    const samples = sampleAlong(geo, 10).slice(0, 8);
+    // Build filter union per type
+    const filters = activeTypes.map(t => POI_DEF[t].filter);
+    const radius = 1200; // meters
+    const clauses = [];
+    samples.forEach(p => {
+      filters.forEach((f, idx) => {
+        clauses.push(`node${f}(around:${radius},${p[0]},${p[1]});`);
+      });
+    });
+    const q = `[out:json][timeout:20];(${clauses.join('')});out body 80;`;
+
+    let res = null, lastErr = null;
+    for (let i = 0; i < OVERPASS_MIRRORS_V42.length; i++) {
+      const url = OVERPASS_MIRRORS_V42[i];
+      listEl.innerHTML = `<span class="tiny muted">Trying mirror ${i+1} of ${OVERPASS_MIRRORS_V42.length}…</span>`;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 16000);
+      try {
+        const r = await fetch(url, {
+          method:'POST', body:'data='+encodeURIComponent(q),
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          signal: ctrl.signal
+        });
+        clearTimeout(timer);
+        if (r.ok) { res = r; break; }
+        lastErr = new Error('HTTP ' + r.status);
+      } catch(err) { clearTimeout(timer); lastErr = err; }
+    }
+    if (!res) throw lastErr || new Error('all Overpass mirrors unavailable');
+    const j = await res.json();
+
+    // Classify each element back into its type bucket
+    const elems = (j.elements || []).map(e => {
+      const tags = e.tags || {};
+      let type = null;
+      if (tags.amenity === 'fuel') type = 'fuel';
+      else if (['cafe','restaurant','biergarten','pub','bar'].includes(tags.amenity)) type = 'cafe';
+      else if (tags.tourism === 'viewpoint') type = 'view';
+      else if (tags.highway === 'rest_area') type = 'rest';
+      if (!type || !activeTypes.includes(type)) return null;
+      return {
+        id: e.id, type, lat:e.lat, lng:e.lon,
+        name: tags.brand || tags.name || POI_DEF[type].label,
+        addr: [tags['addr:street'], tags['addr:city']].filter(Boolean).join(', '),
+        cuisine: tags.cuisine || '',
+        tags
+      };
+    }).filter(Boolean);
+
+    // Dedupe: same coord rounded to 3 decimals + name
+    const seen = new Set();
+    const uniq = elems.filter(p => {
+      const k = p.type + '_' + p.name + Math.round(p.lat*1000) + Math.round(p.lng*1000);
+      if (seen.has(k)) return false; seen.add(k); return true;
+    });
+
+    // Cache
+    cache[cacheKey] = { ts: Date.now(), pois: uniq };
+    // Keep cache small: drop old entries > 7 days
+    const WEEK = 7*24*3600000;
+    Object.keys(cache).forEach(k => { if (Date.now() - cache[k].ts > WEEK) delete cache[k]; });
+    lsSet(K.poiCache, cache);
+
+    // Track exploration (unique POI types visited)
+    recordPoiTypesSeen(uniq.map(p => p.type));
+
+    renderPOIs(uniq);
+    toast(`Found ${uniq.length} POIs along route.`);
+  } catch(err) {
+    listEl.innerHTML = '<span class="tiny muted">Overpass is slow right now. Try again in a minute.</span>';
+    toast('POI lookup failed.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Find POIs Along Route';
+  }
+}
+
+function renderPOIs(pois) {
+  clearPoiMarkers();
+  _poiCurrent = pois;
+  const box = $('#poiList');
+  if (!pois.length) { box.innerHTML = '<span class="tiny muted">No POIs found for selected categories. Widen your search or plan a longer route.</span>'; return; }
+  // Drop map pins per type
+  pois.forEach(p => {
+    const def = POI_DEF[p.type];
+    const m = L.circleMarker([p.lat, p.lng], {
+      radius:8, color:def.color, fillColor:'#0a0a0a', fillOpacity:.9, weight:3
+    }).bindTooltip(`${def.emoji} ${p.name}`, { direction:'top' })
+      .bindPopup(`<b>${def.emoji} ${esc(p.name)}</b><br><span style="color:#888;font-size:11px">${esc(p.addr || def.label)}</span><br><a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">Directions</a>`)
+      .addTo(map);
+    _poiMarkers.push(m);
+  });
+  // List grouped by type
+  const byType = {};
+  pois.forEach(p => { (byType[p.type] ||= []).push(p); });
+  const html = Object.keys(byType).map(t => {
+    const def = POI_DEF[t];
+    return `<div class="tiny muted" style="margin:10px 0 6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">${def.emoji} ${def.label} (${byType[t].length})</div>` +
+      byType[t].map(p => `
+        <div class="poi-row">
+          <div class="poi-ico" style="background:${def.color}22;color:${def.color}">${def.emoji}</div>
+          <div class="poi-body">
+            <div class="poi-name">${esc(p.name)}</div>
+            <div class="poi-meta">${esc(p.addr || def.label)}${p.cuisine ? ' · '+esc(p.cuisine) : ''}</div>
+          </div>
+          <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}','_blank')">Go</button>
+        </div>`).join('');
+  }).join('');
+  box.innerHTML = html;
+}
+
+// Render POI chip state from prefs
+function renderPoiChips() {
+  const prefs = getPoiPrefs();
+  document.querySelectorAll('#poiChips .poi-chip').forEach(chip => {
+    chip.classList.toggle('active', !!prefs.types[chip.dataset.type]);
+  });
+}
+
+// Wire POI chip clicks + buttons (deferred to DOM-ready handled by IIFE order)
+document.querySelectorAll('#poiChips .poi-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const prefs = getPoiPrefs();
+    const t = chip.dataset.type;
+    prefs.types[t] = !prefs.types[t];
+    savePoiPrefs(prefs);
+    chip.classList.toggle('active', prefs.types[t]);
+  });
+});
+$('#findPoiBtn')?.addEventListener('click', findPOIs);
+$('#clearPoiBtn')?.addEventListener('click', () => {
+  clearPoiMarkers();
+  $('#poiList').innerHTML = '<span class="tiny muted">Cleared. Pick categories + tap find to reload.</span>';
+  toast('POI pins cleared.');
+});
+// Initial chip paint
+try { renderPoiChips(); } catch(_) {}
+
+/* ======================== V4.2: CHALLENGES + LEADERBOARDS ======================== */
+// Date helpers (local time)
+function startOfDay(ts){ const d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
+function startOfWeek(ts){ const d=new Date(ts); d.setHours(0,0,0,0); const dow=d.getDay(); d.setDate(d.getDate()-dow); return d.getTime(); } // Sunday
+function startOfMonth(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(1); return d.getTime(); }
+function dayKey(ts){ const d=new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function weekKey(ts){ const w=startOfWeek(ts); return dayKey(w); }
+
+// Weekly target: scales with ride history (last 4 weeks avg) or defaults
+function challengeTargets() {
+  const rides = State.rides || [];
+  const now = Date.now();
+  const last28 = rides.filter(r => (now - (r.ts||Date.parse(r.date))) < 28*24*3600000);
+  const avgWeek = last28.reduce((s,r)=>s+(r.miles||0), 0) / 4;
+  const weekMi = Math.max(50, Math.round((avgWeek * 1.25) / 10) * 10);   // +25% stretch, min 50 mi
+  const monthMi = Math.max(200, Math.round((weekMi * 4.2) / 25) * 25);
+  return { weekMi, monthMi };
+}
+
+// Unique road hash: decimate breadcrumb to ~0.01° tiles (~1.1km) and tally tile-ids
+function roadTilesFromBreadcrumb(bc) {
+  if (!bc || !bc.length) return [];
+  const tiles = new Set();
+  bc.forEach(p => {
+    const lat = p[0] || p.lat; const lng = p[1] || p.lng;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    tiles.add(Math.round(lat*100) + ',' + Math.round(lng*100));
+  });
+  return [...tiles];
+}
+
+function updateExploredRoads() {
+  const known = lsGet(K.exploredRoads, {});
+  let added = 0;
+  (State.rides || []).forEach(r => {
+    roadTilesFromBreadcrumb(r.breadcrumb).forEach(t => {
+      if (!known[t]) { known[t] = r.ts || Date.now(); added++; }
+    });
+  });
+  if (added) lsSet(K.exploredRoads, known);
+  return Object.keys(known).length;
+}
+
+function recordPoiTypesSeen(types) {
+  const pbs = lsGet(K.chalPbs, { poiTypes:[] });
+  pbs.poiTypes = pbs.poiTypes || [];
+  let changed = false;
+  types.forEach(t => { if (!pbs.poiTypes.includes(t)) { pbs.poiTypes.push(t); changed = true; } });
+  if (changed) lsSet(K.chalPbs, pbs);
+}
+
+// Core challenge stats
+function computeChallengeStats() {
+  const rides = (State.rides || []).slice();
+  const now = Date.now();
+  const wkStart = startOfWeek(now);
+  const moStart = startOfMonth(now);
+
+  // Distance totals (this cycle)
+  const weekRides = rides.filter(r => (r.ts||Date.parse(r.date)) >= wkStart);
+  const monthRides = rides.filter(r => (r.ts||Date.parse(r.date)) >= moStart);
+  const weekMi = round(weekRides.reduce((s,r)=>s+(r.miles||0),0), 1);
+  const monthMi = round(monthRides.reduce((s,r)=>s+(r.miles||0),0), 1);
+
+  // Streak: consecutive days ending today/yesterday with >=1 ride
+  const rideDays = new Set(rides.map(r => dayKey(r.ts||Date.parse(r.date))));
+  let streak = 0;
+  let cursor = new Date(); cursor.setHours(0,0,0,0);
+  // If no ride today, start counting from yesterday (grace day)
+  if (!rideDays.has(dayKey(cursor.getTime()))) cursor.setDate(cursor.getDate()-1);
+  while (rideDays.has(dayKey(cursor.getTime()))) {
+    streak++;
+    cursor.setDate(cursor.getDate()-1);
+  }
+
+  // Longest ride ever
+  const longestRide = rides.reduce((m,r) => Math.max(m, r.miles||0), 0);
+
+  // Longest streak ever: walk all ride days
+  const sortedDays = [...rideDays].sort();
+  let longestStreak = 0, cur = 0, prev = null;
+  sortedDays.forEach(k => {
+    const d = new Date(k+'T00:00:00');
+    if (prev && (d - prev) === 86400000) cur++;
+    else cur = 1;
+    longestStreak = Math.max(longestStreak, cur);
+    prev = d;
+  });
+
+  // Unique road tiles (exploration)
+  const uniqueTiles = updateExploredRoads();
+
+  // POI types discovered
+  const pbs = lsGet(K.chalPbs, { poiTypes:[] });
+  const poiTypesSeen = (pbs.poiTypes || []).length;
+
+  // Weekly PB (highest-ever weekly mileage)
+  const byWeek = {};
+  rides.forEach(r => {
+    const k = weekKey(r.ts||Date.parse(r.date));
+    byWeek[k] = (byWeek[k]||0) + (r.miles||0);
+  });
+  const weeklyHistory = Object.entries(byWeek).map(([k,v]) => ({ week:k, miles:round(v,1) }))
+    .sort((a,b) => b.week.localeCompare(a.week));
+  const bestWeekMi = Math.max(0, ...Object.values(byWeek));
+
+  // Monthly PB
+  const byMonth = {};
+  rides.forEach(r => {
+    const d = new Date(r.ts||Date.parse(r.date));
+    const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    byMonth[k] = (byMonth[k]||0) + (r.miles||0);
+  });
+  const bestMonthMi = Math.max(0, ...Object.values(byMonth));
+
+  return {
+    weekMi, monthMi, streak, longestRide:round(longestRide,1), longestStreak,
+    uniqueTiles, poiTypesSeen,
+    bestWeekMi:round(bestWeekMi,1), bestMonthMi:round(bestMonthMi,1),
+    weeklyHistory
+  };
+}
+
+function renderChallengeCard(elId, opts) {
+  // opts: { title, value, target, unit, badge, sub }
+  const pct = opts.target > 0 ? Math.min(100, (opts.value / opts.target) * 100) : 0;
+  const done = pct >= 100;
+  const live = opts.value > 0 && !done;
+  const badgeClass = done ? 'done' : (live ? 'live' : '');
+  const badgeText = done ? '✓ Complete' : (live ? 'Active' : 'Not started');
+  $(elId).innerHTML = `
+    <div class="chal-head">
+      <div class="chal-title">${esc(opts.title)}</div>
+      <span class="chal-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="chal-val">${opts.value} <span class="tiny muted" style="font-size:13px;font-weight:600">${esc(opts.unit)}</span></div>
+    ${opts.target ? `<div class="chal-prog"><div class="chal-fill" style="width:${pct}%"></div></div><div class="chal-target">Target: ${opts.target} ${esc(opts.unit)} — ${Math.round(pct)}%</div>` : ''}
+    ${opts.sub ? `<div class="chal-sub">${opts.sub}</div>` : ''}
+  `;
+}
+
+function renderStreakDots(streak) {
+  // 14-day strip: dots = ridden days over last 14 days
+  const rides = State.rides || [];
+  const rideDays = new Set(rides.map(r => dayKey(r.ts||Date.parse(r.date))));
+  const today = dayKey(Date.now());
+  const cells = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const k = dayKey(d.getTime());
+    const isToday = k === today;
+    const ridden = rideDays.has(k);
+    cells.push(`<div class="streak-dot ${ridden?'ridden':''} ${isToday?'today':''}" title="${k}${ridden?' — ride logged':''}"></div>`);
+  }
+  return `<div class="streak-dots">${cells.join('')}</div>`;
+}
+
+function renderChallenges() {
+  const stats = computeChallengeStats();
+  const targets = challengeTargets();
+  const unit = distLabel();
+
+  renderChallengeCard('#chalWeekly', {
+    title: 'Weekly Distance',
+    value: round(distConv(stats.weekMi), 1),
+    target: round(distConv(targets.weekMi), 0),
+    unit,
+    sub: `Cycle ends Saturday night. Best ever: <b>${round(distConv(stats.bestWeekMi),1)} ${unit}</b>`
+  });
+  renderChallengeCard('#chalMonthly', {
+    title: 'Monthly Distance',
+    value: round(distConv(stats.monthMi), 1),
+    target: round(distConv(targets.monthMi), 0),
+    unit,
+    sub: `Best ever: <b>${round(distConv(stats.bestMonthMi),1)} ${unit}</b>`
+  });
+  renderChallengeCard('#chalStreak', {
+    title: 'Current Streak',
+    value: stats.streak,
+    target: Math.max(7, stats.longestStreak),
+    unit: stats.streak === 1 ? 'day' : 'days',
+    sub: `Longest ever: <b>${stats.longestStreak} days</b>. Grace: ride today or yesterday to keep it alive.` + renderStreakDots(stats.streak)
+  });
+  renderChallengeCard('#chalExploration', {
+    title: 'Roads Discovered',
+    value: stats.uniqueTiles,
+    target: Math.max(50, Math.ceil(stats.uniqueTiles * 1.25 / 10) * 10),
+    unit: 'tiles',
+    sub: `Each tile ≈ 1km² of ground you’ve ridden. POI categories tried: <b>${stats.poiTypesSeen}/4</b>.`
+  });
+
+  // Personal bests
+  $('#chalPersonalBests').innerHTML = `
+    <div class="lb-row"><div class="lb-rank gold">🥇</div>
+      <div class="lb-label"><div class="lb-name">Longest Single Ride</div><div class="lb-meta">All-time record</div></div>
+      <div class="lb-val">${round(distConv(stats.longestRide),1)} ${unit}</div></div>
+    <div class="lb-row"><div class="lb-rank gold">📅</div>
+      <div class="lb-label"><div class="lb-name">Biggest Week</div><div class="lb-meta">Most miles in a single week</div></div>
+      <div class="lb-val">${round(distConv(stats.bestWeekMi),1)} ${unit}</div></div>
+    <div class="lb-row"><div class="lb-rank gold">🗓️</div>
+      <div class="lb-label"><div class="lb-name">Biggest Month</div><div class="lb-meta">Most miles in a single month</div></div>
+      <div class="lb-val">${round(distConv(stats.bestMonthMi),1)} ${unit}</div></div>
+    <div class="lb-row"><div class="lb-rank gold">🔥</div>
+      <div class="lb-label"><div class="lb-name">Longest Streak</div><div class="lb-meta">Consecutive ride days</div></div>
+      <div class="lb-val">${stats.longestStreak} days</div></div>
+    <div class="lb-row"><div class="lb-rank gold">🗺️</div>
+      <div class="lb-label"><div class="lb-name">Roads Discovered</div><div class="lb-meta">Unique ~1km tiles ridden</div></div>
+      <div class="lb-val">${stats.uniqueTiles}</div></div>
+  `;
+
+  // Weekly leaderboard (last 10 weeks by distance)
+  const wb = $('#chalWeeklyBoard');
+  const top = stats.weeklyHistory.slice(0, 10);
+  if (!top.length) {
+    wb.innerHTML = '<span class="tiny muted">No rides yet. Log one to start the board.</span>';
+  } else {
+    const sortedByMiles = [...top].sort((a,b) => b.miles - a.miles);
+    const ranks = new Map();
+    sortedByMiles.forEach((w,i) => ranks.set(w.week, i+1));
+    wb.innerHTML = top.map(w => {
+      const rank = ranks.get(w.week);
+      const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+      const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`;
+      const weekDate = new Date(w.week+'T00:00:00');
+      const label = `Week of ${weekDate.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`;
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass}">${medal}</div>
+        <div class="lb-label"><div class="lb-name">${esc(label)}</div><div class="lb-meta">Rank ${rank} of ${top.length}</div></div>
+        <div class="lb-val">${round(distConv(w.miles),1)} ${unit}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
 /* ======================== V4.1: SPOTIFY RIDE PLAYLIST ======================== */
 const Spotify = (() => {
   const AUTH_HOST = 'https://accounts.spotify.com';
@@ -3616,6 +4168,7 @@ document.querySelectorAll('nav.tabs button, .more-sheet [data-more-view]').forEa
   b.addEventListener('click', () => {
     const v = b.dataset.view || b.dataset.moreView;
     if (v === 'music') { renderSpotifyStatus(); renderMusicPrefs(); }
+    if (v === 'challenges') { try { renderChallenges(); } catch(e) { console.error('[BDS] challenges render failed', e); } }
   });
 });
 
@@ -3631,7 +4184,7 @@ document.querySelectorAll('nav.tabs button, .more-sheet [data-more-view]').forEa
 })();
 
 // Expose for debugging
-window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop, Spotify, generateRidePlaylist };
+window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop, Spotify, generateRidePlaylist, findPOIs, renderChallenges, computeChallengeStats };
 
 })();
 </script>
