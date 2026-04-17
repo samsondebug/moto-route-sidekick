@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon-192.svg">
 <link rel="apple-touch-icon" href="icon-192.svg">
-<link rel="stylesheet" href="vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'">
+<link rel="stylesheet" href="vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';this.crossOrigin='anonymous'">
 <style>
 :root{
   --bg:#0a0a0a;--surface:#141414;--surface-2:#1c1c1c;--surface-3:#242424;
@@ -359,6 +359,33 @@ a:hover{text-decoration:underline}
 /* DNA card preview */
 #dnaPreviewWrap{display:flex;justify-content:center;margin:10px 0}
 #dnaPreview{max-width:100%;border-radius:var(--radius);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+/* ======================== V4: VIDEO EDITOR / REEL BUILDER ======================== */
+.ve-clip-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.ve-clip{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:flex-start}
+.ve-clip-thumb{width:80px;height:142px;background:#000;border-radius:6px;flex-shrink:0;object-fit:cover;border:1px solid var(--border)}
+.ve-clip-body{flex:1;min-width:0}
+.ve-clip-title{font-weight:700;font-size:12px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve-clip-meta{font-size:10px;color:var(--muted);margin-bottom:8px}
+.ve-trim-range{position:relative;height:36px;background:var(--surface-3);border-radius:6px;border:1px solid var(--border);overflow:hidden}
+.ve-trim-selected{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(255,59,0,.35),rgba(255,180,0,.35));border-left:2px solid var(--accent);border-right:2px solid var(--accent-2);pointer-events:none}
+.ve-trim-handle{position:absolute;top:0;bottom:0;width:14px;background:var(--accent);cursor:ew-resize;touch-action:none;z-index:2;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:10px;user-select:none}
+.ve-trim-handle.right{background:var(--accent-2)}
+.ve-trim-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.ve-clip-actions{display:flex;gap:6px;margin-top:8px}
+.ve-clip-actions button{font-size:10px;padding:4px 8px}
+.ve-totals{display:flex;justify-content:space-between;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:12px;font-variant-numeric:tabular-nums}
+.ve-totals .overlimit{color:var(--danger);font-weight:700}
+.ve-music-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px}
+.ve-music-info{flex:1;min-width:0;font-size:11px}
+.ve-music-info .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve-music-info .bpm{color:var(--accent-2);font-weight:700}
+.ve-progress{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px;display:none}
+.ve-progress.show{display:block}
+.ve-progress-bar{height:10px;background:var(--surface-3);border-radius:999px;overflow:hidden;margin-top:8px}
+.ve-progress-bar>div{height:100%;background:linear-gradient(90deg,var(--ok),var(--accent-2),var(--accent));width:0%;transition:width .2s}
+.ve-log{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--muted);max-height:80px;overflow-y:auto;margin-top:8px;white-space:pre-wrap;word-break:break-all}
+.ve-preview-video{width:100%;max-width:280px;background:#000;border-radius:8px;margin-top:10px;display:block}
+.ve-empty{text-align:center;color:var(--muted);padding:20px;border:1px dashed var(--border);border-radius:8px;margin-top:10px;font-size:13px}
 </style>
 </head>
 <body>
@@ -651,6 +678,64 @@ a:hover{text-decoration:underline}
     <h3>🎤 Voice Ride Notes</h3>
     <div id="voiceNotesList"><span class="tiny muted">Tap the mic button during a ride to drop a 10-second voice note pinned to your GPS location.</span></div>
   </div>
+
+  <!-- ============ V4: VIDEO REEL EDITOR ============ -->
+  <div class="card">
+    <h3>🎬 Reel Builder <span class="tiny muted">v4 beta</span></h3>
+    <p class="tiny muted">Pick 2–10 clips from your phone. Trim each one. Add a song — cuts auto-snap to the beat. Export a 1080×1920 Reel-ready MP4, max 90s.</p>
+    <div class="row mt-12">
+      <button class="btn" id="veAddClipsBtn">+ Add Clips</button>
+      <button class="btn ghost" id="veAddMusicBtn">♪ Add Music</button>
+      <button class="btn ghost" id="veClearBtn">Clear</button>
+    </div>
+    <input type="file" id="veClipsFile" accept="video/*" multiple class="hide">
+    <input type="file" id="veMusicFile" accept="audio/*" class="hide">
+
+    <div id="veClipList" class="ve-clip-list"></div>
+    <div id="veEmpty" class="ve-empty">No clips yet. Tap "Add Clips" to start.</div>
+
+    <div id="veMusicRow" class="ve-music-row hide">
+      <div class="ve-music-info">
+        <div class="n" id="veMusicName">—</div>
+        <div>Detected tempo: <span class="bpm" id="veMusicBpm">—</span> · Beats found: <span id="veMusicBeats">—</span></div>
+      </div>
+      <button class="btn ghost" id="veMusicRemoveBtn" style="font-size:11px;padding:6px 10px">✕</button>
+    </div>
+
+    <div id="veTotals" class="ve-totals hide">
+      <span>Total length: <strong id="veTotalLen">0.0s</strong> <span class="tiny muted">/ 90s max</span></span>
+      <span>Clips: <strong id="veTotalClips">0</strong></span>
+    </div>
+
+    <div class="row mt-12">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;flex:1">
+        <input type="checkbox" id="veBeatSync" checked>
+        Snap cuts to beat
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;flex:1">
+        <input type="checkbox" id="veMuteClips" checked>
+        Mute clip audio
+      </label>
+    </div>
+
+    <button class="btn warn mt-12" id="veExportBtn" style="width:100%;font-size:14px;padding:14px" disabled>🎬 EXPORT MP4 REEL</button>
+
+    <div id="veProgress" class="ve-progress">
+      <div id="veProgressMsg" style="font-size:12px;font-weight:700">Preparing...</div>
+      <div class="ve-progress-bar"><div id="veProgressBar"></div></div>
+      <div id="veLog" class="ve-log"></div>
+    </div>
+
+    <div id="veResult" class="hide mt-12">
+      <video id="veResultVideo" class="ve-preview-video" controls playsinline></video>
+      <div class="row mt-12">
+        <button class="btn" id="veDownloadBtn">⬇ Download MP4</button>
+        <button class="btn warn" id="veShareBtn">↗ Share</button>
+      </div>
+    </div>
+
+    <p class="tiny muted mt-12">Renders on-device with FFmpeg.wasm. A 60s Reel takes 30–90s on a modern phone. Don't lock your screen during export.</p>
+  </div>
 </section>
 
 <!-- ============ GROUP ============ -->
@@ -781,7 +866,10 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
-<script src="vendor/leaflet.js" onerror="(function(s){var f=document.createElement('script');f.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';f.onerror=function(){document.body.insertAdjacentHTML('afterbegin','<div style=\'position:fixed;inset:0;z-index:99999;background:#0a0a0a;color:#fff;padding:40px;font-family:-apple-system,sans-serif\'><h2 style=\'color:#ff3b00\'>Map library failed to load</h2><p>Check your connection and refresh. Your rides and data are safe.</p><button onclick=\'location.reload()\' style=\'background:#ff3b00;color:#fff;border:0;padding:14px 24px;border-radius:10px;font-size:16px;font-weight:700;margin-top:12px\'>Refresh</button></div>');};document.head.appendChild(f);})(this);"></script>
+<script src="vendor/leaflet.js" onerror="(function(s){var f=document.createElement('script');f.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';f.crossOrigin='anonymous';f.onerror=function(){document.body.insertAdjacentHTML('afterbegin','<div style=\'position:fixed;inset:0;z-index:99999;background:#0a0a0a;color:#fff;padding:40px;font-family:-apple-system,sans-serif\'><h2 style=\'color:#ff3b00\'>Map library failed to load</h2><p>Check your connection and refresh. Your rides and data are safe.</p><button onclick=\'location.reload()\' style=\'background:#ff3b00;color:#fff;border:0;padding:14px 24px;border-radius:10px;font-size:16px;font-weight:700;margin-top:12px\'>Refresh</button></div>');};document.head.appendChild(f);})(this);"></script>
+<!-- v4: FFmpeg.wasm for video editor. COOP/COEP headers set in vercel.json -->
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js" crossorigin="anonymous"></script>
 <script>
 (() => {
 'use strict';
@@ -3052,6 +3140,557 @@ async function boot() {
   setTimeout(() => { try { map.invalidateSize(); } catch(_) {} }, 60);
 }
 boot();
+
+// ======================== V4: VIDEO REEL EDITOR ========================
+(function veInit(){
+  const MAX_TOTAL = 90; // seconds
+  const MAX_CLIPS = 10;
+  const MIN_CLIPS = 2;
+  const TARGET_W = 1080;
+  const TARGET_H = 1920;
+
+  const veState = { clips: [], music: null, ffmpeg: null, exporting: false, outputUrl: null, outputBlob: null };
+
+  const el = {
+    addClipsBtn: $('#veAddClipsBtn'),
+    addMusicBtn: $('#veAddMusicBtn'),
+    clearBtn: $('#veClearBtn'),
+    clipsFile: $('#veClipsFile'),
+    musicFile: $('#veMusicFile'),
+    clipList: $('#veClipList'),
+    empty: $('#veEmpty'),
+    musicRow: $('#veMusicRow'),
+    musicName: $('#veMusicName'),
+    musicBpm: $('#veMusicBpm'),
+    musicBeats: $('#veMusicBeats'),
+    musicRemoveBtn: $('#veMusicRemoveBtn'),
+    totals: $('#veTotals'),
+    totalLen: $('#veTotalLen'),
+    totalClips: $('#veTotalClips'),
+    beatSync: $('#veBeatSync'),
+    muteClips: $('#veMuteClips'),
+    exportBtn: $('#veExportBtn'),
+    progress: $('#veProgress'),
+    progressMsg: $('#veProgressMsg'),
+    progressBar: $('#veProgressBar'),
+    log: $('#veLog'),
+    result: $('#veResult'),
+    resultVideo: $('#veResultVideo'),
+    downloadBtn: $('#veDownloadBtn'),
+    shareBtn: $('#veShareBtn'),
+  };
+
+  if (!el.addClipsBtn) return; // UI not present
+
+  const fmtSec = s => (Math.round(s * 10) / 10).toFixed(1) + 's';
+  const logLine = (m) => { if (!el.log) return; el.log.textContent += m + '\n'; el.log.scrollTop = el.log.scrollHeight; };
+  const setProgressMsg = m => { if (el.progressMsg) el.progressMsg.textContent = m; };
+  const setProgressPct = p => { if (el.progressBar) el.progressBar.style.width = Math.max(0, Math.min(100, p)) + '%'; };
+
+  // ============ Clip picker ============
+  el.addClipsBtn.addEventListener('click', () => el.clipsFile.click());
+  el.clearBtn.addEventListener('click', () => {
+    if (veState.exporting) return;
+    veState.clips.forEach(c => { try { URL.revokeObjectURL(c.url); } catch(_) {} });
+    veState.clips = [];
+    renderClips();
+  });
+
+  el.clipsFile.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    const room = MAX_CLIPS - veState.clips.length;
+    if (room <= 0) { toast('Max ' + MAX_CLIPS + ' clips.'); return; }
+    const take = files.slice(0, room);
+    if (files.length > room) toast('Added ' + room + ' / ' + files.length + ' (cap ' + MAX_CLIPS + ').');
+    for (const f of take) {
+      try {
+        const clip = await loadClip(f);
+        veState.clips.push(clip);
+        renderClips();
+      } catch (err) {
+        logLine('Skipped ' + f.name + ': ' + err.message);
+        toast('Skipped ' + f.name);
+      }
+    }
+  });
+
+  function loadClip(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const v = document.createElement('video');
+      v.preload = 'metadata';
+      v.muted = true;
+      v.playsInline = true;
+      v.src = url;
+      const to = setTimeout(() => { reject(new Error('metadata timeout')); }, 15000);
+      v.addEventListener('loadedmetadata', async () => {
+        clearTimeout(to);
+        const dur = v.duration;
+        if (!isFinite(dur) || dur <= 0.1) { reject(new Error('bad duration')); return; }
+        const w = v.videoWidth, h = v.videoHeight;
+        let thumb = '';
+        try { thumb = await grabThumb(v, Math.min(0.1, dur/2)); } catch(_) {}
+        resolve({
+          id: 'c' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+          file, url, duration: dur, width: w, height: h,
+          trimStart: 0, trimEnd: Math.min(dur, 15),
+          thumb, name: file.name,
+        });
+      }, { once: true });
+      v.addEventListener('error', () => { clearTimeout(to); reject(new Error('load error')); }, { once: true });
+    });
+  }
+
+  function grabThumb(v, t) {
+    return new Promise((resolve, reject) => {
+      const onSeek = () => {
+        try {
+          const cw = 160, ch = 284;
+          const canvas = document.createElement('canvas');
+          canvas.width = cw; canvas.height = ch;
+          const ctx = canvas.getContext('2d');
+          const vw = v.videoWidth, vh = v.videoHeight;
+          // center-crop to 9:16 then draw
+          const target = cw / ch;
+          const src = vw / vh;
+          let sx=0, sy=0, sw=vw, sh=vh;
+          if (src > target) { sw = vh * target; sx = (vw - sw) / 2; }
+          else { sh = vw / target; sy = (vh - sh) / 2; }
+          ctx.drawImage(v, sx, sy, sw, sh, 0, 0, cw, ch);
+          resolve(canvas.toDataURL('image/jpeg', 0.6));
+        } catch(e) { reject(e); }
+      };
+      v.addEventListener('seeked', onSeek, { once: true });
+      try { v.currentTime = t; } catch(e) { reject(e); }
+    });
+  }
+
+  // ============ Render ============
+  function renderClips() {
+    el.clipList.innerHTML = '';
+    if (!veState.clips.length) {
+      el.empty.classList.remove('hide');
+      el.totals.classList.add('hide');
+    } else {
+      el.empty.classList.add('hide');
+      el.totals.classList.remove('hide');
+      veState.clips.forEach((clip, idx) => el.clipList.appendChild(renderClipRow(clip, idx)));
+    }
+    updateTotals();
+  }
+
+  function renderClipRow(clip, idx) {
+    const row = document.createElement('div');
+    row.className = 've-clip';
+    row.dataset.id = clip.id;
+    const selDur = Math.max(0, clip.trimEnd - clip.trimStart);
+    row.innerHTML = `
+      <img class="ve-clip-thumb" src="${clip.thumb || ''}" alt="">
+      <div class="ve-clip-body">
+        <div class="ve-clip-title">#${idx+1} ${escapeHtml(clip.name)}</div>
+        <div class="ve-clip-meta">${clip.width}×${clip.height} · ${fmtSec(clip.duration)} total · keeping <span class="keep">${fmtSec(selDur)}</span></div>
+        <div class="ve-trim-range" data-id="${clip.id}">
+          <div class="ve-trim-selected"></div>
+          <div class="ve-trim-handle left" data-side="left">◀</div>
+          <div class="ve-trim-handle right" data-side="right">▶</div>
+        </div>
+        <div class="ve-trim-labels"><span class="ls">${fmtSec(clip.trimStart)}</span><span class="le">${fmtSec(clip.trimEnd)}</span></div>
+        <div class="ve-clip-actions">
+          <button class="btn ghost" data-act="up">↑</button>
+          <button class="btn ghost" data-act="down">↓</button>
+          <button class="btn ghost" data-act="preview">▶ Preview</button>
+          <button class="btn ghost" data-act="remove">✕</button>
+        </div>
+      </div>
+    `;
+    // actions
+    row.querySelector('[data-act="remove"]').addEventListener('click', () => {
+      const i = veState.clips.findIndex(c => c.id === clip.id);
+      if (i >= 0) { try { URL.revokeObjectURL(veState.clips[i].url); } catch(_) {} veState.clips.splice(i, 1); renderClips(); }
+    });
+    row.querySelector('[data-act="up"]').addEventListener('click', () => {
+      const i = veState.clips.findIndex(c => c.id === clip.id);
+      if (i > 0) { const [x] = veState.clips.splice(i,1); veState.clips.splice(i-1,0,x); renderClips(); }
+    });
+    row.querySelector('[data-act="down"]').addEventListener('click', () => {
+      const i = veState.clips.findIndex(c => c.id === clip.id);
+      if (i >= 0 && i < veState.clips.length - 1) { const [x] = veState.clips.splice(i,1); veState.clips.splice(i+1,0,x); renderClips(); }
+    });
+    row.querySelector('[data-act="preview"]').addEventListener('click', () => previewClip(clip));
+
+    // trim slider
+    wireTrim(row.querySelector('.ve-trim-range'), clip, row);
+    paintTrim(row, clip);
+    return row;
+  }
+
+  function paintTrim(row, clip) {
+    const range = row.querySelector('.ve-trim-range');
+    if (!range) return;
+    const W = range.clientWidth || 1;
+    const pxPerSec = W / clip.duration;
+    const left = clip.trimStart * pxPerSec;
+    const right = clip.trimEnd * pxPerSec;
+    const sel = range.querySelector('.ve-trim-selected');
+    const lh = range.querySelector('.ve-trim-handle.left');
+    const rh = range.querySelector('.ve-trim-handle.right');
+    sel.style.left = left + 'px';
+    sel.style.width = Math.max(2, right - left) + 'px';
+    lh.style.left = Math.max(0, left - 7) + 'px';
+    rh.style.left = Math.max(0, right - 7) + 'px';
+    const ls = row.querySelector('.ls'); if (ls) ls.textContent = fmtSec(clip.trimStart);
+    const le = row.querySelector('.le'); if (le) le.textContent = fmtSec(clip.trimEnd);
+    const keep = row.querySelector('.keep'); if (keep) keep.textContent = fmtSec(clip.trimEnd - clip.trimStart);
+  }
+
+  function wireTrim(range, clip, row) {
+    let dragging = null; // 'left'|'right'
+    const onDown = (e) => {
+      const t = e.target;
+      if (!t.classList.contains('ve-trim-handle')) return;
+      e.preventDefault();
+      dragging = t.dataset.side;
+      try { t.setPointerCapture(e.pointerId); } catch(_) {}
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const rect = range.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(rect.width, x));
+      let t = (x / rect.width) * clip.duration;
+      const MIN = 0.3;
+      if (dragging === 'left') clip.trimStart = Math.min(t, clip.trimEnd - MIN);
+      else clip.trimEnd = Math.max(t, clip.trimStart + MIN);
+      paintTrim(row, clip);
+      updateTotals();
+    };
+    const onUp = () => { dragging = null; };
+    range.addEventListener('pointerdown', onDown);
+    range.addEventListener('pointermove', onMove);
+    range.addEventListener('pointerup', onUp);
+    range.addEventListener('pointercancel', onUp);
+  }
+
+  function previewClip(clip) {
+    const v = document.createElement('video');
+    v.src = clip.url;
+    v.style.position='fixed'; v.style.inset='0'; v.style.width='100%'; v.style.height='100%';
+    v.style.background='#000'; v.style.zIndex='9999'; v.controls = true; v.playsInline = true;
+    v.addEventListener('loadedmetadata', () => { v.currentTime = clip.trimStart; v.play().catch(()=>{}); });
+    v.addEventListener('timeupdate', () => { if (v.currentTime >= clip.trimEnd) { v.pause(); document.body.removeChild(v); } });
+    v.addEventListener('click', () => { try { document.body.removeChild(v); } catch(_) {} });
+    document.body.appendChild(v);
+  }
+
+  function updateTotals() {
+    const total = veState.clips.reduce((a,c) => a + Math.max(0, c.trimEnd - c.trimStart), 0);
+    el.totalLen.textContent = fmtSec(total);
+    el.totalClips.textContent = String(veState.clips.length);
+    el.totalLen.classList.toggle('overlimit', total > MAX_TOTAL);
+    const ok = veState.clips.length >= MIN_CLIPS && total > 0.5 && total <= MAX_TOTAL && !veState.exporting;
+    el.exportBtn.disabled = !ok;
+  }
+
+  // ============ Music + beat detection ============
+  el.addMusicBtn.addEventListener('click', () => el.musicFile.click());
+  el.musicRemoveBtn.addEventListener('click', () => {
+    if (veState.music) { try { URL.revokeObjectURL(veState.music.url); } catch(_) {} }
+    veState.music = null;
+    el.musicRow.classList.add('hide');
+  });
+  el.musicFile.addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    try {
+      el.musicName.textContent = f.name;
+      el.musicBpm.textContent = 'analyzing…';
+      el.musicBeats.textContent = '…';
+      el.musicRow.classList.remove('hide');
+      const arr = await f.arrayBuffer();
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC();
+      const audio = await ctx.decodeAudioData(arr.slice(0));
+      const { bpm, beats } = detectBeats(audio);
+      try { ctx.close(); } catch(_) {}
+      veState.music = { file: f, url: URL.createObjectURL(f), duration: audio.duration, bpm, beats };
+      el.musicBpm.textContent = bpm ? Math.round(bpm) : '—';
+      el.musicBeats.textContent = beats.length;
+      updateTotals();
+    } catch (err) {
+      toast('Music load failed: ' + err.message);
+      veState.music = null;
+      el.musicRow.classList.add('hide');
+    }
+  });
+
+  // Energy-based onset detection → BPM via inter-onset histogram
+  function detectBeats(audioBuffer) {
+    const sr = audioBuffer.sampleRate;
+    const ch0 = audioBuffer.getChannelData(0);
+    const ch1 = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : null;
+    const frame = Math.round(sr * 0.02); // 20ms frames
+    const nFrames = Math.floor(ch0.length / frame);
+    const energy = new Float32Array(nFrames);
+    for (let i = 0; i < nFrames; i++) {
+      let sum = 0;
+      const off = i * frame;
+      for (let j = 0; j < frame; j++) {
+        const s = ch1 ? (ch0[off+j] + ch1[off+j]) * 0.5 : ch0[off+j];
+        sum += s * s;
+      }
+      energy[i] = Math.sqrt(sum / frame);
+    }
+    // spectral flux-ish: positive differences
+    const flux = new Float32Array(nFrames);
+    for (let i = 1; i < nFrames; i++) {
+      const d = energy[i] - energy[i-1];
+      flux[i] = d > 0 ? d : 0;
+    }
+    // adaptive threshold (local window)
+    const win = 20; // ~400ms
+    const peaks = [];
+    for (let i = 2; i < nFrames - 2; i++) {
+      let sum = 0, cnt = 0;
+      for (let k = Math.max(0, i-win); k <= Math.min(nFrames-1, i+win); k++) { sum += flux[k]; cnt++; }
+      const mean = sum / Math.max(1, cnt);
+      const thr = mean * 1.5 + 1e-4;
+      if (flux[i] > thr && flux[i] > flux[i-1] && flux[i] >= flux[i+1]) {
+        const lastT = peaks.length ? peaks[peaks.length-1] : -999;
+        const t = (i * frame) / sr;
+        if (t - lastT > 0.12) peaks.push(t); // 12ms min gap
+      }
+    }
+    // BPM via histogram of inter-onset intervals in [0.3s, 1.0s] → 60–200 BPM
+    const hist = {};
+    for (let i = 1; i < peaks.length; i++) {
+      const d = peaks[i] - peaks[i-1];
+      if (d < 0.3 || d > 1.0) continue;
+      const bpm = Math.round(60 / d);
+      hist[bpm] = (hist[bpm] || 0) + 1;
+    }
+    let bestBpm = 0, bestCount = 0;
+    for (const k in hist) { if (hist[k] > bestCount) { bestCount = hist[k]; bestBpm = +k; } }
+    // fold to 90–180 range for typical music
+    while (bestBpm && bestBpm < 70) bestBpm *= 2;
+    while (bestBpm && bestBpm > 200) bestBpm /= 2;
+    return { bpm: bestBpm || 0, beats: peaks };
+  }
+
+  function snapToBeats(durations) {
+    // Given desired per-clip durations, snap each cut-point to the nearest beat
+    if (!veState.music || !el.beatSync.checked || !veState.music.beats.length) return durations;
+    const beats = veState.music.beats;
+    const out = [];
+    let t = 0;
+    for (let i = 0; i < durations.length; i++) {
+      const desired = t + durations[i];
+      if (i === durations.length - 1) { out.push(durations[i]); break; }
+      // find nearest beat to desired, but only if within 0.25s
+      let best = desired, bestDiff = 0.25;
+      for (const b of beats) {
+        if (b <= t + 0.2) continue;
+        const diff = Math.abs(b - desired);
+        if (diff < bestDiff) { bestDiff = diff; best = b; }
+        if (b > desired + 0.3) break;
+      }
+      const newDur = Math.max(0.3, best - t);
+      out.push(newDur);
+      t += newDur;
+    }
+    return out;
+  }
+
+  // ============ Export pipeline ============
+  el.exportBtn.addEventListener('click', () => { exportReel().catch(err => { logLine('FATAL: ' + err.message); toast('Export failed: ' + err.message); veState.exporting = false; updateTotals(); }); });
+
+  async function loadFFmpeg() {
+    if (veState.ffmpeg) return veState.ffmpeg;
+    if (!self.crossOriginIsolated) {
+      throw new Error('Not cross-origin isolated — COOP/COEP headers missing. Hard refresh.');
+    }
+    if (!window.FFmpegWASM || !window.FFmpegUtil) {
+      throw new Error('FFmpeg scripts not loaded');
+    }
+    const { FFmpeg } = window.FFmpegWASM;
+    const ff = new FFmpeg();
+    ff.on('log', ({ message }) => logLine(message));
+    ff.on('progress', ({ progress }) => {
+      const pct = Math.max(0, Math.min(1, progress || 0)) * 100;
+      // reserve 60–95% for actual ffmpeg
+      setProgressPct(60 + pct * 0.35);
+    });
+    setProgressMsg('Loading FFmpeg core…');
+    await ff.load({
+      coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+      wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+    });
+    veState.ffmpeg = ff;
+    return ff;
+  }
+
+  async function exportReel() {
+    if (veState.exporting) return;
+    if (veState.clips.length < MIN_CLIPS) { toast('Need at least ' + MIN_CLIPS + ' clips.'); return; }
+    veState.exporting = true;
+    updateTotals();
+    el.progress.classList.add('show');
+    el.result.classList.add('hide');
+    if (el.log) el.log.textContent = '';
+    setProgressPct(2);
+    setProgressMsg('Preparing…');
+    try {
+      const ff = await loadFFmpeg();
+      const { fetchFile } = window.FFmpegUtil;
+
+      // Compute trimmed durations, optionally beat-snap
+      let durations = veState.clips.map(c => Math.max(0.3, c.trimEnd - c.trimStart));
+      // Enforce 90s cap
+      let total = durations.reduce((a,b)=>a+b,0);
+      if (total > MAX_TOTAL) {
+        const scale = MAX_TOTAL / total;
+        durations = durations.map(d => d * scale);
+        logLine('Total over 90s — scaled each clip by ' + scale.toFixed(3));
+      }
+      if (veState.music && el.beatSync.checked) {
+        const before = durations.slice();
+        durations = snapToBeats(durations);
+        logLine('Beat-snap: ' + before.map(x=>x.toFixed(2)).join(',') + ' → ' + durations.map(x=>x.toFixed(2)).join(','));
+      }
+
+      // Write each clip, transcode to 1080x1920 H.264, trimmed
+      const segFiles = [];
+      for (let i = 0; i < veState.clips.length; i++) {
+        const clip = veState.clips[i];
+        setProgressMsg('Processing clip ' + (i+1) + ' of ' + veState.clips.length + '…');
+        setProgressPct(5 + (i / veState.clips.length) * 50);
+        const inName = 'in' + i + '.mp4';
+        const outName = 'seg' + i + '.mp4';
+        logLine('Writing ' + inName + ' (' + Math.round(clip.file.size/1024) + ' KB)');
+        await ff.writeFile(inName, await fetchFile(clip.file));
+        const dur = durations[i];
+        const vf = 'scale=' + TARGET_W + ':' + TARGET_H + ':force_original_aspect_ratio=increase,crop=' + TARGET_W + ':' + TARGET_H + ',setsar=1,fps=30';
+        // tokenized args (bug #2 fix)
+        const args = [
+          '-ss', String(clip.trimStart.toFixed(3)),
+          '-t', String(dur.toFixed(3)),
+          '-i', inName,
+          '-vf', vf,
+          '-an',
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-pix_fmt', 'yuv420p',
+          '-movflags', '+faststart',
+          '-r', '30',
+          '-y', outName,
+        ];
+        logLine('ffmpeg ' + args.join(' '));
+        await ff.exec(args);
+        try { await ff.deleteFile(inName); } catch(_) {}
+        segFiles.push(outName);
+      }
+
+      // Write concat list (real newlines — bug #1 fix)
+      const concatList = segFiles.map(n => "file '" + n + "'").join('\n') + '\n';
+      await ff.writeFile('concat.txt', new TextEncoder().encode(concatList));
+      setProgressMsg('Stitching clips…');
+      setProgressPct(60);
+
+      const concatArgs = ['-f', 'concat', '-safe', '0', '-i', 'concat.txt', '-c', 'copy', '-y', 'stitched.mp4'];
+      logLine('ffmpeg ' + concatArgs.join(' '));
+      await ff.exec(concatArgs);
+
+      // Final: mux music or finalize
+      let outName = 'reel.mp4';
+      if (veState.music) {
+        setProgressMsg('Adding music…');
+        await ff.writeFile('music.in', await fetchFile(veState.music.file));
+        // bug #3 fix: explicit -map 0:v and -map 1:a
+        const muxArgs = [
+          '-i', 'stitched.mp4',
+          '-i', 'music.in',
+          '-map', '0:v:0',
+          '-map', '1:a:0',
+          '-c:v', 'copy',
+          '-c:a', 'aac',
+          '-b:a', '192k',
+          '-shortest',
+          '-y', outName,
+        ];
+        logLine('ffmpeg ' + muxArgs.join(' '));
+        await ff.exec(muxArgs);
+        try { await ff.deleteFile('music.in'); } catch(_) {}
+      } else {
+        // no music: just rename / re-mux to be safe
+        outName = 'stitched.mp4';
+      }
+
+      setProgressMsg('Finalizing…');
+      setProgressPct(97);
+      const data = await ff.readFile(outName);
+      const blob = new Blob([data.buffer], { type: 'video/mp4' });
+      if (veState.outputUrl) { try { URL.revokeObjectURL(veState.outputUrl); } catch(_) {} }
+      veState.outputBlob = blob;
+      veState.outputUrl = URL.createObjectURL(blob);
+      el.resultVideo.src = veState.outputUrl;
+      el.result.classList.remove('hide');
+      setProgressPct(100);
+      setProgressMsg('Done — ' + Math.round(blob.size / 1024) + ' KB');
+      toast('Reel ready.');
+
+      // cleanup temp files
+      for (const f of segFiles) { try { await ff.deleteFile(f); } catch(_) {} }
+      try { await ff.deleteFile('concat.txt'); } catch(_) {}
+      try { await ff.deleteFile('stitched.mp4'); } catch(_) {}
+      if (outName !== 'stitched.mp4') { try { await ff.deleteFile(outName); } catch(_) {} }
+    } finally {
+      veState.exporting = false;
+      updateTotals();
+    }
+  }
+
+  el.downloadBtn.addEventListener('click', () => {
+    if (!veState.outputUrl) return;
+    const a = document.createElement('a');
+    a.href = veState.outputUrl;
+    a.download = 'bds-reel-' + Date.now() + '.mp4';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+
+  el.shareBtn.addEventListener('click', async () => {
+    if (!veState.outputBlob) return;
+    const file = new File([veState.outputBlob], 'bds-reel.mp4', { type: 'video/mp4' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Bad Decision Society Reel' });
+      } else {
+        el.downloadBtn.click();
+        toast('Share not supported — downloaded instead.');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') toast('Share failed: ' + err.message);
+    }
+  });
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // Repaint trim sliders on resize
+  window.addEventListener('resize', () => {
+    el.clipList.querySelectorAll('.ve-clip').forEach(row => {
+      const id = row.dataset.id;
+      const clip = veState.clips.find(c => c.id === id);
+      if (clip) paintTrim(row, clip);
+    });
+  });
+
+  renderClips();
+})();
 
 // Expose for debugging
 window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop };

@@ -1,7 +1,7 @@
-// Bad Decision Sidekick — Service Worker v5 (V3 app build)
+// Bad Decision Sidekick — Service Worker v6 (V4 Reel Builder build)
 // Cache-first app shell. Network-first APIs with stale tile fallback. LRU tile cap.
 
-const VERSION = 'bds-v5-2026-04-17';
+const VERSION = 'bds-v6-2026-04-17-reel';
 const SHELL_CACHE = VERSION + '-shell';
 const TILE_CACHE  = VERSION + '-tiles';
 const API_CACHE   = VERSION + '-api';
