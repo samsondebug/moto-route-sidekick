@@ -1,7 +1,7 @@
-// Bad Decision Sidekick — Service Worker v4
+// Bad Decision Sidekick — Service Worker v5 (V3 app build)
 // Cache-first app shell. Network-first APIs with stale tile fallback. LRU tile cap.
 
-const VERSION = 'bds-v4-2026-04-17';
+const VERSION = 'bds-v5-2026-04-17';
 const SHELL_CACHE = VERSION + '-shell';
 const TILE_CACHE  = VERSION + '-tiles';
 const API_CACHE   = VERSION + '-api';
@@ -14,7 +14,13 @@ const SHELL = [
   '/icon-192.svg',
   '/icon-512.svg',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  // V3: Leaflet marker assets so offline maps don't show broken-image placeholders
+  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  'https://unpkg.com/leaflet@1.9.4/dist/images/layers.png',
+  'https://unpkg.com/leaflet@1.9.4/dist/images/layers-2x.png'
 ];
 
 self.addEventListener('install', e => {

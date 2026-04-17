@@ -25,6 +25,13 @@
   --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
   --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
 }
+/* Theme: Ghost (acid-green accent on charcoal) */
+body[data-theme="ghost"]{--accent:#00ff88;--accent-2:#a6ff00;--lean-hi:#00ff88}
+/* Theme: Ion (cyan + electric blue) */
+body[data-theme="ion"]{--accent:#00b8ff;--accent-2:#00ffe1;--lean-hi:#00b8ff}
+/* Battery-saver dims HUD chrome but keeps primary CTA full-strength */
+body[data-battery-saver="1"] .hud-tile,
+body[data-battery-saver="1"] .hud-top .chip{opacity:.55;filter:saturate(.6)}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -89,7 +96,7 @@ p{line-height:1.5;color:var(--muted);margin:6px 0}
 
 .hud-bottom{position:absolute;bottom:calc(12px + var(--safe-bottom));left:10px;right:10px;z-index:400;
   display:flex;gap:8px;pointer-events:none}
-.hud-bottom .btn,.hud-bottom .hud-tiles{pointer-events:auto}
+.hud-bottom .btn,.hud-bottom .cta-ride,.hud-bottom .hud-tiles{pointer-events:auto}
 .hud-tiles{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .hud-tile{background:rgba(20,20,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:1px solid var(--border-strong);border-radius:12px;padding:8px 10px;text-align:center}
@@ -204,6 +211,47 @@ input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{bord
 a{color:var(--accent-2);text-decoration:none}
 a:hover{text-decoration:underline}
 
+/* V3: CRASH DETECTION MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border:2px solid var(--danger);border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 0 40px rgba(255,77,77,.5)}
+.modal h3{margin:0 0 8px;font-size:20px;color:var(--danger);letter-spacing:.04em}
+.modal .count{font-size:64px;font-weight:900;font-variant-numeric:tabular-nums;text-align:center;color:var(--danger);line-height:1;margin:16px 0;font-family:ui-monospace,monospace}
+
+/* V3: MULTI-BIKE SWITCHER */
+.bike-switcher{display:flex;gap:6px;overflow-x:auto;padding:4px 0;scrollbar-width:none;margin-bottom:10px}
+.bike-switcher::-webkit-scrollbar{display:none}
+.bike-chip{flex:0 0 auto;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px}
+.bike-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bike-chip.add{background:transparent;border:1px dashed var(--border-strong);color:var(--muted)}
+
+/* V3: LARGE ROOM CODE / SHARE */
+.room-code-big{font-family:ui-monospace,SFMono-Regular,monospace;font-size:clamp(48px,14vw,88px);font-weight:900;letter-spacing:.15em;text-align:center;color:var(--accent);padding:20px 0;line-height:1;user-select:all;-webkit-user-select:all}
+
+/* V3: SWITCH (toggle) */
+.switch{position:relative;display:inline-block;width:44px;height:26px}
+.switch input{opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:999px;transition:.15s ease;cursor:pointer}
+.switch .slider::before{content:"";position:absolute;left:3px;top:2px;width:18px;height:18px;background:var(--text);border-radius:50%;transition:.15s ease}
+.switch input:checked + .slider{background:var(--accent);border-color:var(--accent)}
+.switch input:checked + .slider::before{transform:translateX(18px);background:#fff}
+
+/* V3: LEAN PROFILE MINI-BAR (used in DNA preview + rides list) */
+.lean-profile{display:flex;align-items:flex-end;gap:2px;height:28px;padding:2px 0}
+.lean-profile-cell{flex:1;min-width:2px;background:var(--lean-low);border-radius:1px;transition:height .2s ease}
+.lean-profile-cell.mid{background:var(--lean-mid)}
+.lean-profile-cell.hi{background:var(--lean-hi)}
+
+/* V3: PRIORITIZED PLAN-TAB BUTTON ROW */
+.plan-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
+.plan-actions .btn{min-height:40px}
+.plan-actions .btn.wide{grid-column:1/-1}
+
+/* V3: PREDICTIVE MAINT LABEL */
+.maint-predict{font-size:10px;color:var(--muted);letter-spacing:.04em;margin-top:4px}
+.maint-predict.warn{color:var(--accent-2)}
+.maint-predict.danger{color:var(--danger)}
+
 /* HELPER */
 .hide{display:none!important}
 .spacer{flex:1}
@@ -310,13 +358,20 @@ a:hover{text-decoration:underline}
     </div>
     <div class="row">
       <label class="field"><span class="lbl">Style</span>
-        <select id="rideStyle"><option value="twisties">Max Twisties</option><option value="scenic">Scenic</option><option value="fastest">Fastest</option></select>
+        <select id="rideStyle">
+          <option value="twisties">Max Twisties</option>
+          <option value="sportbike">Sportbike Max Lean</option>
+          <option value="mixed">Mixed Cruise</option>
+          <option value="scenic">Scenic</option>
+          <option value="fastest">Fastest</option>
+        </select>
       </label>
       <label class="field"><span class="lbl">Loop</span>
         <select id="rideLoop"><option value="out">One-way</option><option value="loop" selected>Loop</option></select>
       </label>
     </div>
     <button id="generateRideBtn" class="btn warn mt-12" style="width:100%">GENERATE RIDE FOR ME</button>
+    <button id="regenTwistierBtn" class="btn ghost mt-12" style="width:100%">🌀 Regenerate Twistier</button>
     <div id="generatedRideInfo"></div>
   </div>
 
@@ -324,11 +379,14 @@ a:hover{text-decoration:underline}
     <h3>Current Route</h3>
     <div id="routeStats" class="stats-grid"></div>
     <div id="twistyBar" class="mt-12"></div>
-    <div class="row mt-12">
-      <button class="btn" id="saveRouteBtn">💾 Save Route</button>
-      <button class="btn warn" id="shareRouteBtn">↗ Share</button>
+    <div class="plan-actions">
+      <button class="btn" id="saveRouteBtn">💾 Save</button>
+      <button class="btn warn" id="shareRouteBtn">↗ Share Link</button>
       <button class="btn ghost" id="precacheBtn">📥 Cache Offline</button>
-      <button class="btn ghost" id="rerouteWxBtn">🌦 Re-route Around Rain</button>
+      <button class="btn ghost" id="rerouteWxBtn">🌦 Dodge Rain</button>
+      <button class="btn ghost" id="exportGpxBtn">⬇ Export GPX</button>
+      <button class="btn ghost" id="importGpxBtn">⬆ Import GPX</button>
+      <input type="file" id="importGpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" class="hide">
     </div>
   </div>
 
@@ -380,7 +438,8 @@ a:hover{text-decoration:underline}
 <section id="view-garage" class="view" role="tabpanel" aria-label="Garage">
   <h2>The Garage</h2>
   <div class="card">
-    <h3>Your Bike</h3>
+    <h3>Bikes</h3>
+    <div id="bikeSwitcher" class="bike-switcher"></div>
     <div class="row">
       <label class="field"><span class="lbl">Make</span><input type="text" id="bikeMake" placeholder="Kawasaki"></label>
       <label class="field"><span class="lbl">Model</span><input type="text" id="bikeModel" placeholder="Ninja ZX-6R"></label>
@@ -390,7 +449,11 @@ a:hover{text-decoration:underline}
       <label class="field"><span class="lbl">Nickname</span><input type="text" id="bikeName" placeholder="Pumpkin"></label>
       <label class="field"><span class="lbl">Odometer (mi)</span><input type="number" id="bikeOdo" step="1" min="0"></label>
     </div>
-    <button class="btn mt-12" id="saveBikeBtn">Save Bike</button>
+    <div class="row mt-12">
+      <button class="btn" id="saveBikeBtn">Save Bike</button>
+      <button class="btn ghost" id="deleteBikeBtn">🗑 Delete Bike</button>
+    </div>
+    <p class="tiny muted mt-12">Ride totals stick to the active bike. Switch bikes before logging a ride from a different one.</p>
   </div>
 
   <div class="card">
@@ -481,8 +544,44 @@ a:hover{text-decoration:underline}
       <select id="unitsSelect"><option value="imperial">Imperial</option><option value="metric">Metric</option></select>
     </div>
     <div class="pref">
-      <div><div class="k">Voice Cues</div><div class="d">Speak weather + turn prompts over Bluetooth helmet</div></div>
-      <label class="switch"><input type="checkbox" id="voiceEnabled"></label>
+      <div><div class="k">Theme</div><div class="d">Swap the HUD accent color</div></div>
+      <select id="themeSelect"><option value="classic">Classic Orange</option><option value="ghost">Ghost Green</option><option value="ion">Ion Blue</option></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ride Safety</h3>
+    <div class="pref">
+      <div><div class="k">Keep Screen On</div><div class="d">Lock screen off during a live ride (Wake Lock)</div></div>
+      <label class="switch"><input type="checkbox" id="wakeLockEnabled"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Battery Saver</div><div class="d">Lower-accuracy GPS, dim HUD chrome</div></div>
+      <label class="switch"><input type="checkbox" id="batterySaver"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Crash Detection</div><div class="d">Flags sudden high-G events mid-ride (experimental — opt-in)</div></div>
+      <label class="switch"><input type="checkbox" id="crashDetect"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Voice Cues</h3>
+    <div class="pref">
+      <div><div class="k">Voice Cues Master</div><div class="d">Speak alerts over Bluetooth helmet</div></div>
+      <label class="switch"><input type="checkbox" id="voiceEnabled"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Ride Start / End</div><div class="d">"Ride started" / "Ride ended"</div></div>
+      <label class="switch"><input type="checkbox" id="voiceRide"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Badge Unlocks</div><div class="d">Announce new badges as you earn them</div></div>
+      <label class="switch"><input type="checkbox" id="voiceBadges"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Lean Alerts</div><div class="d">"Lean 35° — twisty incoming"</div></div>
+      <label class="switch"><input type="checkbox" id="voiceLean"><span class="slider"></span></label>
     </div>
   </div>
 
@@ -499,14 +598,28 @@ a:hover{text-decoration:underline}
 
   <div class="card">
     <h3>About</h3>
-    <p><strong>Bad Decision Sidekick V2</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v2.0 · <span id="buildId">2026.04.17</span></p>
+    <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
+    <p class="tiny muted">v3.0 · <span id="buildId">2026.04.17</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<!-- V3: CRASH DETECTION MODAL -->
+<div id="crashModal" class="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="crashModalTitle">
+  <div class="modal">
+    <h3 id="crashModalTitle">🚨 Possible Crash Detected</h3>
+    <p class="muted">High-G spike + sudden stop. If you're OK, cancel within:</p>
+    <div class="count" id="crashCount">15</div>
+    <div class="row">
+      <button class="btn danger" id="crashCancelBtn" style="flex:1">I'm OK — Cancel</button>
+      <button class="btn ghost" id="crashConfirmBtn" style="flex:1">Alert Group Now</button>
+    </div>
+    <p class="tiny muted mt-12">This flags the ride with a crash marker. If you've got a group room, a handoff message copies to your share sheet.</p>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -515,23 +628,65 @@ a:hover{text-decoration:underline}
 
 /* ======================== STATE & STORAGE ======================== */
 const K = {
-  bike: 'bds_bike', rides: 'bds_rides', routes: 'bds_routes', settings: 'bds_settings',
-  badges: 'bds_badges', maint: 'bds_maint', room: 'bds_room', lastRide: 'bds_last_ride'
+  bike: 'bds_bike', bikes: 'bds_bikes', activeBike: 'bds_active_bike',
+  rides: 'bds_rides', routes: 'bds_routes', settings: 'bds_settings',
+  badges: 'bds_badges', maint: 'bds_maint', room: 'bds_room', lastRide: 'bds_last_ride',
+  liveSnapshot: 'bds_live_ride' // V3: resume-in-progress
 };
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} };
+const lsSet = (k, v) => {
+  try { localStorage.setItem(k, JSON.stringify(v)); return true; }
+  catch(e) {
+    // V3: surface quota errors instead of swallowing silently
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      try { toast('Storage full — export + wipe to free space.', 4500); } catch(_) {}
+    }
+    return false;
+  }
+};
+
+const DEFAULT_SETTINGS = {
+  units:'imperial', voice:false, fuelTank:4.5, fuelMpg:38, fuelReserve:0.8,
+  // V3:
+  theme:'classic', wakeLock:true, batterySaver:false, crashDetect:false,
+  voiceRide:true, voiceBadges:true, voiceLean:false
+};
 
 const State = {
-  bike: lsGet(K.bike, { make:'', model:'', year:'', name:'', odo:0 }),
+  bikes: lsGet(K.bikes, null),
+  activeBikeId: lsGet(K.activeBike, null),
   rides: lsGet(K.rides, []),
   routes: lsGet(K.routes, []),
-  settings: lsGet(K.settings, { units:'imperial', voice:false, fuelTank:4.5, fuelMpg:38, fuelReserve:0.8 }),
+  settings: Object.assign({}, DEFAULT_SETTINGS, lsGet(K.settings, {})),
   badges: lsGet(K.badges, {}),
   maint: lsGet(K.maint, null),
   room: lsGet(K.room, null),
   currentRoute: { waypoints: [], geometry: null, distMi: 0, durationMin: 0, twisty: 0, elevFt: 0, name:'' },
-  liveRide: null
+  liveRide: null,
+  _wakeLock: null // V3: WakeLockSentinel
 };
+
+// V3: migrate legacy single-bike → bikes[] on first run
+(function migrateBike() {
+  if (State.bikes && State.bikes.length) { if (!State.activeBikeId) State.activeBikeId = State.bikes[0].id; return; }
+  const legacy = lsGet(K.bike, null);
+  if (legacy && (legacy.make || legacy.model || legacy.odo)) {
+    const id = 'b_' + Date.now();
+    State.bikes = [{ id, ...legacy }];
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+  } else {
+    const id = 'b_' + Date.now();
+    State.bikes = [{ id, make:'', model:'', year:'', name:'', odo:0 }];
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+  }
+})();
+
+// State.bike = shortcut to active bike record (mutations require lsSet(K.bikes, State.bikes))
+Object.defineProperty(State, 'bike', {
+  get() { return State.bikes.find(b => b.id === State.activeBikeId) || State.bikes[0]; }
+});
 
 // Init maintenance if empty
 if (!State.maint) {
@@ -571,6 +726,107 @@ const speak = msg => {
   if (!State.settings.voice || !('speechSynthesis' in window)) return;
   try { const u = new SpeechSynthesisUtterance(msg); u.rate = 1; u.pitch = 1; speechSynthesis.speak(u); } catch(_) {}
 };
+
+/* ======================== V3 UTILITIES ======================== */
+
+// Bounded fetch: abort after Nms; callers should fall back to cache/straight-line
+async function fetchWithTimeout(url, opts = {}, ms = 8000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try { return await fetch(url, { ...opts, signal: ctrl.signal }); }
+  finally { clearTimeout(t); }
+}
+
+function debounce(fn, ms = 400) {
+  let h;
+  const d = (...args) => { clearTimeout(h); h = setTimeout(() => fn(...args), ms); };
+  d.flush = () => { if (h) { clearTimeout(h); h = null; } fn(); };
+  return d;
+}
+
+/* ---- Wake Lock (keeps screen on during a ride) ---- */
+async function acquireWakeLock() {
+  if (!State.settings.wakeLock || !('wakeLock' in navigator)) return;
+  try {
+    State._wakeLock = await navigator.wakeLock.request('screen');
+    State._wakeLock.addEventListener('release', () => { State._wakeLock = null; });
+  } catch(_) {}
+}
+async function releaseWakeLock() {
+  try { if (State._wakeLock) await State._wakeLock.release(); } catch(_) {}
+  State._wakeLock = null;
+}
+// Re-acquire after visibility change (OS may release on tab hide)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && State.liveRide && !State._wakeLock) acquireWakeLock();
+});
+
+/* ---- GPX: parse + build ---- */
+function gpxParse(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('Invalid GPX');
+  // Prefer <rtept> (route points = waypoints); fallback to <trkpt> (track); finally <wpt>
+  const rtepts = [...doc.querySelectorAll('rtept')];
+  const trkpts = [...doc.querySelectorAll('trkpt')];
+  const wpts   = [...doc.querySelectorAll('wpt')];
+  let pts = rtepts.length ? rtepts : (wpts.length ? wpts : trkpts);
+  if (!pts.length) throw new Error('No GPX points');
+  // If it's a trkpt set, decimate to ~20 waypoints so OSRM doesn't choke
+  if (pts === trkpts && pts.length > 20) {
+    const step = Math.floor(pts.length / 20);
+    pts = pts.filter((_, i) => i % step === 0).slice(0, 20);
+  }
+  const name = doc.querySelector('metadata > name')?.textContent
+            || doc.querySelector('trk > name')?.textContent
+            || doc.querySelector('rte > name')?.textContent
+            || 'Imported Route';
+  return {
+    name: name.trim(),
+    waypoints: pts.map(p => ({
+      lat: parseFloat(p.getAttribute('lat')),
+      lng: parseFloat(p.getAttribute('lon')),
+      label: p.querySelector('name')?.textContent?.trim() || ''
+    })).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+  };
+}
+
+function gpxBuild({ name, waypoints, geometry, kind = 'rte' }) {
+  const escXml = s => String(s ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+  const now = new Date().toISOString();
+  const head = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Bad Decision Sidekick" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${escXml(name || 'Bad Decision Route')}</name>
+    <time>${now}</time>
+  </metadata>`;
+  let body = '';
+  if (kind === 'trk' && geometry && geometry.length) {
+    const seg = geometry.map(([lat,lng]) => `      <trkpt lat="${lat}" lon="${lng}"/>`).join('\n');
+    body = `
+  <trk><name>${escXml(name)}</name><trkseg>
+${seg}
+  </trkseg></trk>`;
+  } else {
+    const rtept = (waypoints || []).map(w =>
+      `    <rtept lat="${w.lat}" lon="${w.lng}">${w.label ? `<name>${escXml(w.label)}</name>` : ''}</rtept>`
+    ).join('\n');
+    body = `
+  <rte><name>${escXml(name)}</name>
+${rtept}
+  </rte>`;
+  }
+  return head + body + `
+</gpx>`;
+}
+
+function gpxDownload(filename, xml) {
+  const blob = new Blob([xml], { type: 'application/gpx+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename.endsWith('.gpx') ? filename : filename + '.gpx';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
 
 /* ======================== TAB NAV ======================== */
 $$('nav.tabs button').forEach(b => b.addEventListener('click', () => {
@@ -616,7 +872,7 @@ async function recalcRoute() {
   if (wps.length < 2) { if (routeLine) { map.removeLayer(routeLine); routeLine = null; } renderRouteStats(); renderWxRibbon(); return; }
   try {
     const coords = wps.map(w => `${w.lng},${w.lat}`).join(';');
-    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+    const res = await fetchWithTimeout(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
     const j = await res.json();
     if (!j.routes || !j.routes.length) throw new Error('no route');
     const r = j.routes[0];
@@ -708,11 +964,11 @@ function renderRouteStats() {
 async function searchPlace() {
   const q = $('#searchInput').value.trim(); if (!q) return;
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
+    const res = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
     const j = await res.json();
     if (!j.length) { toast('Place not found.'); return; }
     const p = j[0]; map.setView([+p.lat, +p.lon], 12); toast(p.display_name.split(',')[0]);
-  } catch(_) { toast('Search failed — offline?'); }
+  } catch(_) { toast('Search failed — offline or slow network.'); }
 }
 
 /* ======================== WEATHER ======================== */
@@ -726,7 +982,7 @@ async function fetchWx(lat, lng) {
     `&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m` +
     `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code` +
     `&forecast_days=7&temperature_unit=${tUnit}&wind_speed_unit=${wUnit}&precipitation_unit=${pUnit}&timezone=auto`;
-  const res = await fetch(url); return await res.json();
+  const res = await fetchWithTimeout(url); return await res.json();
 }
 function wxEmoji(c) {
   if (c >= 95) return '⛈';
@@ -809,22 +1065,45 @@ function sampleN(geom, n) {
   return out;
 }
 
-// Re-route around rain: drop the worst rain segment's midpoint as a deterrent (simple heuristic: pick the segment waypoint and nudge perpendicular)
-$('#rerouteWxBtn').addEventListener('click', () => {
+// V3: Rain re-route with delta — reports miles/time added
+$('#rerouteWxBtn').addEventListener('click', async () => {
   if (!lastRibbon.length) { toast('Load route weather first.'); return; }
   const worst = lastRibbon.reduce((a,b) => b.rainPct > a.rainPct ? b : a, lastRibbon[0]);
   if (worst.rainPct < 40) { toast('No rain worth dodging. Send it.'); return; }
-  // Insert a nudge waypoint ~5 miles north of the worst segment
-  const nudge = { lat: worst.lat + 0.07, lng: worst.lng };
+
+  const before = { mi: State.currentRoute.distMi, min: State.currentRoute.durationMin };
+
+  // Nudge perpendicular to route heading at the worst segment (rough — 5 mi lateral)
+  const geom = State.currentRoute.geometry || [];
+  let nudgeLat = worst.lat + 0.07, nudgeLng = worst.lng;
+  if (geom.length >= 2) {
+    // pick the two geometry points nearest worst segment, compute heading, rotate 90°
+    let bestIdx = 0, bestD = Infinity;
+    for (let i = 0; i < geom.length - 1; i++) {
+      const d = haversineMi({lat:geom[i][0], lng:geom[i][1]}, {lat:worst.lat, lng:worst.lng});
+      if (d < bestD) { bestD = d; bestIdx = i; }
+    }
+    const a = geom[bestIdx], b = geom[Math.min(geom.length-1, bestIdx+1)];
+    const brg = bearing(a, b);
+    // Perpendicular = +90°; pick whichever nudge direction has lower rain centroid
+    const rad = (brg + 90) * Math.PI / 180;
+    const dLat = Math.cos(rad) * 0.07, dLng = Math.sin(rad) * 0.07;
+    nudgeLat = worst.lat + dLat; nudgeLng = worst.lng + dLng;
+  }
+
   const wps = State.currentRoute.waypoints;
   if (wps.length < 2) return;
-  // Insert at the middle
-  wps.splice(Math.floor(wps.length/2), 0, nudge);
+  wps.splice(Math.floor(wps.length/2), 0, { lat: nudgeLat, lng: nudgeLng, label: 'Rain Dodge' });
   waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
   State.currentRoute.waypoints = [];
   wps.forEach(addWaypoint);
-  recalcRoute();
-  toast('Re-routed around worst segment. Re-check ribbon.');
+  await recalcRoute();
+
+  const after = { mi: State.currentRoute.distMi, min: State.currentRoute.durationMin };
+  const dMi = round(after.mi - before.mi, 1);
+  const dMin = Math.round(after.min - before.min);
+  const sign = (n) => (n >= 0 ? '+' : '');
+  toast(`Re-routed. ${sign(dMi)}${dMi} ${distLabel()} · ${sign(dMin)}${dMin}m vs. original.`, 4500);
 });
 
 /* ======================== FUEL ======================== */
@@ -853,22 +1132,54 @@ function renderFuel() {
   State.settings[id] = parseFloat(e.target.value) || 0; lsSet(K.settings, State.settings); renderFuel();
 }));
 
-/* ======================== BIKE ======================== */
+/* ======================== V3: MULTI-BIKE ======================== */
 function renderBike() {
   const b = State.bike;
   $('#bikeMake').value = b.make || ''; $('#bikeModel').value = b.model || '';
   $('#bikeYear').value = b.year || ''; $('#bikeName').value = b.name || '';
   $('#bikeOdo').value = b.odo || 0;
 }
+function renderBikeSwitcher() {
+  const box = $('#bikeSwitcher'); if (!box) return;
+  box.innerHTML = State.bikes.map(b => {
+    const label = (b.name || b.model || b.make || 'New Bike') + (b.id === State.activeBikeId ? ' ✓' : '');
+    return `<button class="bike-chip${b.id === State.activeBikeId ? ' active' : ''}" data-bike="${b.id}">${esc(label)}</button>`;
+  }).join('') + `<button class="bike-chip add" id="addBikeChip">+ Add Bike</button>`;
+  box.querySelectorAll('[data-bike]').forEach(el => el.addEventListener('click', () => {
+    State.activeBikeId = el.dataset.bike;
+    lsSet(K.activeBike, State.activeBikeId);
+    renderBike(); renderBikeSwitcher(); renderMaint(); renderStats();
+    toast('Switched to ' + ($('#bikeSwitcher .bike-chip.active')?.textContent || 'bike').trim());
+  }));
+  $('#addBikeChip')?.addEventListener('click', () => {
+    const id = 'b_' + Date.now();
+    State.bikes.push({ id, make:'', model:'', year:'', name:'New Bike', odo:0 });
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+    renderBike(); renderBikeSwitcher(); renderMaint();
+  });
+}
 $('#saveBikeBtn').addEventListener('click', () => {
-  State.bike = {
-    make:$('#bikeMake').value.trim(), model:$('#bikeModel').value.trim(),
-    year:$('#bikeYear').value, name:$('#bikeName').value.trim(),
-    odo: parseFloat($('#bikeOdo').value) || 0
-  };
-  lsSet(K.bike, State.bike); toast('Bike saved.'); renderMaint();
+  const b = State.bike;
+  b.make = $('#bikeMake').value.trim();
+  b.model = $('#bikeModel').value.trim();
+  b.year = $('#bikeYear').value;
+  b.name = $('#bikeName').value.trim();
+  b.odo = parseFloat($('#bikeOdo').value) || 0;
+  lsSet(K.bikes, State.bikes);
+  toast('Bike saved.');
+  renderBikeSwitcher(); renderMaint();
 });
-renderBike();
+$('#deleteBikeBtn')?.addEventListener('click', () => {
+  if (State.bikes.length <= 1) { toast('Keep at least one bike.'); return; }
+  if (!confirm('Delete this bike? Rides stay in the log.')) return;
+  State.bikes = State.bikes.filter(b => b.id !== State.activeBikeId);
+  State.activeBikeId = State.bikes[0].id;
+  lsSet(K.bikes, State.bikes); lsSet(K.activeBike, State.activeBikeId);
+  renderBike(); renderBikeSwitcher(); renderMaint();
+  toast('Bike removed.');
+});
+renderBike(); renderBikeSwitcher();
 
 /* ======================== MAINTENANCE ======================== */
 function totalRideMi() { return State.rides.reduce((s,r) => s + (r.miles||0), 0); }
@@ -878,6 +1189,10 @@ function renderMaint() {
   const odo = currentOdo();
   const box = $('#maintList');
   if (!box) return;
+  // V3: average miles/day across rides in the last 60 days (predictive)
+  const now = Date.now(), cutoff = now - 60 * 86400000;
+  const recentMi = State.rides.filter(r => new Date(r.date).getTime() >= cutoff).reduce((s,r) => s + (r.miles||0), 0);
+  const miPerDay = recentMi / 60; // 0 if nothing recent
   box.innerHTML = State.maint.map(m => {
     const milesSince = odo - m.lastMi;
     const daysSince = (Date.now() - m.lastDate) / 86400000;
@@ -886,11 +1201,23 @@ function renderMaint() {
     const pct = Math.min(1.3, Math.max(miPct, dayPct));
     const cls = pct >= 1 ? 'danger' : pct >= 0.8 ? 'warn' : '';
     const due = m.everyMi ? `${Math.round(milesSince)}/${m.everyMi} mi` : `${Math.round(daysSince)}/${m.everyDays} days`;
+    // V3: predictive label
+    let predictTxt = '';
+    if (m.everyMi && miPerDay > 0.5 && milesSince < m.everyMi) {
+      const miLeft = m.everyMi - milesSince;
+      const daysLeft = Math.round(miLeft / miPerDay);
+      const predictCls = daysLeft < 7 ? 'danger' : daysLeft < 21 ? 'warn' : '';
+      predictTxt = `<div class="maint-predict ${predictCls}">~${miLeft}mi / ${daysLeft}d at your current pace</div>`;
+    } else if (!m.everyMi && m.everyDays) {
+      const daysLeft = Math.max(0, Math.round(m.everyDays - daysSince));
+      predictTxt = `<div class="maint-predict ${daysLeft < 3 ? 'danger' : daysLeft < 7 ? 'warn' : ''}">~${daysLeft}d to due</div>`;
+    }
     return `<div class="maint-item">
       <div style="flex:1">
         <div class="k">${esc(m.n)}</div>
         <div class="maint-bar"><div class="maint-bar-fill ${cls}" style="width:${Math.min(100,pct*100)}%"></div></div>
         <div class="tiny muted mt-12" style="margin-top:4px">${due}${pct>=1?' · DUE':''}</div>
+        ${predictTxt}
       </div>
       <button class="btn sm ghost" data-serviced="${m.k}">✓ Serviced</button>
     </div>`;
@@ -928,29 +1255,70 @@ const BADGES = [
   { k:'photog',     n:'Ride Photog',    d:'Pin a photo mid-ride',   ico:'📸', test: s => s.photoPins >= 1 },
   { k:'group',      n:'Pack Dog',       d:'Create a group room',    ico:'🐺', test: s => s.groupRooms >= 1 },
   { k:'share',      n:'Loud Mouth',     d:'Share a Ride DNA card',  ico:'📣', test: s => s.shares >= 1 },
-  { k:'saved5',     n:'The Architect',  d:'Save 5 routes',          ico:'🗺', test: s => s.saved >= 5 }
+  { k:'saved5',     n:'The Architect',  d:'Save 5 routes',          ico:'🗺', test: s => s.saved >= 5 },
+  // V3 additions
+  { k:'club45',       n:'45° Club',        d:'Avg lean ≥35° on a ride', ico:'📐', test: s => s.club45 },
+  { k:'epicTwisties', n:'Epic 200+ Twisties', d:'200+ mi ride, avg lean ≥25°', ico:'🐉', test: s => s.epicTwisties },
+  { k:'rainRider',    n:'Rain Rider',      d:'3 rides logged in 40%+ rain',  ico:'☔', test: s => s.rainRiderCount >= 3 },
+  { k:'weekendWarrior',n:'Weekend Warrior',d:'Ride on both Sat & Sun of same weekend', ico:'🏆', test: s => s.weekendWarrior },
+  { k:'twistyIdx80',  n:'Twisty Mind',     d:'Twisties Index ≥80 on a ride', ico:'🧠', test: s => s.topTwistiesIdx >= 80 },
+  { k:'survivor',     n:'Survivor',        d:'Cancelled a crash alert — lived to ride again', ico:'🛡', test: s => s.crashCancels >= 1 },
+  { k:'multibike',    n:'Two-Bike Garage', d:'Register a second bike',      ico:'🏎', test: s => s.bikes >= 2 },
+  { k:'gpxer',        n:'GPX Nerd',        d:'Import or export a GPX file', ico:'📁', test: s => s.gpxUses >= 1 }
 ];
 function deriveStats() {
   const miles = totalRideMi();
   const rides = State.rides.length;
   let nightRide=false, dawnRide=false, longestMi=0, topMph=0, maxLean=0, rainRide=false, hillCountry=false, photoPins=0, shares=0;
+  // V3 accumulators
+  let club45=false, epicTwisties=false, rainRiderCount=0, topTwistiesIdx=0;
+  const datesByWeek = {};
   State.rides.forEach(r => {
-    if (r.date) { const h = new Date(r.date).getHours(); if (h >= 20) nightRide = true; if (h < 7 && h >= 0) dawnRide = true; }
+    if (r.date) {
+      const h = new Date(r.date).getHours();
+      if (h >= 20) nightRide = true;
+      if (h < 7 && h >= 0) dawnRide = true;
+      // Track Saturday/Sunday pairings by ISO-week bucket
+      const d = new Date(r.date);
+      const dow = d.getDay(); // 0 Sun, 6 Sat
+      if (dow === 0 || dow === 6) {
+        // Week key: year + weekOfYear
+        const jan1 = new Date(d.getFullYear(), 0, 1);
+        const week = Math.floor(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        const key = d.getFullYear() + '-' + week;
+        datesByWeek[key] = (datesByWeek[key] || 0) | (dow === 6 ? 1 : 2);
+      }
+    }
     if (r.miles > longestMi) longestMi = r.miles;
     if (r.topMph && r.topMph > topMph) topMph = r.topMph;
     if (r.maxLean && r.maxLean > maxLean) maxLean = r.maxLean;
     if (r.rainPct && r.rainPct >= 70) rainRide = true;
+    if (r.rainPct && r.rainPct >= 40) rainRiderCount++;
     if (r.photos && r.photos.length) photoPins += r.photos.length;
     if (r.shared) shares++;
     if (r.hillCountry) hillCountry = true;
+    // V3 lean/twisty heuristics
+    if (r.avgLean && r.avgLean >= 35) club45 = true;
+    if (r.miles >= 200 && r.avgLean && r.avgLean >= 25) epicTwisties = true;
+    if (r.twistiesIdx && r.twistiesIdx > topTwistiesIdx) topTwistiesIdx = r.twistiesIdx;
   });
+  const weekendWarrior = Object.values(datesByWeek).some(v => v === 3); // both Sat(1) + Sun(2)
   const twisty5 = State.routes.some(r => r.twisty >= 5) || State.currentRoute.twisty >= 5;
   const saved = State.routes.length;
   const s = State.settings;
   const r = State.currentRoute;
   const safeRange = (s.fuelTank - s.fuelReserve) * s.fuelMpg;
   const fuelProphet = r.distMi > 0 && Math.abs(r.distMi - safeRange) <= 5;
-  return { rides, miles, nightRide, dawnRide, longestMi, topMph, maxLean, rainRide, hillCountry, photoPins, shares, twisty5, saved, fuelProphet, groupRooms: State.room ? 1 : 0 };
+  return {
+    rides, miles, nightRide, dawnRide, longestMi, topMph, maxLean, rainRide,
+    hillCountry, photoPins, shares, twisty5, saved, fuelProphet,
+    groupRooms: State.room ? 1 : 0,
+    // V3
+    club45, epicTwisties, rainRiderCount, weekendWarrior, topTwistiesIdx,
+    crashCancels: +(lsGet('bds_crash_cancels', 0) || 0),
+    bikes: State.bikes.length,
+    gpxUses: +(lsGet('bds_gpx_uses', 0) || 0)
+  };
 }
 function checkBadges() {
   const s = deriveStats();
@@ -999,76 +1367,207 @@ async function renderPhotoStrip() {
 let motionHandler = null, orientHandler = null, watchId = null, liveTimer = null;
 
 async function requestMotion() {
-  // iOS 13+ requires explicit permission for DeviceMotion
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    try { const p = await DeviceMotionEvent.requestPermission(); return p === 'granted'; } catch(_) { return false; }
-  }
-  return true;
+  // iOS 13+: DeviceMotion and DeviceOrientation each need their own permission call.
+  // Without Orientation permission, lean (e.gamma) is silently 0 forever.
+  const needsM = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+  const needsO = typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
+  const [m, o] = await Promise.all([
+    needsM ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : 'granted',
+    needsO ? DeviceOrientationEvent.requestPermission().catch(() => 'denied') : 'granted'
+  ]);
+  return m === 'granted' && o === 'granted';
 }
 
 async function startRide() {
-  if (State.liveRide) return;
-  if (!('geolocation' in navigator)) { toast('No GPS support.'); return; }
+  if (State.liveRide || startRide._pending) return;
+  startRide._pending = true;
+  const ctaEl = $('#rideCTA'); if (ctaEl) ctaEl.disabled = true;
 
+  try {
+    if (!('geolocation' in navigator)) { toast('No GPS support.'); return; }
+    const motionOk = await requestMotion();
+
+    State.liveRide = {
+      id: 'r_' + Date.now(), startTs: Date.now(), breadcrumb: [],
+      speeds: [], leans: [], accels: [],
+      topMph: 0, maxLean: 0, maxG: 0, distMi: 0,
+      rainPct: 0, hillCountry: false, photos: [],
+      crashFlagged: false, twistyMi: 0 // V3
+    };
+
+    // V3: wake lock (keeps screen on if enabled in settings)
+    acquireWakeLock();
+
+    // Breadcrumb line
+    if (breadcrumbLine) map.removeLayer(breadcrumbLine);
+    breadcrumbLine = L.polyline([], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
+
+    // V3: battery-saver toggles the GPS accuracy profile
+    const saver = !!State.settings.batterySaver;
+    watchId = navigator.geolocation.watchPosition(onPos, err => toast('GPS error: ' + err.message), {
+      enableHighAccuracy: !saver, maximumAge: saver ? 4000 : 1000, timeout: 15000
+    });
+
+    // Motion (lean + g + crash detection)
+    if (motionOk && 'DeviceMotionEvent' in window) {
+      motionHandler = e => {
+        const a = e.accelerationIncludingGravity || {};
+        const x = a.x || 0, y = a.y || 0, z = a.z || 0;
+        const g = Math.hypot(x,y,z) / 9.81;
+        if (g > State.liveRide.maxG) State.liveRide.maxG = g;
+        State.liveRide.accels.push(g);
+        if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+        // V3: crash detection — sustained >4g on accelIncludingGravity (~3g linear) is a reasonable fall heuristic
+        if (State.settings.crashDetect) checkCrash(g);
+      };
+      window.addEventListener('devicemotion', motionHandler, { passive:true });
+    }
+    if (motionOk && 'DeviceOrientationEvent' in window) {
+      orientHandler = e => {
+        const lean = Math.abs(e.gamma || 0);
+        if (lean > State.liveRide.maxLean) State.liveRide.maxLean = lean;
+        State.liveRide.leans.push(lean);
+        if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
+        const tile = $('#hudLeanTile');
+        $('#hudLean').textContent = Math.round(lean);
+        tile.classList.remove('mid','hi');
+        if (lean >= 35) { tile.classList.add('hi'); if (State.settings.voiceLean && lean >= 40) speak('Lean ' + Math.round(lean) + ', twisty incoming'); }
+        else if (lean >= 20) tile.classList.add('mid');
+      };
+      window.addEventListener('deviceorientation', orientHandler, { passive:true });
+    }
+
+    // Live timer
+    liveTimer = setInterval(() => {
+      const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
+      $('#hudDistL').textContent = distLabel().toUpperCase() + ' · ' + mins + 'M';
+    }, 5000);
+
+    // V3: persist snapshot every 10s so an iOS background-kill doesn't nuke the ride
+    State.liveRide._persistTick = setInterval(() => {
+      if (!State.liveRide) return;
+      lsSet(K.liveSnapshot, State.liveRide);
+    }, 10000);
+
+    $('#rideCTA').textContent = 'END RIDE';
+    $('#rideCTA').classList.add('end');
+    $('#rideCTA').setAttribute('aria-label', 'End ride — stop tracking and log it');
+    $('#livePill').classList.remove('hide');
+    switchTo('ride');
+    if (State.settings.voiceRide) speak('Ride started');
+    toast('Ride started. Stay safe out there.');
+  } finally {
+    startRide._pending = false;
+    if (ctaEl) ctaEl.disabled = false;
+  }
+}
+
+/* V3: Re-engage watchers for a resumed liveRide without resetting its counters */
+async function resumeLiveRideWatchers() {
+  if (!State.liveRide) return;
   const motionOk = await requestMotion();
-
-  State.liveRide = {
-    id: 'r_' + Date.now(), startTs: Date.now(), breadcrumb: [],
-    speeds: [], leans: [], accels: [],
-    topMph: 0, maxLean: 0, maxG: 0, distMi: 0,
-    rainPct: 0, hillCountry: false, photos: []
-  };
-
-  // Breadcrumb line
+  acquireWakeLock();
   if (breadcrumbLine) map.removeLayer(breadcrumbLine);
-  breadcrumbLine = L.polyline([], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
-
-  // Watch position
+  breadcrumbLine = L.polyline(State.liveRide.breadcrumb || [], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
+  const saver = !!State.settings.batterySaver;
   watchId = navigator.geolocation.watchPosition(onPos, err => toast('GPS error: ' + err.message), {
-    enableHighAccuracy: true, maximumAge: 1000, timeout: 15000
+    enableHighAccuracy: !saver, maximumAge: saver ? 4000 : 1000, timeout: 15000
   });
-
-  // Motion (lean + g)
   if (motionOk && 'DeviceMotionEvent' in window) {
     motionHandler = e => {
       const a = e.accelerationIncludingGravity || {};
-      const x = a.x || 0, y = a.y || 0, z = a.z || 0;
-      const g = Math.hypot(x,y,z) / 9.81;
+      const g = Math.hypot(a.x||0, a.y||0, a.z||0) / 9.81;
       if (g > State.liveRide.maxG) State.liveRide.maxG = g;
-      State.liveRide.accels.push(g);
-      if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+      State.liveRide.accels.push(g); if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+      if (State.settings.crashDetect) checkCrash(g);
     };
     window.addEventListener('devicemotion', motionHandler, { passive:true });
   }
   if (motionOk && 'DeviceOrientationEvent' in window) {
     orientHandler = e => {
-      const lean = Math.abs(e.gamma || 0); // phone roll ~ bike lean
+      const lean = Math.abs(e.gamma || 0);
       if (lean > State.liveRide.maxLean) State.liveRide.maxLean = lean;
-      State.liveRide.leans.push(lean);
-      if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
-      // Update HUD
-      const tile = $('#hudLeanTile');
-      $('#hudLean').textContent = Math.round(lean);
+      State.liveRide.leans.push(lean); if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
+      const tile = $('#hudLeanTile'); $('#hudLean').textContent = Math.round(lean);
       tile.classList.remove('mid','hi');
-      if (lean >= 35) tile.classList.add('hi');
-      else if (lean >= 20) tile.classList.add('mid');
+      if (lean >= 35) tile.classList.add('hi'); else if (lean >= 20) tile.classList.add('mid');
     };
     window.addEventListener('deviceorientation', orientHandler, { passive:true });
   }
-
-  // Live timer
   liveTimer = setInterval(() => {
     const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
     $('#hudDistL').textContent = distLabel().toUpperCase() + ' · ' + mins + 'M';
   }, 5000);
-
+  State.liveRide._persistTick = setInterval(() => { if (State.liveRide) lsSet(K.liveSnapshot, State.liveRide); }, 10000);
   $('#rideCTA').textContent = 'END RIDE';
   $('#rideCTA').classList.add('end');
-  $('#rideCTA').setAttribute('aria-label', 'End ride — stop tracking and log it');
   $('#livePill').classList.remove('hide');
-  switchTo('ride');
-  speak('Ride started');
-  toast('Ride started. Stay safe out there.');
+  toast('Resumed in-progress ride.', 3500);
+}
+
+/* V3: Crash detection — debounced threshold with 15s cancellable alert */
+let _crashState = { peakCount: 0, lastPeakTs: 0, modalOpen: false };
+function checkCrash(g) {
+  if (_crashState.modalOpen) return;
+  const now = Date.now();
+  // Look for 3 peaks >4g inside a 500ms window (rejects single bumps / pothole spikes)
+  if (g >= 4.0) {
+    if (now - _crashState.lastPeakTs < 500) _crashState.peakCount++;
+    else _crashState.peakCount = 1;
+    _crashState.lastPeakTs = now;
+    if (_crashState.peakCount >= 3) {
+      _crashState.peakCount = 0;
+      openCrashModal();
+    }
+  }
+}
+function openCrashModal() {
+  if (!State.liveRide) return;
+  _crashState.modalOpen = true;
+  const modal = $('#crashModal');
+  const countEl = $('#crashCount');
+  modal.classList.add('open');
+  let n = 15;
+  countEl.textContent = n;
+  speak('Crash detected. Cancel if you are OK.');
+  const tick = setInterval(() => {
+    n--; countEl.textContent = n;
+    if (n <= 0) { clearInterval(tick); finalizeCrashAlert(); }
+  }, 1000);
+  const cancel = () => {
+    clearInterval(tick);
+    modal.classList.remove('open');
+    _crashState.modalOpen = false;
+    $('#crashCancelBtn').removeEventListener('click', cancel);
+    $('#crashConfirmBtn').removeEventListener('click', confirm);
+    // V3: track cancels for the "Survivor" badge
+    try {
+      const n = (+localStorage.getItem('bds_crash_cancels') || 0) + 1;
+      localStorage.setItem('bds_crash_cancels', String(n));
+    } catch(_) {}
+    checkBadges();
+    toast('False alarm cleared.');
+  };
+  const confirm = () => {
+    clearInterval(tick);
+    $('#crashCancelBtn').removeEventListener('click', cancel);
+    $('#crashConfirmBtn').removeEventListener('click', confirm);
+    finalizeCrashAlert();
+  };
+  $('#crashCancelBtn').addEventListener('click', cancel);
+  $('#crashConfirmBtn').addEventListener('click', confirm);
+}
+function finalizeCrashAlert() {
+  const modal = $('#crashModal');
+  modal.classList.remove('open');
+  _crashState.modalOpen = false;
+  if (State.liveRide) State.liveRide.crashFlagged = true;
+  const last = State.liveRide?.breadcrumb?.slice(-1)?.[0];
+  const locStr = last ? `${last[0].toFixed(5)},${last[1].toFixed(5)}` : 'unknown';
+  const msg = `🚨 Crash flagged at ${locStr}. Group room: ${State.room?.code || '(none)'}. Time: ${new Date().toISOString()}`;
+  if (navigator.share) navigator.share({ text: msg, title: 'Crash alert' }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(msg).then(() => toast('Crash alert copied to clipboard — paste to group.', 5000));
+  toast('Crash flagged on this ride.', 4500);
 }
 
 function onPos(pos) {
@@ -1100,14 +1599,35 @@ async function endRide() {
   if (orientHandler) window.removeEventListener('deviceorientation', orientHandler);
   clearInterval(liveTimer); watchId = null; motionHandler = null; orientHandler = null; liveTimer = null;
 
+  // V3: stop persistence + release wake lock + clear snapshot
+  if (State.liveRide._persistTick) clearInterval(State.liveRide._persistTick);
+  try { localStorage.removeItem(K.liveSnapshot); } catch(_) {}
+  releaseWakeLock();
+
   const r = State.liveRide;
   const durHr = (Date.now() - r.startTs) / 3600000;
+
+  // V3: Twisties Index — lean-degree-seconds / ride-seconds, normalized to a 0-100 score
+  // A relaxed cruise averages ~5°; a hot twisty run can average 20°+.
+  const avgLean = r.leans.length ? r.leans.reduce((s,n) => s+n, 0) / r.leans.length : 0;
+  const twistiesIdx = Math.min(100, Math.round(avgLean * 3.5));
+  // Lean-mile estimate: fraction of ride above 20° lean × distance
+  const hotFraction = r.leans.length ? r.leans.filter(l => l >= 20).length / r.leans.length : 0;
+  const twistyMi = round(r.distMi * hotFraction, 1);
+
+  // V3: decimate breadcrumb to max 500 points so localStorage doesn't explode
+  const breadcrumb = decimateBreadcrumb(r.breadcrumb, 500);
+
   const rideRec = {
     id: r.id, ts: Date.now(), date: new Date(r.startTs).toISOString().slice(0,10),
     name: 'Live Ride · ' + new Date(r.startTs).toLocaleDateString(undefined,{month:'short',day:'numeric'}),
     miles: round(r.distMi, 1), hours: round(durHr, 2),
     topMph: round(r.topMph, 1), maxLean: round(r.maxLean, 1), maxG: round(r.maxG, 2),
-    breadcrumb: r.breadcrumb, hillCountry: r.hillCountry,
+    avgLean: round(avgLean, 1), twistiesIdx, twistyMi,
+    leans: r.leans.slice(-300), // keep last ~300 samples for the DNA lean bar
+    breadcrumb, hillCountry: r.hillCountry,
+    crashFlagged: !!r.crashFlagged,
+    bikeId: State.activeBikeId, // V3: which bike did this ride
     rainPct: lastRibbon.length ? Math.max(...lastRibbon.map(x=>x.rainPct)) : 0
   };
   State.rides.unshift(rideRec); lsSet(K.rides, State.rides);
@@ -1120,9 +1640,44 @@ async function endRide() {
   $('#livePill').classList.add('hide');
   $('#hudSpeed').textContent = '—'; $('#hudLean').textContent = '—'; $('#hudDist').textContent = '0.0'; $('#hudDistL').textContent = distLabel().toUpperCase();
 
-  renderRides(); renderMaint(); checkBadges(); drawDNA(); renderPhotoStrip();
-  speak('Ride ended');
-  toast(`Logged ${rideRec.miles} ${distLabel()} · top ${Math.round(speedConv(rideRec.topMph))} ${speedLabel()} · lean ${Math.round(rideRec.maxLean)}°`, 4500);
+  renderRides(); renderMaint(); renderBikeSwitcher(); checkBadges(); drawDNA(); renderPhotoStrip();
+  if (State.settings.voiceRide) speak('Ride ended');
+  toast(`Logged ${rideRec.miles} ${distLabel()} · top ${Math.round(speedConv(rideRec.topMph))} ${speedLabel()} · lean ${Math.round(rideRec.maxLean)}° · twisty idx ${twistiesIdx}`, 4500);
+}
+
+/* V3: Light-touch Douglas-Peucker; keeps visible shape, drops redundant points */
+function decimateBreadcrumb(pts, maxPts = 500) {
+  if (!pts || pts.length <= maxPts) return pts || [];
+  const sqTolDeg = 0.00002; // ~2m
+  const squaredSegDist = (p, a, b) => {
+    let x = a[1], y = a[0], dx = b[1]-x, dy = b[0]-y;
+    if (dx !== 0 || dy !== 0) {
+      const t = ((p[1]-x)*dx + (p[0]-y)*dy) / (dx*dx + dy*dy);
+      if (t > 1) { x = b[1]; y = b[0]; } else if (t > 0) { x += dx*t; y += dy*t; }
+    }
+    dx = p[1]-x; dy = p[0]-y;
+    return dx*dx + dy*dy;
+  };
+  const simplify = (arr, tol) => {
+    if (arr.length <= 2) return arr;
+    const keep = new Uint8Array(arr.length);
+    keep[0] = keep[arr.length-1] = 1;
+    const stack = [[0, arr.length-1]];
+    while (stack.length) {
+      const [lo, hi] = stack.pop();
+      let maxD = 0, idx = 0;
+      for (let i = lo+1; i < hi; i++) {
+        const d = squaredSegDist(arr[i], arr[lo], arr[hi]);
+        if (d > maxD) { maxD = d; idx = i; }
+      }
+      if (maxD > tol) { keep[idx] = 1; stack.push([lo, idx], [idx, hi]); }
+    }
+    return arr.filter((_, i) => keep[i]);
+  };
+  // Ratchet tolerance upward until we fit the cap
+  let tol = sqTolDeg, out = simplify(pts, tol);
+  while (out.length > maxPts && tol < 1) { tol *= 4; out = simplify(pts, tol); }
+  return out;
 }
 
 $('#rideCTA').addEventListener('click', () => { State.liveRide ? endRide() : startRide(); });
@@ -1315,18 +1870,42 @@ function generateRoute() {
   const r = ranges[dist] || [50,100];
   const targetDist = (r[0]+r[1])/2;
   if (dir === 'any') dir = ['north','south','east','west'][Math.floor(Math.random()*4)];
-  let pool = ROUTE_NODES[dir].slice();
-  if (style === 'twisties') pool = pool.concat(ROUTE_NODES.twisties);
+
+  // V3: style-specific pool composition
+  let pool;
+  switch (style) {
+    case 'sportbike':
+      // Heavy twisties bias + short hops → lots of cornering density
+      pool = ROUTE_NODES.twisties.concat(ROUTE_NODES.twisties).concat(ROUTE_NODES[dir]);
+      break;
+    case 'twisties':
+      pool = ROUTE_NODES[dir].concat(ROUTE_NODES.twisties);
+      break;
+    case 'mixed':
+      // Mix of directional + some twisties
+      pool = ROUTE_NODES[dir].concat(ROUTE_NODES.twisties.slice(0, 3));
+      break;
+    case 'scenic':
+    case 'fastest':
+    default:
+      pool = ROUTE_NODES[dir].slice();
+  }
+
   const start = { lat:30.2672, lng:-97.7431, label:'Austin' };
   const wps = [start];
   let totalDist = 0; const used = {};
-  const maxWps = dist==='short'?3:dist==='medium'?5:dist==='long'?6:8;
+  // Sportbike mode: more waypoints, shorter hops between them for denser cornering
+  const maxWps = style === 'sportbike'
+    ? (dist==='short'?4:dist==='medium'?7:dist==='long'?9:12)
+    : (dist==='short'?3:dist==='medium'?5:dist==='long'?6:8);
+  const minHop = style === 'sportbike' ? 5 : 3;
+
   for (let i=0;i<maxWps && totalDist<targetDist*0.85;i++) {
     let best=null, bestScore=Infinity;
     for (let j=0;j<pool.length;j++) {
       if (used[j]) continue;
       const d = haversineMi(wps[wps.length-1], pool[j]);
-      if (d < 3) continue;
+      if (d < minHop) continue;
       const newTotal = totalDist + d;
       if (newTotal > r[1]*1.1) continue;
       const score = Math.abs(d - (targetDist - totalDist)/(maxWps - i));
@@ -1344,7 +1923,8 @@ function generateRoute() {
   State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:'' };
   wps.forEach(addWaypoint);
 
-  const routeName = dir[0].toUpperCase() + dir.slice(1) + ' ' + dist[0].toUpperCase() + dist.slice(1) + ' · ' + style;
+  const styleName = { sportbike:'Max Lean', twisties:'Max Twisties', mixed:'Mixed', scenic:'Scenic', fastest:'Fastest' }[style] || style;
+  const routeName = dir[0].toUpperCase() + dir.slice(1) + ' ' + dist[0].toUpperCase() + dist.slice(1) + ' · ' + styleName;
   State.currentRoute.name = routeName;
   $('#generatedRideInfo').innerHTML = `<div class="card" style="margin-top:10px;border-color:var(--accent)"><div style="font-weight:800;color:var(--accent);margin-bottom:4px">${esc(routeName)}</div><div class="tiny muted">~${Math.round(totalDist)} mi · ${wps.length} waypoints${loop==='loop'?' (loop)':''}</div><div class="tiny mt-12">Via: ${wps.filter(w=>w.label).map(w=>esc(w.label)).join(' → ')}</div></div>`;
   recalcRoute();
@@ -1352,6 +1932,65 @@ function generateRoute() {
   toast('Route generated: ' + routeName);
 }
 $('#generateRideBtn').addEventListener('click', generateRoute);
+
+// V3: Regenerate Twistier — inject extra twisty nodes into the existing route
+$('#regenTwistierBtn').addEventListener('click', async () => {
+  const cur = State.currentRoute.waypoints;
+  if (cur.length < 2) { toast('Generate or plan a route first.'); return; }
+  // Pick 1-2 twisty nodes closest to the route midpoint
+  const mid = cur[Math.floor(cur.length/2)];
+  const candidates = ROUTE_NODES.twisties
+    .map(t => ({ ...t, d: haversineMi(mid, t) }))
+    .filter(t => t.d < 60) // within 60mi of mid
+    .sort((a,b) => a.d - b.d)
+    .slice(0, 2);
+  if (!candidates.length) { toast('No twisty nodes nearby — try Generate Ride instead.'); return; }
+  // Insert them before the midpoint
+  const injectIdx = Math.floor(cur.length/2);
+  const newWps = cur.slice();
+  candidates.forEach((c, i) => newWps.splice(injectIdx + i, 0, { lat:c.lat, lng:c.lng, label:c.name }));
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute.waypoints = [];
+  newWps.forEach(addWaypoint);
+  await recalcRoute();
+  toast(`Injected ${candidates.length} twisty via ${candidates.map(c=>c.name).join(' + ')}. Recheck twisty score.`, 4500);
+});
+
+/* ======================== V3: GPX IMPORT / EXPORT ======================== */
+function bumpGpxUse() { try { localStorage.setItem('bds_gpx_uses', String((+localStorage.getItem('bds_gpx_uses') || 0) + 1)); } catch(_) {} checkBadges(); }
+
+$('#exportGpxBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (!r.waypoints || r.waypoints.length < 2) { toast('Plan a route first.'); return; }
+  // Prefer the routed geometry (track); fall back to waypoints (route)
+  const xml = gpxBuild({
+    name: r.name || 'Bad Decision Route',
+    waypoints: r.waypoints,
+    geometry: r.geometry,
+    kind: (r.geometry && r.geometry.length > 10) ? 'trk' : 'rte'
+  });
+  gpxDownload((r.name || 'route').replace(/[^\w-]+/g,'_'), xml);
+  bumpGpxUse();
+  toast('GPX exported.');
+});
+
+$('#importGpxBtn').addEventListener('click', () => $('#importGpxFile').click());
+$('#importGpxFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const text = await f.text();
+    const parsed = gpxParse(text);
+    if (!parsed.waypoints.length) throw new Error('No points');
+    waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+    State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name: parsed.name };
+    parsed.waypoints.forEach(w => addWaypoint(w));
+    await recalcRoute();
+    switchTo('ride');
+    bumpGpxUse();
+    toast(`Imported "${parsed.name}" · ${parsed.waypoints.length} waypoints.`, 4500);
+  } catch(err) { toast('GPX import failed: ' + (err.message || 'bad file')); }
+  finally { e.target.value = ''; }
+});
 
 /* ======================== GROUP ROOMS ======================== */
 $('#createRoomBtn').addEventListener('click', () => {
@@ -1371,19 +2010,25 @@ $('#joinRoomBtn').addEventListener('click', () => {
 function renderRoom() {
   const box = $('#roomInfo');
   if (!State.room) { box.innerHTML = ''; return; }
+  const url = location.origin + location.pathname + '?room=' + State.room.code;
   box.innerHTML = `
     <div class="card" style="border-color:var(--accent-2)">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div class="tiny muted">Your code</div>
-          <div class="mono" style="font-size:32px;font-weight:800;letter-spacing:.15em">${esc(State.room.code)}</div>
-        </div>
-        <button class="btn ghost sm" id="leaveRoomBtn">Leave</button>
+      <div class="tiny muted" style="text-align:center">Your code — hold to copy</div>
+      <div class="room-code-big" id="roomCodeBig">${esc(State.room.code)}</div>
+      <div class="row">
+        <button class="btn warn" id="shareRoomBtn" style="flex:1">↗ Invite Crew</button>
+        <button class="btn ghost" id="leaveRoomBtn">Leave</button>
       </div>
       <p class="tiny muted mt-12">Live pin sharing drops in the next update. For now: tell your crew the code — we'll flip the switch on and you'll all show up on each other's maps without re-joining.</p>
     </div>`;
   $('#leaveRoomBtn').addEventListener('click', () => {
     State.room = null; lsSet(K.room, null); renderRoom();
+  });
+  $('#shareRoomBtn').addEventListener('click', async () => {
+    const text = `Join my Bad Decision Sidekick ride — code ${State.room.code}\n${url}`;
+    if (navigator.share) { try { await navigator.share({ title:'Ride room', text, url }); return; } catch(_) {} }
+    try { await navigator.clipboard.writeText(text); toast('Invite copied.'); }
+    catch(_) { toast('Share link: ' + url, 6000); }
   });
 }
 renderRoom();
@@ -1399,20 +2044,28 @@ function drawDNA() {
   const ctx = canvas.getContext('2d');
   const last = State.rides[0] || lsGet(K.lastRide, null);
 
+  // V3: theme-aware palette
+  const theme = State.settings.theme || 'classic';
+  const palette = {
+    classic: { accent:'#ff3b00', accent2:'#ffb400', bgEnd:'#1a0800' },
+    ghost:   { accent:'#00ff88', accent2:'#a6ff00', bgEnd:'#001a10' },
+    ion:     { accent:'#00b8ff', accent2:'#00ffe1', bgEnd:'#001a26' }
+  }[theme];
+
   // BG gradient
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, '#1a0800');
+  g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, palette.bgEnd);
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
 
   // Glow
   const rad = ctx.createRadialGradient(w*0.3, h*0.25, 0, w*0.3, h*0.25, w*0.7);
-  rad.addColorStop(0, 'rgba(255,59,0,.35)'); rad.addColorStop(1, 'rgba(255,59,0,0)');
+  rad.addColorStop(0, palette.accent + '55'); rad.addColorStop(1, palette.accent + '00');
   ctx.fillStyle = rad; ctx.fillRect(0, 0, w, h);
 
   // Brand mark
-  ctx.fillStyle = '#ff3b00';
+  ctx.fillStyle = palette.accent;
   ctx.beginPath(); ctx.arc(90, 90, 36, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#ffb400';
+  ctx.fillStyle = palette.accent2;
   ctx.beginPath(); ctx.arc(78, 78, 14, 0, Math.PI*2); ctx.fill();
 
   ctx.fillStyle = '#f5f5f5';
@@ -1429,7 +2082,7 @@ function drawDNA() {
     return;
   }
 
-  // Route polyline (scaled into a display box)
+  // Route polyline
   if (last.breadcrumb && last.breadcrumb.length > 5) {
     const pts = last.breadcrumb;
     const lats = pts.map(p=>p[0]), lngs = pts.map(p=>p[1]);
@@ -1440,8 +2093,8 @@ function drawDNA() {
     const sx = boxW / Math.max(1e-6, maxLng-minLng);
     const sy = boxH / Math.max(1e-6, maxLat-minLat);
     const s = Math.min(sx, sy);
-    ctx.strokeStyle = '#ff3b00'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(255,59,0,.6)'; ctx.shadowBlur = 20;
+    ctx.strokeStyle = palette.accent; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.shadowColor = palette.accent + '99'; ctx.shadowBlur = 20;
     ctx.beginPath();
     pts.forEach((p, i) => {
       const x = padX + (p[1]-minLng) * s + (boxW - (maxLng-minLng)*s)/2;
@@ -1452,14 +2105,29 @@ function drawDNA() {
     ctx.shadowBlur = 0;
   }
 
+  // V3: Twisties Index badge (top-right)
+  if (last.twistiesIdx != null) {
+    const bx = w - 200, by = 60;
+    ctx.fillStyle = palette.accent2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, 160, 80, 14); else ctx.rect(bx, by, 160, 80);
+    ctx.fill();
+    ctx.fillStyle = '#0a0a0a';
+    ctx.font = '900 44px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(String(last.twistiesIdx), bx + 80, by + 46);
+    ctx.font = '800 14px -apple-system, system-ui, sans-serif';
+    ctx.fillText('TWISTY IDX', bx + 80, by + 66);
+    ctx.textAlign = 'start';
+  }
+
   // Stats
-  const statY = fmt === 'tw' ? h - 180 : h - 420;
+  const statY = fmt === 'tw' ? h - 220 : h - 460;
   ctx.fillStyle = '#f5f5f5';
   ctx.font = '800 64px -apple-system, system-ui, sans-serif';
   ctx.fillText(`${Math.round(distConv(last.miles))} ${distLabel().toUpperCase()}`, 60, statY);
   ctx.font = '600 22px -apple-system, system-ui, sans-serif';
   ctx.fillStyle = '#9a9a9a';
-  ctx.fillText(esc(last.name || 'Ride'), 60, statY + 36);
+  ctx.fillText(String(last.name || 'Ride'), 60, statY + 36);
 
   // Sub-stats row
   const subs = [
@@ -1470,7 +2138,7 @@ function drawDNA() {
   const subY = statY + 90;
   subs.forEach((s, i) => {
     const x = 60 + i * (w/3.2 - 20);
-    ctx.fillStyle = '#ff3b00';
+    ctx.fillStyle = palette.accent;
     ctx.font = '800 44px -apple-system, system-ui, sans-serif';
     ctx.fillText(String(s.v), x, subY);
     ctx.fillStyle = '#9a9a9a';
@@ -1478,8 +2146,45 @@ function drawDNA() {
     ctx.fillText(s.l, x, subY + 26);
   });
 
+  // V3: Lean profile mini-bar (bucketed histogram of lean angles)
+  if (last.leans && last.leans.length > 5) {
+    const buckets = new Array(10).fill(0);
+    last.leans.forEach(l => {
+      const b = Math.min(9, Math.floor(l / 5)); // 0-5°, 5-10°, ... 45+°
+      buckets[b]++;
+    });
+    const maxB = Math.max(...buckets, 1);
+    const barW = 18, gap = 6, totalW = 10 * (barW + gap) - gap;
+    const barX = 60, barY = subY + 80, barH = 56;
+    ctx.fillStyle = '#6a6a6a';
+    ctx.font = '700 12px -apple-system, system-ui, sans-serif';
+    ctx.fillText('LEAN PROFILE (0° → 45°+)', barX, barY - 6);
+    buckets.forEach((cnt, i) => {
+      const hh = Math.round((cnt / maxB) * barH);
+      const color = i < 4 ? palette.accent2 : i < 7 ? palette.accent : '#ff4d4d';
+      ctx.fillStyle = color;
+      ctx.fillRect(barX + i * (barW + gap), barY + (barH - hh), barW, Math.max(2, hh));
+    });
+  }
+
+  // V3: Weather highlight tag
+  if (last.rainPct && last.rainPct >= 70) {
+    ctx.fillStyle = '#ff4d4d';
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('☔ SENT IT IN THE RAIN', 60, h - 120);
+  } else if (last.rainPct && last.rainPct >= 40) {
+    ctx.fillStyle = palette.accent2;
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('🌦 DAMP DECISIONS', 60, h - 120);
+  }
+  if (last.crashFlagged) {
+    ctx.fillStyle = '#ff4d4d';
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('🛡 SURVIVOR RIDE', 60, h - 150);
+  }
+
   // Tagline
-  ctx.fillStyle = '#ffb400';
+  ctx.fillStyle = palette.accent2;
   ctx.font = '900 34px -apple-system, system-ui, sans-serif';
   ctx.fillText('MADE A BAD DECISION.', 60, h - 80);
   ctx.fillStyle = '#f5f5f5';
@@ -1508,27 +2213,97 @@ $('#dnaShareBtn').addEventListener('click', async () => {
 });
 
 /* ======================== SETTINGS & DATA ======================== */
+function applyTheme(t) {
+  document.body.setAttribute('data-theme', t || 'classic');
+}
+function applyBatterySaver(on) {
+  document.body.setAttribute('data-battery-saver', on ? '1' : '0');
+}
+
 function renderSettings() {
   $('#unitsSelect').value = State.settings.units;
+  $('#themeSelect').value = State.settings.theme || 'classic';
   $('#voiceEnabled').checked = !!State.settings.voice;
+  $('#voiceRide').checked   = State.settings.voiceRide !== false;
+  $('#voiceBadges').checked = State.settings.voiceBadges !== false;
+  $('#voiceLean').checked   = !!State.settings.voiceLean;
+  $('#wakeLockEnabled').checked = State.settings.wakeLock !== false;
+  $('#batterySaver').checked = !!State.settings.batterySaver;
+  $('#crashDetect').checked = !!State.settings.crashDetect;
+  applyTheme(State.settings.theme);
+  applyBatterySaver(State.settings.batterySaver);
 }
-$('#unitsSelect').addEventListener('change', e => { State.settings.units = e.target.value; lsSet(K.settings, State.settings); renderFuel(); renderRides(); renderRouteStats(); });
-$('#voiceEnabled').addEventListener('change', e => { State.settings.voice = e.target.checked; lsSet(K.settings, State.settings); if (e.target.checked) speak('Voice cues on'); });
+
+function bindSetting(id, key, cast = v => v) {
+  $('#' + id).addEventListener('change', e => {
+    const el = e.target;
+    const val = el.type === 'checkbox' ? el.checked : cast(el.value);
+    State.settings[key] = val;
+    lsSet(K.settings, State.settings);
+  });
+}
+bindSetting('unitsSelect', 'units');
+bindSetting('themeSelect', 'theme');
+bindSetting('voiceEnabled', 'voice');
+bindSetting('voiceRide', 'voiceRide');
+bindSetting('voiceBadges', 'voiceBadges');
+bindSetting('voiceLean', 'voiceLean');
+bindSetting('wakeLockEnabled', 'wakeLock');
+bindSetting('batterySaver', 'batterySaver');
+bindSetting('crashDetect', 'crashDetect');
+
+$('#unitsSelect').addEventListener('change', () => { renderFuel(); renderRides(); renderRouteStats(); });
+$('#themeSelect').addEventListener('change', () => { applyTheme(State.settings.theme); drawDNA(); });
+$('#batterySaver').addEventListener('change', () => applyBatterySaver(State.settings.batterySaver));
+$('#wakeLockEnabled').addEventListener('change', () => {
+  if (!State.settings.wakeLock) releaseWakeLock();
+  else if (State.liveRide) acquireWakeLock();
+});
+$('#voiceEnabled').addEventListener('change', () => { if (State.settings.voice) speak('Voice cues on'); });
 
 $('#exportBtn').addEventListener('click', () => {
-  const data = { bike:State.bike, rides:State.rides, routes:State.routes, settings:State.settings, badges:State.badges, maint:State.maint, room:State.room, exportedAt:Date.now() };
+  const data = {
+    schemaVersion: 3,
+    bikes: State.bikes, activeBikeId: State.activeBikeId,
+    rides: State.rides, routes: State.routes, settings: State.settings,
+    badges: State.badges, maint: State.maint, room: State.room, exportedAt: Date.now()
+  };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bds-sidekick-backup.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
 $('#importFile').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
-    const txt = await f.text(); const d = JSON.parse(txt);
-    ['bike','rides','routes','settings','badges','maint','room'].forEach(k => { if (d[k] != null) { State[k] = d[k]; lsSet(K[k], d[k]); } });
-    renderBike(); renderRides(); renderSavedRoutes(); renderFuel(); renderMaint(); renderBadges(); renderRoom(); renderSettings();
+    const txt = await f.text();
+    const d = JSON.parse(txt);
+    if (!confirm('Import will overwrite your current data on this device. Continue?')) { e.target.value = ''; return; }
+
+    // V3: new-schema fields
+    if (Array.isArray(d.bikes) && d.bikes.length) {
+      State.bikes = d.bikes;
+      State.activeBikeId = d.activeBikeId || d.bikes[0].id;
+      lsSet(K.bikes, State.bikes); lsSet(K.activeBike, State.activeBikeId);
+    } else if (d.bike) {
+      // Legacy v1/v2 export: single-bike object → migrate to array
+      const id = 'b_' + Date.now();
+      State.bikes = [{ id, ...d.bike }];
+      State.activeBikeId = id;
+      lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+    }
+    ['rides','routes','settings','badges','maint','room'].forEach(k => {
+      if (d[k] != null) { State[k] = d[k]; lsSet(K[k], d[k]); }
+    });
+    // Merge imported settings onto defaults so new V3 keys get sane values
+    State.settings = Object.assign({}, DEFAULT_SETTINGS, State.settings);
+    lsSet(K.settings, State.settings);
+
+    renderBike(); renderBikeSwitcher();
+    renderRides(); renderSavedRoutes(); renderFuel(); renderMaint(); renderBadges(); renderRoom(); renderSettings();
     toast('Data imported.');
-  } catch(_) { toast('Import failed.'); }
+  } catch(err) { toast('Import failed: ' + (err.message || 'bad file')); }
+  finally { e.target.value = ''; }
 });
 $('#wipeBtn').addEventListener('click', () => {
   if (!confirm('Wipe everything on this device? This cannot be undone.')) return;
@@ -1561,21 +2336,65 @@ function updateOnline() {
 addEventListener('online', updateOnline); addEventListener('offline', updateOnline);
 
 /* ======================== BOOT ======================== */
-function boot() {
+async function boot() {
+  // Apply visual settings first so the user doesn't see a flash-of-classic-theme
+  applyTheme(State.settings.theme);
+  applyBatterySaver(State.settings.batterySaver);
+
   // Restore current date field default
   if (!$('#rideDate').value) $('#rideDate').value = new Date().toISOString().slice(0,10);
-  renderBike(); renderFuel(); renderRides(); renderSavedRoutes(); renderMaint(); renderBadges(); renderSettings(); updateOnline();
+
+  renderBike(); renderBikeSwitcher();
+  renderFuel(); renderRides(); renderSavedRoutes(); renderMaint(); renderBadges();
+  renderSettings(); updateOnline();
   loadHashRoute();
+
   // Query-string shortcuts
   const q = new URLSearchParams(location.search);
-  if (q.get('start') === '1') setTimeout(startRide, 400);
-  if (q.get('gen') === '1')   setTimeout(generateRoute, 400);
   if (q.get('tab'))           switchTo(q.get('tab'));
+  if (q.get('gen') === '1')   setTimeout(generateRoute, 400);
+  if (q.get('start') === '1') setTimeout(startRide, 400);
+  // V3: ?room=ABC123 auto-joins
+  if (q.get('room')) {
+    const code = q.get('room').toUpperCase();
+    if (code.length === 6 && !State.room) {
+      State.room = { code, host:false, createdAt: Date.now() };
+      lsSet(K.room, State.room);
+      renderRoom();
+      switchTo('group');
+      toast('Joined room ' + code);
+    }
+  }
+
   drawDNA();
+
+  // V3: Resume a live ride that was background-killed mid-ride
+  try {
+    const raw = localStorage.getItem(K.liveSnapshot);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const ageHr = (Date.now() - (parsed.startTs || 0)) / 3600000;
+      if (ageHr > 8) {
+        // Stale — discard
+        localStorage.removeItem(K.liveSnapshot);
+      } else {
+        // Ask user: resume or finalize?
+        const resume = confirm(`Found an in-progress ride from ${Math.round(ageHr * 60)}m ago.\n\nOK = Resume tracking\nCancel = Save what we have and stop`);
+        if (resume) {
+          State.liveRide = parsed;
+          await resumeLiveRideWatchers();
+        } else {
+          State.liveRide = parsed;
+          await endRide();
+        }
+      }
+    }
+  } catch(_) {}
+
   // Register SW
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
   checkBadges();
-  setTimeout(() => map.invalidateSize(), 60);
+  setTimeout(() => { try { map.invalidateSize(); } catch(_) {} }, 60);
 }
 boot();
 
