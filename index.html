@@ -25,6 +25,8 @@
   --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
   --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
 }
+/* Theme: Classic (explicit for clean switch-back) */
+body[data-theme="classic"]{--accent:#ff3b00;--accent-2:#ffb400;--lean-hi:#ff3b00}
 /* Theme: Ghost (acid-green accent on charcoal) */
 body[data-theme="ghost"]{--accent:#00ff88;--accent-2:#a6ff00;--lean-hi:#00ff88}
 /* Theme: Ion (cyan + electric blue) */
@@ -534,13 +536,13 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>Tank &amp; Range Calculator</h3>
     <div class="row">
-      <label class="field"><span class="lbl">Tank (gal)</span><input type="number" id="fuelTank" step="0.1" min="0"></label>
-      <label class="field"><span class="lbl">MPG</span><input type="number" id="fuelMpg" step="0.1" min="0"></label>
-      <label class="field"><span class="lbl">Reserve (gal)</span><input type="number" id="fuelReserve" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl" id="fuelTankLbl">Tank (gal)</span><input type="number" id="fuelTank" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl" id="fuelMpgLbl">MPG</span><input type="number" id="fuelMpg" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl" id="fuelReserveLbl">Reserve (gal)</span><input type="number" id="fuelReserve" step="0.1" min="0"></label>
     </div>
     <div class="stats-grid mt-12">
-      <div class="stat"><div class="v" id="fuelSafeRange">—</div><div class="l">Safe Range (mi)</div></div>
-      <div class="stat"><div class="v" id="fuelFullRange">—</div><div class="l">Full Range (mi)</div></div>
+      <div class="stat"><div class="v" id="fuelSafeRange">—</div><div class="l" id="fuelSafeRangeLbl">Safe Range (mi)</div></div>
+      <div class="stat"><div class="v" id="fuelFullRange">—</div><div class="l" id="fuelFullRangeLbl">Full Range (mi)</div></div>
     </div>
   </div>
   <div class="card">
@@ -571,7 +573,7 @@ a:hover{text-decoration:underline}
     </div>
     <div class="row">
       <label class="field"><span class="lbl">Nickname</span><input type="text" id="bikeName" placeholder="Pumpkin"></label>
-      <label class="field"><span class="lbl">Odometer (mi)</span><input type="number" id="bikeOdo" step="1" min="0"></label>
+      <label class="field"><span class="lbl" id="bikeOdoLbl">Odometer (mi)</span><input type="number" id="bikeOdo" step="1" min="0"></label>
     </div>
     <div class="row mt-12">
       <button class="btn" id="saveBikeBtn">Save Bike</button>
@@ -604,16 +606,16 @@ a:hover{text-decoration:underline}
   <h2>Rides</h2>
   <div class="stats-grid">
     <div class="stat"><div class="v" id="statRides">0</div><div class="l">Total Rides</div></div>
-    <div class="stat"><div class="v" id="statMiles">0</div><div class="l">Total Miles</div></div>
+    <div class="stat"><div class="v" id="statMiles">0</div><div class="l" id="statMilesLbl">Total Miles</div></div>
     <div class="stat"><div class="v" id="statHours">0.0</div><div class="l">Total Hours</div></div>
-    <div class="stat"><div class="v" id="statAvg">0</div><div class="l">Avg Ride (mi)</div></div>
+    <div class="stat"><div class="v" id="statAvg">0</div><div class="l" id="statAvgLbl">Avg Ride (mi)</div></div>
   </div>
 
   <div class="card">
     <h3>Log a Ride</h3>
     <div class="row">
       <label class="field"><span class="lbl">Name</span><input type="text" id="rideName" placeholder="Hill Country loop"></label>
-      <label class="field"><span class="lbl">Distance (mi)</span><input type="number" id="rideMiles" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl" id="rideMilesLbl">Distance (mi)</span><input type="number" id="rideMiles" step="0.1" min="0"></label>
     </div>
     <div class="row">
       <label class="field"><span class="lbl">Hours</span><input type="number" id="rideHours" step="0.1" min="0"></label>
@@ -759,7 +761,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17c</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17d</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -1338,6 +1340,15 @@ function renderFuel() {
   const full = s.fuelTank * s.fuelMpg, safe = Math.max(0, (s.fuelTank - s.fuelReserve) * s.fuelMpg);
   $('#fuelSafeRange').textContent = round(distConv(safe), 1);
   $('#fuelFullRange').textContent = round(distConv(full), 1);
+  // V4.0d: update labels for current units
+  const volLbl = units() === 'imperial' ? 'gal' : 'L';
+  const consLbl = units() === 'imperial' ? 'MPG' : 'km/L';
+  const dLbl = distLabel();
+  const tEl = $('#fuelTankLbl'); if (tEl) tEl.textContent = `Tank (${volLbl})`;
+  const mEl = $('#fuelMpgLbl'); if (mEl) mEl.textContent = consLbl;
+  const rEl = $('#fuelReserveLbl'); if (rEl) rEl.textContent = `Reserve (${volLbl})`;
+  const srEl = $('#fuelSafeRangeLbl'); if (srEl) srEl.textContent = `Safe Range (${dLbl})`;
+  const frEl = $('#fuelFullRangeLbl'); if (frEl) frEl.textContent = `Full Range (${dLbl})`;
   const r = State.currentRoute;
   if (r.distMi > 0) {
     const stops = Math.max(0, Math.ceil(r.distMi / safe) - 1);
@@ -1943,7 +1954,7 @@ function renderRides() {
     <div class="pref">
       <div>
         <div class="k">${esc(r.name)}</div>
-        <div class="d">${esc(r.date || '')} · ${r.miles} ${distLabel()} · ${r.hours}h${r.topMph?' · top '+Math.round(speedConv(r.topMph))+' '+speedLabel():''}${r.maxLean?' · lean '+Math.round(r.maxLean)+'°':''}</div>
+        <div class="d">${esc(r.date || '')} · ${round(distConv(r.miles),1)} ${distLabel()} · ${r.hours}h${r.topMph?' · top '+Math.round(speedConv(r.topMph))+' '+speedLabel():''}${r.maxLean?' · lean '+Math.round(r.maxLean)+'°':''}</div>
       </div>
       <button class="icon-btn" data-delride="${r.id}" aria-label="Delete ride">✕</button>
     </div>
@@ -1959,6 +1970,12 @@ function renderStats() {
   $('#statMiles').textContent = Math.round(distConv(mi));
   $('#statHours').textContent = hr.toFixed(1);
   $('#statAvg').textContent = n ? Math.round(distConv(mi/n)) : 0;
+  // V4.0d: update labels for current units
+  const dLbl = distLabel();
+  const smEl = $('#statMilesLbl'); if (smEl) smEl.textContent = `Total ${units() === 'imperial' ? 'Miles' : 'Km'}`;
+  const saEl = $('#statAvgLbl'); if (saEl) saEl.textContent = `Avg Ride (${dLbl})`;
+  const rmEl = $('#rideMilesLbl'); if (rmEl) rmEl.textContent = `Distance (${dLbl})`;
+  const boEl = $('#bikeOdoLbl'); if (boEl) boEl.textContent = `Odometer (${dLbl})`;
 }
 $('#saveRideBtn').addEventListener('click', () => {
   const name = $('#rideName').value.trim() || 'Ride';
