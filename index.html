@@ -1,1 +1,1588 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0a0a0a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Bad Decision Society"><meta name="mobile-web-app-capable" content="yes"><meta name="description" content="Motorcycle route planning, weather, fuel range, and ride logging built for the twisties."><title>Bad Decision Society</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="icon-192.svg"><link rel="apple-touch-icon" href="icon-192.svg"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>:root{--bg:#0a0a0a;--surface:#141414;--surface-2:#1c1c1c;--border:#262626;--text:#f5f5f5;--muted:#9a9a9a;--accent:#ff3b00;--accent-2:#ffb400;--ok:#23d18b;--danger:#ff4d4d;--radius:10px;--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)}*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}body{display:flex;flex-direction:column}header{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + var(--safe-top)) 14px 10px 14px;background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000}.brand{display:flex;align-items:center;gap:10px}.brand-mark{width:28px;height:28px;border-radius:6px;background:radial-gradient(circle at 30% 30%,var(--accent-2),var(--accent) 70%);box-shadow:0 0 12px rgba(255,59,0,.45)}.brand h1{font-size:16px;margin:0;letter-spacing:.04em;text-transform:uppercase}.brand small{color:var(--muted);font-size:10px;letter-spacing:.15em}.online-pill{font-size:10px;padding:4px 8px;border-radius:999px;background:#1a1a1a;border:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.online-pill.online{color:var(--ok);border-color:rgba(35,209,139,.3)}.online-pill.offline{color:var(--accent-2);border-color:rgba(255,180,0,.3)}nav.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}nav.tabs::-webkit-scrollbar{display:none}nav.tabs button{flex:1 0 auto;background:transparent;color:var(--muted);border:none;padding:12px 14px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}nav.tabs button.active{color:var(--text);border-bottom-color:var(--accent)}main{flex:1;position:relative;overflow:hidden}.view{display:none;height:100%;overflow:auto;padding:14px;padding-bottom:calc(14px + var(--safe-bottom))}.view.active{display:block}.view.map-view.active{display:flex;flex-direction:column;padding:0}#map{flex:1;width:100%;background:#111;min-height:300px}.map-controls{display:flex;gap:8px;padding:10px;background:var(--surface);border-top:1px solid var(--border);flex-wrap:wrap}.map-controls .row{display:flex;gap:8px;width:100%}.map-controls input{flex:1;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:14px}button.btn,.btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:var(--radius);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;cursor:pointer;transition:transform .05s ease,filter .2s ease}button.btn:active{transform:scale(.97)}button.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}button.btn.warn{background:var(--accent-2);color:#0a0a0a}button.btn.danger{background:var(--danger);color:#fff}button.btn:disabled{filter:grayscale(.6) brightness(.6);cursor:not-allowed}.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}.card h2{margin:0 0 10px 0;font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.row-split{display:flex;gap:10px}.row-split>*{flex:1}label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}input[type=text],input[type=number],textarea,select{width:100%;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:14px;font-family:inherit}textarea{min-height:70px;resize:vertical}.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}.stat .label{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.1em}.stat .value{font-size:22px;font-weight:800;margin-top:4px}.stat .sub{font-size:11px;color:var(--muted);margin-top:2px}.list-item{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.list-item .info{flex:1;min-width:0}.list-item .title{font-weight:700;margin-bottom:2px}.list-item .meta{font-size:12px;color:var(--muted)}.list-item .actions{display:flex;gap:6px;flex-shrink:0}.icon-btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 8px;cursor:pointer;font-size:12px}.weather-card .current{display:flex;align-items:center;gap:14px;margin-bottom:10px}.weather-card .temp{font-size:40px;font-weight:800;line-height:1}.weather-card .cond{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.weather-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px}.weather-slot{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center}.weather-slot .t{font-size:11px;color:var(--muted)}.weather-slot .v{font-size:16px;font-weight:700;margin-top:2px}.weather-slot .rain{font-size:10px;color:var(--accent-2);margin-top:2px}.fuel-bar{height:10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;margin-top:8px}.fuel-bar div{height:100%;background:linear-gradient(90deg,var(--ok),var(--accent-2),var(--accent));transition:width .4s ease}.tag{display:inline-block;font-size:10px;text-transform:uppercase;padding:3px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);margin-right:4px}.tag.live{color:var(--ok);border-color:rgba(35,209,139,.3)}.toast{position:fixed;bottom:calc(20px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:999px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%}.toast.show{opacity:1}.empty{text-align:center;color:var(--muted);padding:30px 10px;border:1px dashed var(--border);border-radius:var(--radius)}details.howto{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-top:10px}details.howto summary{cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}details.howto p,details.howto ul{font-size:13px;color:#ccc}.leaflet-container{background:#111!important}.leaflet-tile{filter:brightness(.78) saturate(.9)}@media(min-width:700px){.view{padding:22px;max-width:900px;margin:0 auto;width:100%}.view.map-view.active{max-width:none}.stat-grid{grid-template-columns:repeat(4,1fr)}}</style></head><body><header><div class="brand"><div class="brand-mark" aria-hidden="true"></div><div><h1>Bad Decision Society</h1><small>Austin TX</small></div></div><div id="onlinePill" class="online-pill"></div></header><nav class="tabs" role="tablist"><button data-view="map" class="active">Route</button><button data-view="weather">Weather</button><button data-view="fuel">Fuel</button><button data-view="rides">Rides</button><button data-view="settings">Bike</button></nav><main><section class="view map-view active" id="view-map"><div id="map"></div><div class="map-controls"><div class="row"><input id="searchInput" type="text" placeholder="Search place e.g. Luckenbach TX"><button class="btn" id="searchBtn">Find</button></div><div class="row"><button class="btn ghost" id="locBtn">My Location</button><button class="btn ghost" id="clearBtn">Clear</button><button class="btn" id="saveRouteBtn">Save Route</button><button class="btn warn" id="shareRouteBtn">Share</button></div><div class="row" style="color:var(--muted);font-size:12px"><span id="routeStats">Tap the map to drop waypoints. First tap = start.</span></div></div></section><section class="view" id="view-weather"><div class="card weather-card"><h2>Current Conditions</h2><div id="weatherCurrent" class="empty">Tap "Use My Location" to load weather for your ride.</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="wxLocBtn">Use My Location</button><button class="btn ghost" id="wxRouteBtn">Use Route Start</button></div></div><div class="card"><h2>Next 12 Hours</h2><div id="weatherHourly" class="weather-strip"></div></div><div class="card"><h2>7-Day Outlook</h2><div id="weatherDaily" class="weather-strip"></div></div></section><section class="view" id="view-fuel"><div class="card"><h2>Tank &amp; Range Calculator</h2><div class="row-split"><div><label>Tank Size (gal)</label><input id="tankSize" type="number" step="0.1" value="4.5" inputmode="decimal"></div><div><label>Avg MPG</label><input id="mpg" type="number" step="1" value="42" inputmode="decimal"></div></div><div class="row-split" style="margin-top:10px"><div><label>Reserve Buffer (%)</label><input id="reserve" type="number" step="1" value="15" inputmode="decimal"></div><div><label>Current Fuel (%)</label><input id="currentFuel" type="number" step="1" value="100" inputmode="decimal"></div></div><div class="stat-grid" style="margin-top:14px"><div class="stat"><div class="label">Safe Range</div><div class="value" id="safeRange"></div><div class="sub">mi w/ reserve</div></div><div class="stat"><div class="label">Full Range</div><div class="value" id="fullRange"></div><div class="sub">mi tank empty</div></div><div class="stat"><div class="label">Current Range</div><div class="value" id="currentRange"></div><div class="sub">mi at current fuel</div></div><div class="stat"><div class="label">Route Distance</div><div class="value" id="routeDist"></div><div class="sub">mi planned</div></div></div><div class="fuel-bar"><div id="fuelBarFill" style="width:0"></div></div><div id="fuelVerdict" style="margin-top:10px;font-size:14px"></div></div><div class="card"><h2>Gas Stop Planner</h2><p style="color:var(--muted);font-size:13px;margin-top:0">Based on your safe range, here's how many stops you'll need for your current route.</p><div id="gasPlan" class="empty">Plan a route on the Map tab to see gas stops.</div></div></section><section class="view" id="view-rides"><div class="card"><h2>Generate a Ride</h2><p style="font-size:12px;color:var(--muted);margin:0 0 10px 0">Set your preferences and we'll generate a dynamic route from Austin.</p><div class="row-split" style="margin-bottom:10px"><div><label>Direction</label><select id="rideDirection"><option value="any">Random</option><option value="north">North</option><option value="south">South</option><option value="east">East</option><option value="west">West</option></select></div><div><label>Distance</label><select id="rideDistance"><option value="short">Short (25-50 mi)</option><option value="medium">Medium (50-100 mi)</option><option value="long">Long (100-175 mi)</option><option value="epic">Epic (175+ mi)</option></select></div></div><div class="row-split" style="margin-bottom:10px"><div><label>Ride Style</label><select id="rideStyle"><option value="mixed">Mixed</option><option value="twisties">Twisties</option><option value="scenic">Scenic</option></select></div><div><label>Loop</label><select id="rideLoop"><option value="loop">Round Trip</option><option value="oneway">One Way</option></select></div></div><button class="btn warn" id="generateRideBtn" style="width:100%;margin-bottom:8px">GENERATE RIDE FOR ME</button><div id="generatedRideInfo"></div></div><div class="card"><h2>Log a Ride</h2><label>Title</label><input id="rideTitle" type="text" placeholder="Twisted Sisters run"><div class="row-split" style="margin-top:10px"><div><label>Distance (mi)</label><input id="rideDist" type="number" step="0.1" inputmode="decimal"></div><div><label>Duration (min)</label><input id="rideDuration" type="number" step="1" inputmode="numeric"></div></div><label style="margin-top:10px">Notes</label><textarea id="rideNotes" placeholder="Road conditions, favorite sections, nearly-died moments..."></textarea><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="saveRideBtn">Save Ride</button><button class="btn ghost" id="fillFromRouteBtn">Fill From Current Route</button></div></div><div class="card"><h2>Saved Routes</h2><div id="savedRoutes"></div></div><div class="card"><h2>Ride Log</h2><div id="rideLog"></div><div class="stat-grid" style="margin-top:14px"><div class="stat"><div class="label">Total Rides</div><div class="value" id="totalRides">0</div></div><div class="stat"><div class="label">Total Miles</div><div class="value" id="totalMiles">0</div></div><div class="stat"><div class="label">Total Hours</div><div class="value" id="totalHours">0</div></div><div class="stat"><div class="label">Avg Ride</div><div class="value" id="avgRide">0</div><div class="sub">mi</div></div></div></div></section><section class="view" id="view-settings"><div class="card"><h2>Your Bike</h2><label>Make</label><input id="bikeMake" type="text" placeholder="Kawasaki"><label style="margin-top:10px">Model</label><input id="bikeModel" type="text" placeholder="Ninja ZX-6R"><div class="row-split" style="margin-top:10px"><div><label>Year</label><input id="bikeYear" type="number" inputmode="numeric" placeholder="2026"></div><div><label>Nickname</label><input id="bikeNick" type="text" placeholder="Greenie"></div></div><div style="margin-top:10px"><button class="btn" id="saveBikeBtn">Save Bike</button></div></div><div class="card"><h2>Units &amp; Display</h2><label>Units</label><select id="units"><option value="imperial">Imperial (mi, °F, gal)</option><option value="metric">Metric (km, °C, L)</option></select></div><div class="card"><h2>Data</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="exportBtn">Export All Data (JSON)</button><button class="btn ghost" id="importBtn">Import JSON</button><input id="importFile" type="file" accept="application/json" style="display:none"><button class="btn danger" id="wipeBtn">Wipe All Data</button></div><details class="howto"><summary>How data is stored</summary><p>Everything (bike, rides, routes, settings) lives in your browser's local storage on this device. Nothing is sent to a server. Shared routes are encoded into the URL itself, so the link IS the data.</p></details></div><div class="card"><h2>About</h2><p style="color:var(--muted);font-size:13px">Bad Decision Society v1.0 — Built for twisties. Map tiles © OpenStreetMap contributors. Weather: Open-Meteo.</p></div></section></main><div id="toast" class="toast" role="status" aria-live="polite"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>const LS={get(k,d=null){try{const v=localStorage.getItem('mrs_'+k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem('mrs_'+k,JSON.stringify(v))}catch{}},del(k){try{localStorage.removeItem('mrs_'+k)}catch{}}};const State={bike:LS.get('bike',{make:'',model:'',year:'',nick:''}),units:LS.get('units','imperial'),fuel:LS.get('fuel',{tank:4.5,mpg:42,reserve:15,current:100}),rides:LS.get('rides',[]),routes:LS.get('routes',[]),currentRoute:{waypoints:[],distanceMi:0}};document.querySelectorAll('nav.tabs button').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));btn.classList.add('active');const view=document.getElementById('view-'+btn.dataset.view);view.classList.add('active');if(btn.dataset.view==='map')setTimeout(()=>map.invalidateSize(),50);if(btn.dataset.view==='fuel')renderFuel();if(btn.dataset.view==='rides'){renderRides();renderRoutes()}if(btn.dataset.view==='settings')renderSettings()})});const toastEl=document.getElementById('toast');let toastTimer;function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400)}function updateOnline(){const pill=document.getElementById('onlinePill');if(navigator.onLine){pill.textContent='Online';pill.className='online-pill online'}else{pill.textContent='Offline';pill.className='online-pill offline'}}window.addEventListener('online',updateOnline);window.addEventListener('offline',updateOnline);updateOnline();const map=L.map('map',{zoomControl:true,attributionControl:true}).setView([30.2672,-97.7431],10);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);let waypointMarkers=[];let routeLine=null;function haversineMi(a,b){const toRad=d=>d*Math.PI/180;const R=3958.8;const dLat=toRad(b.lat-a.lat);const dLng=toRad(b.lng-a.lng);const lat1=toRad(a.lat),lat2=toRad(b.lat);const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}function recalcRoute(){const wps=State.currentRoute.waypoints;let dist=0;for(let i=1;i<wps.length;i++)dist+=haversineMi(wps[i-1],wps[i]);State.currentRoute.distanceMi=dist;const unit=State.units==='metric'?'km':'mi';const shown=State.units==='metric'?dist*1.60934:dist;document.getElementById('routeStats').textContent=wps.length===0?'Tap the map to drop waypoints. First tap = start.':wps.length+' waypoint'+(wps.length>1?'s':'')+' \u2022 '+shown.toFixed(1)+' '+unit+' (loading road...)';drawRouteLine()}function drawRouteLine(){if(routeLine){map.removeLayer(routeLine);routeLine=null}const wps=State.currentRoute.waypoints;if(wps.length<2)return;const coords=wps.map(w=>w.lng+','+w.lat).join(';');if(!navigator.onLine){routeLine=L.polyline(wps.map(w=>[w.lat,w.lng]),{color:'#ff3b00',weight:4,opacity:.9,dashArray:'6 6'}).addTo(map);return}fetch('https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson').then(r=>r.json()).then(data=>{if(data.code==='Ok'&&data.routes&&data.routes[0]){const geo=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);routeLine=L.polyline(geo,{color:'#ff3b00',weight:5,opacity:.9}).addTo(map);const roadMi=data.routes[0].distance/1609.34;State.currentRoute.distanceMi=roadMi;const unit=State.units==='metric'?'km':'mi';const shown=State.units==='metric'?roadMi*1.60934:roadMi;document.getElementById('routeStats').textContent=wps.length+' waypoints \u2022 '+shown.toFixed(1)+' '+unit+' (road)';document.getElementById('routeStats').style.color='var(--ok)'}else{routeLine=L.polyline(wps.map(w=>[w.lat,w.lng]),{color:'#ff3b00',weight:4,opacity:.9,dashArray:'6 6'}).addTo(map)}}).catch(()=>{routeLine=L.polyline(wps.map(w=>[w.lat,w.lng]),{color:'#ff3b00',weight:4,opacity:.9,dashArray:'6 6'}).addTo(map)})}function addWaypoint(latlng,opts={}){const idx=State.currentRoute.waypoints.length;State.currentRoute.waypoints.push({lat:latlng.lat,lng:latlng.lng,label:opts.label});const icon=L.divIcon({className:'wp-marker',html:'<div style="background:'+(idx===0?'#23d18b':'#ff3b00')+';color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.6)">'+(idx===0?'S':idx)+'</div>',iconSize:[26,26],iconAnchor:[13,13]});const m=L.marker([latlng.lat,latlng.lng],{icon,draggable:true}).addTo(map);m.on('dragend',()=>{const p=m.getLatLng();State.currentRoute.waypoints[idx]={...State.currentRoute.waypoints[idx],lat:p.lat,lng:p.lng};recalcRoute()});m.on('click',()=>{if(confirm('Remove this waypoint?'))removeWaypoint(idx)});waypointMarkers.push(m);recalcRoute()}function removeWaypoint(idx){State.currentRoute.waypoints.splice(idx,1);waypointMarkers.forEach(m=>map.removeLayer(m));waypointMarkers=[];const wps=State.currentRoute.waypoints.slice();State.currentRoute.waypoints=[];wps.forEach(w=>addWaypoint({lat:w.lat,lng:w.lng},{label:w.label}))}map.on('click',e=>addWaypoint(e.latlng));document.getElementById('clearBtn').addEventListener('click',()=>{State.currentRoute.waypoints=[];waypointMarkers.forEach(m=>map.removeLayer(m));waypointMarkers=[];if(routeLine){map.removeLayer(routeLine);routeLine=null}recalcRoute()});document.getElementById('locBtn').addEventListener('click',()=>{if(!navigator.geolocation)return toast('Geolocation not supported');toast('Locating...');navigator.geolocation.getCurrentPosition(pos=>{const{latitude,longitude}=pos.coords;map.setView([latitude,longitude],13);addWaypoint({lat:latitude,lng:longitude})},err=>toast('Location error: '+err.message),{enableHighAccuracy:true,timeout:10000})});document.getElementById('searchBtn').addEventListener('click',searchPlace);document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlace()});async function searchPlace(){const q=document.getElementById('searchInput').value.trim();if(!q)return;if(!navigator.onLine)return toast('Offline: search needs internet');try{toast('Searching...');const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q),{headers:{'Accept-Language':'en'}});const data=await r.json();if(!data||!data.length)return toast('No results');const{lat,lon,display_name}=data[0];map.setView([lat,lon],12);addWaypoint({lat:+lat,lng:+lon},{label:display_name})}catch(e){toast('Search failed')}}document.getElementById('saveRouteBtn').addEventListener('click',()=>{if(State.currentRoute.waypoints.length<2)return toast('Need at least 2 waypoints');const name=prompt('Name this route','Route '+new Date().toLocaleDateString());if(!name)return;const r={id:'r'+Date.now(),name,created:Date.now(),waypoints:State.currentRoute.waypoints.slice(),distanceMi:State.currentRoute.distanceMi};State.routes.unshift(r);LS.set('routes',State.routes);toast('Route saved!')});document.getElementById('shareRouteBtn').addEventListener('click',async()=>{if(State.currentRoute.waypoints.length<1)return toast('No route to share');const encoded=encodeRoute(State.currentRoute.waypoints);const url=location.origin+location.pathname+'#r='+encoded;try{if(navigator.share){await navigator.share({title:'Moto Route',text:'Check out this route!',url})}else{await navigator.clipboard.writeText(url);toast('Route link copied to clipboard!')}}catch(e){prompt('Copy this link:',url)}});function encodeRoute(wps){const str=wps.map(w=>w.lat.toFixed(5)+','+w.lng.toFixed(5)).join(';');return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'')}function decodeRoute(enc){try{const b64=enc.replace(/-/g,'+').replace(/_/g,'/');const str=decodeURIComponent(escape(atob(b64)));return str.split(';').filter(Boolean).map(pair=>{const[lat,lng]=pair.split(',').map(Number);return{lat,lng}})}catch{return[]}}function loadHashRoute(){const m=location.hash.match(/r=(.+)/);if(!m)return;const wps=decodeRoute(m[1]);if(!wps.length)return;setTimeout(()=>{wps.forEach(w=>addWaypoint(w));if(wps.length)map.fitBounds(wps.map(w=>[w.lat,w.lng]),{padding:[40,40]});toast('Shared route loaded!')},200)}loadHashRoute();const WXCODES={0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Fog',48:'Icy Fog',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',56:'Freezing Drizzle',57:'Freezing Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',66:'Freezing Rain',67:'Freezing Rain',71:'Light Snow',73:'Snow',75:'Heavy Snow',77:'Snow Grains',80:'Showers',81:'Showers',82:'Violent Showers',85:'Snow Showers',86:'Snow Showers',95:'Thunderstorm',96:'Thunder w/ Hail',99:'Thunder w/ Hail'};function wxLabel(c){return WXCODES[c]||'Unknown'}function wxRideable(c,windSpeed){if([56,57,66,67,71,73,75,77,85,86,95,96,99].includes(c))return{ok:false,reason:'Unrideable: storms/freeze/snow'};if([65,82].includes(c))return{ok:false,reason:'Heavy rain: not recommended'};if([61,63,80,81].includes(c))return{ok:true,reason:'Wet ride: with caution',warn:true};if(windSpeed&&windSpeed>25&&State.units!=='metric')return{ok:true,reason:'High winds: lean in',warn:true};return{ok:true,reason:'Clear to ride'}}async function loadWeather(lat,lng){if(!navigator.onLine){document.getElementById('weatherCurrent').innerHTML='<div class="empty">Offline: weather needs internet</div>';return}const unitParam=State.units==='metric'?'celsius':'fahrenheit';const windUnit=State.units==='metric'?'kmh':'mph';const precipUnit=State.units==='metric'?'mm':'inch';const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code,precipitation&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=7&temperature_unit=${unitParam}&wind_speed_unit=${windUnit}&precipitation_unit=${precipUnit}&timezone=auto`;try{document.getElementById('weatherCurrent').innerHTML='Loading...';const r=await fetch(url);const data=await r.json();renderWeather(data,lat,lng)}catch(e){document.getElementById('weatherCurrent').innerHTML='<div class="empty">Weather failed to load.</div>'}}function renderWeather(d,lat,lng){const tempUnit=State.units==='metric'?'\u00b0C':'\u00b0F';const windU=State.units==='metric'?'km/h':'mph';const cur=d.current;const verdict=wxRideable(cur.weather_code,cur.wind_speed_10m);const vc=!verdict.ok?'var(--danger)':verdict.warn?'var(--accent-2)':'var(--ok)';document.getElementById('weatherCurrent').innerHTML='<div class="current"><div class="temp">'+Math.round(cur.temperature_2m)+tempUnit+'</div><div><div class="cond">'+wxLabel(cur.weather_code)+'</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Feels '+Math.round(cur.apparent_temperature)+tempUnit+' Humidity '+cur.relative_humidity_2m+'% Wind '+Math.round(cur.wind_speed_10m)+' '+windU+' (gusts '+Math.round(cur.wind_gusts_10m)+')</div><div style="margin-top:6px;font-weight:700;color:'+vc+'">'+verdict.reason+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+lat.toFixed(3)+', '+lng.toFixed(3)+'</div></div></div>';const hourly=document.getElementById('weatherHourly');hourly.innerHTML='';const nowIdx=new Date().getHours();for(let i=0;i<12;i++){const idx=nowIdx+i;if(!d.hourly.time[idx])break;const t=new Date(d.hourly.time[idx]);const hr=t.getHours();const label=hr===0?'12a':hr<12?hr+'a':hr===12?'12p':(hr-12)+'p';hourly.innerHTML+='<div class="weather-slot"><div class="t">'+label+'</div><div class="v">'+Math.round(d.hourly.temperature_2m[idx])+'</div><div class="rain">'+(d.hourly.precipitation_probability[idx]||0)+'%</div></div>'}const daily=document.getElementById('weatherDaily');daily.innerHTML='';const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];for(let i=0;i<d.daily.time.length;i++){const dt=new Date(d.daily.time[i]+'T12:00:00');daily.innerHTML+='<div class="weather-slot"><div class="t">'+dayNames[dt.getDay()]+'</div><div class="v">'+Math.round(d.daily.temperature_2m_max[i])+'</div><div class="t">'+Math.round(d.daily.temperature_2m_min[i])+'</div><div class="rain">'+(d.daily.precipitation_probability_max[i]||0)+'%</div></div>'}}document.getElementById('wxLocBtn').addEventListener('click',()=>{if(!navigator.geolocation)return toast('Geolocation not supported');navigator.geolocation.getCurrentPosition(pos=>loadWeather(pos.coords.latitude,pos.coords.longitude),()=>toast('Location error'),{enableHighAccuracy:true,timeout:10000})});document.getElementById('wxRouteBtn').addEventListener('click',()=>{const wps=State.currentRoute.waypoints;if(!wps.length)return toast('Plan a route first');loadWeather(wps[0].lat,wps[0].lng)});function renderFuel(){const tank=+document.getElementById('tankSize').value||0;const mpg=+document.getElementById('mpg').value||0;const reserve=+document.getElementById('reserve').value||0;const current=+document.getElementById('currentFuel').value||0;State.fuel={tank,mpg,reserve,current};LS.set('fuel',State.fuel);const fullRange=tank*mpg;const safeRange=fullRange*(1-reserve/100);const currentRange=fullRange*(current/100);const routeDist=State.currentRoute.distanceMi;const fmt=n=>isFinite(n)?n.toFixed(1):'--';document.getElementById('fullRange').textContent=fmt(fullRange);document.getElementById('safeRange').textContent=fmt(safeRange);document.getElementById('currentRange').textContent=fmt(currentRange);document.getElementById('routeDist').textContent=routeDist>0?fmt(routeDist):'--';const pct=Math.max(0,Math.min(100,current));document.getElementById('fuelBarFill').style.width=pct+'%';const verdict=document.getElementById('fuelVerdict');if(routeDist>0){if(routeDist>currentRange){verdict.innerHTML='<span style="color:var(--danger);font-weight:700">Route exceeds current fuel range by '+(routeDist-currentRange).toFixed(1)+' mi</span>'}else if(routeDist>safeRange){verdict.innerHTML='<span style="color:var(--accent-2);font-weight:700">Within tank but past safe buffer: top off before reserve</span>'}else{verdict.innerHTML='<span style="color:var(--ok);font-weight:700">Route within safe range</span>'}}else{verdict.textContent=''}const plan=document.getElementById('gasPlan');if(routeDist<=0){plan.className='empty';plan.textContent='Plan a route on the Map tab to see gas stops.'}else{const stops=Math.max(0,Math.ceil(routeDist/safeRange)-1);const interval=safeRange;plan.className='';plan.innerHTML='<div class="stat-grid"><div class="stat"><div class="label">Stops Needed</div><div class="value">'+stops+'</div></div><div class="stat"><div class="label">Stop Every</div><div class="value">'+interval.toFixed(0)+'</div><div class="sub">mi</div></div></div><p style="color:var(--muted);font-size:12px;margin-top:10px">Tip: in Hill Country, gas stations thin out past Fredericksburg. Top off in Junction, Leakey, and Camp Wood.</p>'}}['tankSize','mpg','reserve','currentFuel'].forEach(id=>document.getElementById(id).addEventListener('input',renderFuel));function renderRides(){const log=document.getElementById('rideLog');log.innerHTML='';if(!State.rides.length){log.innerHTML='<div class="empty">No rides logged yet.</div>'}else{State.rides.forEach(ride=>{const el=document.createElement('div');el.className='list-item';const d=new Date(ride.created);el.innerHTML='<div class="info"><div class="title">'+escapeHTML(ride.title||'Untitled Ride')+'</div><div class="meta">'+d.toLocaleDateString()+' \u2022 '+(ride.distance||0)+' mi \u2022 '+(ride.duration||0)+' min</div>'+(ride.notes?'<div style="font-size:12px;color:#bbb;margin-top:6px">'+escapeHTML(ride.notes)+'</div>':'')+'</div><div class="actions"><button class="icon-btn" data-del="'+ride.id+'">\u2716</button></div>';log.appendChild(el)});log.querySelectorAll('[data-del]').forEach(b=>{b.addEventListener('click',()=>{if(!confirm('Delete this ride?'))return;State.rides=State.rides.filter(r=>r.id!=b.dataset.del);LS.set('rides',State.rides);renderRides()})})}const totalMi=State.rides.reduce((s,r)=>s+(+r.distance||0),0);const totalMin=State.rides.reduce((s,r)=>s+(+r.duration||0),0);document.getElementById('totalRides').textContent=State.rides.length;document.getElementById('totalMiles').textContent=totalMi.toFixed(0);document.getElementById('totalHours').textContent=(totalMin/60).toFixed(1);document.getElementById('avgRide').textContent=State.rides.length?(totalMi/State.rides.length).toFixed(0):'0'}function renderRoutes(){const box=document.getElementById('savedRoutes');box.innerHTML='';if(!State.routes.length){box.innerHTML='<div class="empty">No saved routes.</div>';return}State.routes.forEach(r=>{const el=document.createElement('div');el.className='list-item';el.innerHTML='<div class="info"><div class="title">'+escapeHTML(r.name)+'</div><div class="meta">'+(r.distanceMi||0).toFixed(1)+' mi \u2022 '+r.waypoints.length+' waypoints \u2022 '+new Date(r.created).toLocaleDateString()+'</div></div><div class="actions"><button class="icon-btn" data-load="'+r.id+'">Load</button><button class="icon-btn" data-share="'+r.id+'">Share</button><button class="icon-btn" data-del="'+r.id+'">\u2716</button></div>';box.appendChild(el)});box.querySelectorAll('[data-load]').forEach(b=>{b.addEventListener('click',()=>{const r=State.routes.find(x=>x.id==b.dataset.load);if(!r)return;State.currentRoute.waypoints=[];waypointMarkers.forEach(m=>map.removeLayer(m));waypointMarkers=[];if(routeLine){map.removeLayer(routeLine);routeLine=null}r.waypoints.forEach(w=>addWaypoint(w));if(r.waypoints.length)map.fitBounds(r.waypoints.map(w=>[w.lat,w.lng]),{padding:[40,40]});document.querySelector('nav.tabs button[data-view=map]').click();toast('Route loaded!')})});box.querySelectorAll('[data-share]').forEach(b=>{b.addEventListener('click',async()=>{const r=State.routes.find(x=>x.id==b.dataset.share);if(!r)return;const url=location.origin+location.pathname+'#r='+encodeRoute(r.waypoints);try{if(navigator.share){await navigator.share({title:r.name,url})}else{await navigator.clipboard.writeText(url);toast('Link copied!')}}catch{prompt('Copy link:',url)}})});box.querySelectorAll('[data-del]').forEach(b=>{b.addEventListener('click',()=>{if(!confirm('Delete this route?'))return;State.routes=State.routes.filter(r=>r.id!=b.dataset.del);LS.set('routes',State.routes);renderRoutes()})})}document.getElementById('saveRideBtn').addEventListener('click',()=>{const title=document.getElementById('rideTitle').value.trim();const distance=+document.getElementById('rideDist').value||0;const duration=+document.getElementById('rideDuration').value||0;const notes=document.getElementById('rideNotes').value.trim();if(!title&&!distance)return toast('Add a title or distance');const ride={id:'ride'+Date.now(),title,distance,duration,notes,created:Date.now()};State.rides.unshift(ride);LS.set('rides',State.rides);document.getElementById('rideTitle').value='';document.getElementById('rideDist').value='';document.getElementById('rideDuration').value='';document.getElementById('rideNotes').value='';renderRides();toast('Ride logged!')});document.getElementById('fillFromRouteBtn').addEventListener('click',()=>{if(State.currentRoute.distanceMi<=0)return toast('No route planned');document.getElementById('rideDist').value=State.currentRoute.distanceMi.toFixed(1);toast('Filled from route!')});function renderSettings(){document.getElementById('bikeMake').value=State.bike.make;document.getElementById('bikeModel').value=State.bike.model;document.getElementById('bikeYear').value=State.bike.year;document.getElementById('bikeNick').value=State.bike.nick;document.getElementById('units').value=State.units;document.getElementById('tankSize').value=State.fuel.tank;document.getElementById('mpg').value=State.fuel.mpg;document.getElementById('reserve').value=State.fuel.reserve;document.getElementById('currentFuel').value=State.fuel.current}document.getElementById('saveBikeBtn').addEventListener('click',()=>{State.bike={make:document.getElementById('bikeMake').value.trim(),model:document.getElementById('bikeModel').value.trim(),year:document.getElementById('bikeYear').value.trim(),nick:document.getElementById('bikeNick').value.trim()};LS.set('bike',State.bike);toast('Bike saved!')});document.getElementById('units').addEventListener('change',e=>{State.units=e.target.value;LS.set('units',State.units);recalcRoute();renderFuel();toast('Units: '+State.units)});document.getElementById('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({bike:State.bike,units:State.units,fuel:State.fuel,rides:State.rides,routes:State.routes,exportedAt:new Date().toISOString(),version:1},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moto-sidekick-backup-'+Date.now()+'.json';a.click()});document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());document.getElementById('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const text=await f.text();const d=JSON.parse(text);if(d.bike){State.bike=d.bike;LS.set('bike',State.bike)}if(d.units){State.units=d.units;LS.set('units',State.units)}if(d.fuel){State.fuel=d.fuel;LS.set('fuel',State.fuel)}if(d.rides){State.rides=d.rides;LS.set('rides',State.rides)}if(d.routes){State.routes=d.routes;LS.set('routes',State.routes)}renderSettings();renderRides();renderRoutes();toast('Imported!')}catch{toast('Import failed')}});document.getElementById('wipeBtn').addEventListener('click',()=>{if(!confirm('Wipe ALL data? This cannot be undone.'))return;['bike','units','fuel','rides','routes'].forEach(k=>LS.del(k));location.reload()});function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}renderSettings();renderFuel();renderRides();renderRoutes();recalcRoute();if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}var ROUTE_NODES={north:[{lat:30.445,lng:-97.878,name:'Lime Creek'},{lat:30.578,lng:-98.275,name:'Marble Falls'},{lat:30.729,lng:-98.298,name:'Inks Lake'},{lat:30.756,lng:-98.68,name:'Llano'},{lat:30.898,lng:-98.44,name:'Buchanan Dam'},{lat:31.06,lng:-97.37,name:'Belton Lake'}],south:[{lat:30.11,lng:-97.315,name:'Bastrop'},{lat:29.997,lng:-98.099,name:'San Marcos'},{lat:29.927,lng:-98.202,name:'Devils Backbone'},{lat:29.88,lng:-98.131,name:'Canyon Lake'},{lat:29.731,lng:-99.356,name:'Leakey'},{lat:29.594,lng:-99.74,name:'Garner SP'}],east:[{lat:30.11,lng:-97.315,name:'Bastrop'},{lat:30.105,lng:-97.265,name:'Bastrop SP'},{lat:30.08,lng:-97.24,name:'Lost Pines'},{lat:30.33,lng:-96.95,name:'Smithville'},{lat:30.63,lng:-96.33,name:'Bryan'}],west:[{lat:30.19,lng:-98.087,name:'Dripping Springs'},{lat:30.276,lng:-98.411,name:'Johnson City'},{lat:30.275,lng:-98.82,name:'Fredericksburg'},{lat:30.506,lng:-98.819,name:'Enchanted Rock'},{lat:30.488,lng:-98.694,name:'Willow City'},{lat:30.05,lng:-99.59,name:'Junction'}],twisties:[{lat:29.856,lng:-98.737,name:'RR335'},{lat:29.731,lng:-99.356,name:'RR336 Leakey'},{lat:29.7897,lng:-99.7614,name:'RR337'},{lat:29.912,lng:-99.718,name:'Vanderpool'},{lat:30.05,lng:-99.59,name:'Junction'},{lat:30.0977,lng:-98.1028,name:'Wimberley'}]};function generateRoute(){var dir=document.getElementById('rideDirection').value;var dist=document.getElementById('rideDistance').value;var style=document.getElementById('rideStyle').value;var loop=document.getElementById('rideLoop').value;var ranges={short:[25,50],medium:[50,100],long:[100,175],epic:[175,300]};var r=ranges[dist]||[50,100];var targetDist=(r[0]+r[1])/2;var dirs=['north','south','east','west'];if(dir==='any')dir=dirs[Math.floor(Math.random()*dirs.length)];var pool=ROUTE_NODES[dir].slice();if(style==='twisties'&&ROUTE_NODES.twisties){pool=pool.concat(ROUTE_NODES.twisties)}else if(style==='scenic'){pool=pool.slice()}var start={lat:30.2672,lng:-97.7431};var wps=[start];var totalDist=0;var used={};var maxWps=dist==='short'?3:dist==='medium'?5:dist==='long'?6:8;for(var i=0;i<maxWps&&totalDist<targetDist*0.85;i++){var best=null;var bestScore=Infinity;for(var j=0;j<pool.length;j++){if(used[j])continue;var d=haversineMi(wps[wps.length-1],pool[j]);if(d<3)continue;var newTotal=totalDist+d;if(newTotal>r[1]*1.1)continue;var score=Math.abs(d-(targetDist-totalDist)/(maxWps-i));if(score<bestScore){bestScore=score;best=j}}if(best===null)break;used[best]=true;wps.push({lat:pool[best].lat,lng:pool[best].lng,label:pool[best].name});totalDist+=haversineMi(wps[wps.length-2],wps[wps.length-1])}if(loop==='loop'&&wps.length>2){wps.push(start);totalDist+=haversineMi(wps[wps.length-2],start)}if(wps.length<2){toast('Could not generate a route. Try different options.');return}State.currentRoute.waypoints=[];waypointMarkers.forEach(function(m){map.removeLayer(m)});waypointMarkers=[];if(routeLine){map.removeLayer(routeLine);routeLine=null}wps.forEach(function(w){addWaypoint(w)});map.fitBounds(wps.map(function(w){return[w.lat,w.lng]}),{padding:[40,40]});var names=wps.filter(function(w){return w.label}).map(function(w){return w.label});var routeName=dir.charAt(0).toUpperCase()+dir.slice(1)+' '+dist.charAt(0).toUpperCase()+dist.slice(1)+' '+style;document.getElementById('generatedRideInfo').innerHTML='<div style="margin-top:8px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)"><div style="font-weight:700;color:var(--accent);margin-bottom:4px">'+escapeHTML(routeName)+'</div><div style="font-size:12px;color:var(--muted)">~'+Math.round(totalDist)+' mi - '+wps.length+' waypoints'+(loop==='loop'?' (loop)':'')+'</div><div style="font-size:13px;margin-top:6px">Via: '+names.join(' &#8594; ')+'</div></div>';document.querySelector('nav.tabs button[data-view=map]').click();toast('Route generated: '+routeName)}document.getElementById('generateRideBtn').addEventListener('click',generateRoute);</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BDS Sidekick">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Bad Decision Sidekick — the moto cockpit for bad decisions. Plan. Ride. Survive. Share.">
+<title>Bad Decision Sidekick</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon-192.svg">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface-2:#1c1c1c;--surface-3:#242424;
+  --border:#262626;--border-strong:#3a3a3a;
+  --text:#f5f5f5;--muted:#9a9a9a;--dim:#6a6a6a;
+  --accent:#ff3b00;--accent-2:#ffb400;--ok:#23d18b;--danger:#ff4d4d;
+  --lean-low:#23d18b;--lean-mid:#ffb400;--lean-hi:#ff3b00;
+  --radius:10px;--radius-lg:14px;
+  --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
+  --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none;touch-action:manipulation}
+body{display:flex;flex-direction:column}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + var(--safe-top)) 14px 10px 14px;
+  background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:32px;height:32px;border-radius:8px;
+  background:radial-gradient(circle at 30% 30%,var(--accent-2),var(--accent) 70%);
+  box-shadow:0 0 16px rgba(255,59,0,.5);flex-shrink:0}
+.brand h1{font-size:15px;margin:0;letter-spacing:.06em;text-transform:uppercase;font-weight:800}
+.brand small{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:8px}
+.pill{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted)}
+.pill.live{background:var(--accent);color:#fff;border-color:var(--accent);
+  box-shadow:0 0 12px rgba(255,59,0,.6);animation:pulse 2s ease-in-out infinite}
+.pill.offline{background:var(--danger);color:#fff;border-color:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* TAB NAV */
+nav.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{background:transparent;border:none;color:var(--muted);
+  padding:12px 16px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s ease;min-height:44px}
+nav.tabs button.active{color:var(--text);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--text)}
+
+/* VIEWS */
+main{flex:1;position:relative;overflow:hidden}
+.view{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px calc(100px + var(--safe-bottom)) 14px}
+.view.active{display:block}
+.view#view-ride{padding:0;position:relative}
+h2{font-size:16px;margin:14px 0 10px;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
+h3{font-size:13px;margin:12px 0 6px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+p{line-height:1.5;color:var(--muted);margin:6px 0}
+
+/* RIDE HUD */
+#map{width:100%;height:100%;background:#0a0a0a}
+.hud-top{position:absolute;top:10px;left:10px;right:10px;z-index:400;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.hud-top .chip{pointer-events:auto}
+.chip{background:rgba(20,20,20,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--border-strong);border-radius:10px;padding:6px 10px;
+  font-size:12px;font-weight:600;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.chip.warn{border-color:var(--accent-2);color:var(--accent-2)}
+.chip.danger{border-color:var(--danger);color:var(--danger)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+
+.hud-bottom{position:absolute;bottom:calc(12px + var(--safe-bottom));left:10px;right:10px;z-index:400;
+  display:flex;gap:8px;pointer-events:none}
+.hud-bottom .btn,.hud-bottom .hud-tiles{pointer-events:auto}
+.hud-tiles{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hud-tile{background:rgba(20,20,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--border-strong);border-radius:12px;padding:8px 10px;text-align:center}
+.hud-tile .v{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--text);line-height:1.1}
+.hud-tile .l{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.hud-tile.lean .v{color:var(--lean-low)}
+.hud-tile.lean.mid .v{color:var(--lean-mid)}
+.hud-tile.lean.hi .v{color:var(--lean-hi)}
+
+/* PRIMARY CTA — START/END RIDE */
+.cta-ride{height:64px;border-radius:14px;font-size:18px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;border:none;color:#fff;background:var(--accent);
+  box-shadow:0 12px 32px rgba(255,59,0,.35);transition:transform .1s ease,background .15s ease;width:100%}
+.cta-ride:hover{background:#d93100}
+.cta-ride:active{transform:scale(.98)}
+.cta-ride.end{background:var(--danger);box-shadow:0 12px 32px rgba(255,77,77,.35)}
+.cta-ride.end:hover{background:#d93535}
+
+/* BOTTOM SHEET */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:1500;
+  background:var(--surface);border-top:1px solid var(--border-strong);
+  border-radius:18px 18px 0 0;
+  transform:translateY(100%);transition:transform .22s cubic-bezier(.2,.8,.2,1);
+  max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 14px calc(18px + var(--safe-bottom))}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:44px;height:4px;background:var(--border-strong);border-radius:4px;margin:6px auto 10px}
+.sheet-close{position:absolute;top:10px;right:14px;background:var(--surface-2);border:1px solid var(--border);
+  width:36px;height:36px;border-radius:50%;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center}
+
+/* FORM + BUTTONS */
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row.stack{flex-direction:column}
+label.field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:120px}
+label.field .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 12px;color:var(--text);font-size:15px;min-height:44px}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:var(--accent-2);outline:none}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+  padding:12px 16px;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  min-height:44px;transition:background .15s ease,transform .05s ease}
+.btn:hover{background:#d93100}
+.btn:active{transform:scale(.98)}
+.btn:disabled{background:var(--surface-3);color:var(--dim);cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.warn{background:var(--accent-2);color:#0a0a0a}
+.btn.warn:hover{background:#e3a000}
+.btn.ok{background:var(--ok);color:#0a0a0a}
+.btn.danger{background:var(--danger)}
+.btn.sm{padding:8px 12px;font-size:12px;min-height:36px}
+.icon-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin:10px 0}
+.card.accent{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,59,0,.15),0 8px 24px rgba(0,0,0,.3)}
+.card h3:first-child{margin-top:0}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:520px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.stat .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .l{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+
+/* WEATHER RIBBON */
+.wx-ribbon{display:flex;gap:4px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.wx-ribbon::-webkit-scrollbar{display:none}
+.wx-seg{flex:0 0 auto;min-width:64px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:6px 8px;text-align:center}
+.wx-seg.warn{border-color:var(--accent-2);background:rgba(255,180,0,.08)}
+.wx-seg.danger{border-color:var(--danger);background:rgba(255,77,77,.08)}
+.wx-seg .t{font-size:14px;font-weight:700}
+.wx-seg .r{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* BADGES */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.badge{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 8px;text-align:center;position:relative;overflow:hidden}
+.badge.unlocked{border-color:var(--accent-2);background:linear-gradient(180deg,rgba(255,180,0,.08),rgba(255,59,0,.04))}
+.badge.locked{opacity:.35;filter:grayscale(1)}
+.badge .ico{font-size:26px;line-height:1;margin-bottom:6px}
+.badge .n{font-size:11px;font-weight:700;letter-spacing:.03em}
+.badge .d{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+
+/* TWISTY BADGE */
+.twisty-badge{display:inline-flex;gap:2px;align-items:center;font-family:monospace;letter-spacing:.05em}
+.twisty-cell{width:12px;height:16px;border-radius:2px;background:var(--surface-3)}
+.twisty-cell.on{background:var(--accent-2);box-shadow:0 0 6px rgba(255,180,0,.5)}
+
+/* TOAST */
+#toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-bottom));transform:translateX(-50%) translateY(40px);
+  background:var(--surface);border:1px solid var(--accent);color:var(--text);
+  padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:3000;
+  opacity:0;pointer-events:none;transition:all .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MAP OVERLAYS */
+.leaflet-control-attribution{font-size:9px!important;background:rgba(20,20,20,.7)!important;color:var(--muted)!important}
+.leaflet-container{background:#0a0a0a!important}
+.leaflet-container a{color:var(--accent-2)}
+
+/* PREFERENCES ROW */
+.pref{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.pref:last-child{border-bottom:none}
+.pref .k{font-weight:600}
+.pref .d{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* MUTED LINK */
+a{color:var(--accent-2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* HELPER */
+.hide{display:none!important}
+.spacer{flex:1}
+.muted{color:var(--muted)}
+.tiny{font-size:11px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.center{text-align:center}
+.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}
+.sep{height:1px;background:var(--border);margin:14px 0}
+
+/* MAINT item */
+.maint-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:10px}
+.maint-item:last-child{border-bottom:none}
+.maint-bar{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:4px}
+.maint-bar-fill{height:100%;background:var(--ok);transition:width .2s ease}
+.maint-bar-fill.warn{background:var(--accent-2)}
+.maint-bar-fill.danger{background:var(--danger)}
+
+/* DNA card preview */
+#dnaPreviewWrap{display:flex;justify-content:center;margin:10px 0}
+#dnaPreview{max-width:100%;border-radius:var(--radius);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+
+<header role="banner">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div>
+      <h1>Bad Decision Sidekick</h1>
+      <small>Plan. Ride. Survive. Share.</small>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="onlinePill" class="pill">Online</span>
+    <span id="livePill" class="pill hide">● Live</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Primary">
+  <button data-view="ride" class="active" role="tab" aria-selected="true">Ride</button>
+  <button data-view="plan" role="tab">Plan</button>
+  <button data-view="weather" role="tab">Weather</button>
+  <button data-view="fuel" role="tab">Fuel</button>
+  <button data-view="garage" role="tab">Garage</button>
+  <button data-view="rides" role="tab">Rides</button>
+  <button data-view="group" role="tab">Group</button>
+  <button data-view="settings" role="tab">Settings</button>
+</nav>
+
+<main>
+
+<!-- ============ RIDE HUD (home) ============ -->
+<section id="view-ride" class="view active" role="tabpanel" aria-label="Ride HUD">
+  <div id="map" aria-label="Map"></div>
+
+  <div class="hud-top" aria-live="polite">
+    <span id="hudRouteChip" class="chip hide">📍 <span id="hudRouteName">Route</span></span>
+    <span id="hudTwistyChip" class="chip hide">🌀 <span id="hudTwistyText">—</span></span>
+    <span id="hudWxChip" class="chip hide">☀️ <span id="hudWxText">—</span></span>
+    <span class="spacer"></span>
+    <button id="recenterBtn" class="chip" aria-label="Recenter map">🎯 Recenter</button>
+  </div>
+
+  <div class="hud-bottom">
+    <div class="hud-tiles" id="hudTiles">
+      <div class="hud-tile"><div class="v" id="hudSpeed" aria-live="polite">—</div><div class="l" id="hudSpeedL">MPH</div></div>
+      <div class="hud-tile lean" id="hudLeanTile"><div class="v" id="hudLean">—</div><div class="l">LEAN °</div></div>
+      <div class="hud-tile"><div class="v" id="hudDist">0.0</div><div class="l" id="hudDistL">MI</div></div>
+    </div>
+  </div>
+
+  <div class="hud-bottom" style="bottom:calc(88px + var(--safe-bottom))">
+    <button id="rideCTA" class="cta-ride" aria-label="Start ride — begin GPS tracking">START RIDE</button>
+  </div>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section id="view-plan" class="view" role="tabpanel" aria-label="Plan a ride">
+  <h2>Plan a Ride</h2>
+  <div class="card">
+    <div class="row stack">
+      <div class="row">
+        <input type="text" id="searchInput" placeholder="Search a place…" style="flex:1">
+        <button class="btn" id="searchBtn">Find</button>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="locBtn">📍 My Location</button>
+        <button class="btn ghost" id="clearBtn">Clear Route</button>
+      </div>
+      <p class="tiny muted" style="margin:0">Switch to the Ride tab and tap the map to drop waypoints. First tap = start.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Generate a Ride</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Direction</span>
+        <select id="rideDirection"><option value="any">Any</option><option value="north">North</option><option value="south">South</option><option value="east">East</option><option value="west">West</option></select>
+      </label>
+      <label class="field"><span class="lbl">Distance</span>
+        <select id="rideDistance"><option value="short">Short (25–50mi)</option><option value="medium" selected>Medium (50–100mi)</option><option value="long">Long (100–175mi)</option><option value="epic">Epic (175–300mi)</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Style</span>
+        <select id="rideStyle"><option value="twisties">Max Twisties</option><option value="scenic">Scenic</option><option value="fastest">Fastest</option></select>
+      </label>
+      <label class="field"><span class="lbl">Loop</span>
+        <select id="rideLoop"><option value="out">One-way</option><option value="loop" selected>Loop</option></select>
+      </label>
+    </div>
+    <button id="generateRideBtn" class="btn warn mt-12" style="width:100%">GENERATE RIDE FOR ME</button>
+    <div id="generatedRideInfo"></div>
+  </div>
+
+  <div class="card">
+    <h3>Current Route</h3>
+    <div id="routeStats" class="stats-grid"></div>
+    <div id="twistyBar" class="mt-12"></div>
+    <div class="row mt-12">
+      <button class="btn" id="saveRouteBtn">💾 Save Route</button>
+      <button class="btn warn" id="shareRouteBtn">↗ Share</button>
+      <button class="btn ghost" id="precacheBtn">📥 Cache Offline</button>
+      <button class="btn ghost" id="rerouteWxBtn">🌦 Re-route Around Rain</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Weather Along the Route</h3>
+    <div id="wxRibbon" class="wx-ribbon"><span class="tiny muted">Plan a route to see segment weather.</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Saved Routes</h3>
+    <div id="savedRoutesList"><span class="tiny muted">No saved routes.</span></div>
+  </div>
+</section>
+
+<!-- ============ WEATHER ============ -->
+<section id="view-weather" class="view" role="tabpanel" aria-label="Weather">
+  <h2>Weather</h2>
+  <div class="row">
+    <button class="btn" id="wxLocBtn">Use My Location</button>
+    <button class="btn ghost" id="wxRouteBtn">Use Route Start</button>
+  </div>
+  <div class="card"><h3>Current Conditions</h3><div id="wxCurrent"><span class="tiny muted">Tap "Use My Location" to load weather.</span></div></div>
+  <div class="card"><h3>Next 12 Hours</h3><div id="wxHourly"></div></div>
+  <div class="card"><h3>7-Day Outlook</h3><div id="wxDaily"></div></div>
+</section>
+
+<!-- ============ FUEL ============ -->
+<section id="view-fuel" class="view" role="tabpanel" aria-label="Fuel calculator">
+  <h2>Fuel</h2>
+  <div class="card">
+    <h3>Tank &amp; Range Calculator</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Tank (gal)</span><input type="number" id="fuelTank" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">MPG</span><input type="number" id="fuelMpg" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">Reserve (gal)</span><input type="number" id="fuelReserve" step="0.1" min="0"></label>
+    </div>
+    <div class="stats-grid mt-12">
+      <div class="stat"><div class="v" id="fuelSafeRange">—</div><div class="l">Safe Range (mi)</div></div>
+      <div class="stat"><div class="v" id="fuelFullRange">—</div><div class="l">Full Range (mi)</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Gas Stop Planner</h3>
+    <div id="fuelRouteInfo"><span class="tiny muted">Plan a route to see gas stops.</span></div>
+  </div>
+</section>
+
+<!-- ============ GARAGE ============ -->
+<section id="view-garage" class="view" role="tabpanel" aria-label="Garage">
+  <h2>The Garage</h2>
+  <div class="card">
+    <h3>Your Bike</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Make</span><input type="text" id="bikeMake" placeholder="Kawasaki"></label>
+      <label class="field"><span class="lbl">Model</span><input type="text" id="bikeModel" placeholder="Ninja ZX-6R"></label>
+      <label class="field"><span class="lbl">Year</span><input type="number" id="bikeYear" min="1900" max="2100"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Nickname</span><input type="text" id="bikeName" placeholder="Pumpkin"></label>
+      <label class="field"><span class="lbl">Odometer (mi)</span><input type="number" id="bikeOdo" step="1" min="0"></label>
+    </div>
+    <button class="btn mt-12" id="saveBikeBtn">Save Bike</button>
+  </div>
+
+  <div class="card">
+    <h3>Maintenance</h3>
+    <div id="maintList"></div>
+    <button class="btn ghost sm mt-12" id="resetMaintBtn">Reset All Intervals to Today</button>
+    <p class="tiny muted mt-12">Based on typical sportbike intervals. Tap an item to mark serviced. Bike odometer = ride log total + starting odometer.</p>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Garage Wall</h3>
+    <div id="badgesGrid" class="badges-grid"></div>
+    <p class="tiny muted mt-12">Unlock badges by riding. <span class="muted">Merch rewards coming soon.</span></p>
+  </div>
+
+  <div class="card">
+    <h3>📸 Last Ride Photos</h3>
+    <div id="photoStrip"><span class="tiny muted">Add photos during a live ride.</span></div>
+  </div>
+</section>
+
+<!-- ============ RIDES ============ -->
+<section id="view-rides" class="view" role="tabpanel" aria-label="Ride log">
+  <h2>Rides</h2>
+  <div class="stats-grid">
+    <div class="stat"><div class="v" id="statRides">0</div><div class="l">Total Rides</div></div>
+    <div class="stat"><div class="v" id="statMiles">0</div><div class="l">Total Miles</div></div>
+    <div class="stat"><div class="v" id="statHours">0.0</div><div class="l">Total Hours</div></div>
+    <div class="stat"><div class="v" id="statAvg">0</div><div class="l">Avg Ride (mi)</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Log a Ride</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Name</span><input type="text" id="rideName" placeholder="Hill Country loop"></label>
+      <label class="field"><span class="lbl">Distance (mi)</span><input type="number" id="rideMiles" step="0.1" min="0"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Hours</span><input type="number" id="rideHours" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">Date</span><input type="date" id="rideDate"></label>
+    </div>
+    <div class="row mt-12">
+      <button class="btn" id="saveRideBtn">Save Ride</button>
+      <button class="btn ghost" id="fillFromRouteBtn">Fill From Current Route</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ride Log</h3>
+    <div id="ridesList"><span class="tiny muted">No rides logged yet.</span></div>
+  </div>
+
+  <div class="card">
+    <h3>🎨 Ride DNA — Share the Last Ride</h3>
+    <div id="dnaPreviewWrap"><canvas id="dnaPreview" width="1080" height="1350" style="width:100%;max-width:360px"></canvas></div>
+    <div class="row">
+      <button class="btn" id="dnaDownloadBtn">⬇ Download PNG</button>
+      <button class="btn warn" id="dnaShareBtn">↗ Share</button>
+      <select id="dnaFormat" style="flex:1"><option value="ig">Instagram 1080×1350</option><option value="tw">Twitter 1200×630</option></select>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GROUP ============ -->
+<section id="view-group" class="view" role="tabpanel" aria-label="Group ride">
+  <h2>Group Ride</h2>
+  <div class="card accent">
+    <h3>Ride Rooms</h3>
+    <p>Create a 6-character code, share it with your crew, they tap it in, everyone sees each other on the map.</p>
+    <div class="row mt-12">
+      <button class="btn" id="createRoomBtn">Create Room</button>
+      <input type="text" id="joinRoomInput" placeholder="ABC123" maxlength="6" style="flex:1;text-transform:uppercase">
+      <button class="btn warn" id="joinRoomBtn">Join</button>
+    </div>
+    <div id="roomInfo" class="mt-12"></div>
+    <p class="tiny muted mt-12"><strong>Live sync:</strong> coming soon. Tonight's build generates + stores the room locally, so you can lock in your code. Real-time pin sharing will flip on in the next drop without you needing to do anything.</p>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="view-settings" class="view" role="tabpanel" aria-label="Settings">
+  <h2>Settings</h2>
+
+  <div class="card">
+    <h3>Units &amp; Display</h3>
+    <div class="pref">
+      <div><div class="k">Units</div><div class="d">Imperial (mph, mi, °F) or Metric (km/h, km, °C)</div></div>
+      <select id="unitsSelect"><option value="imperial">Imperial</option><option value="metric">Metric</option></select>
+    </div>
+    <div class="pref">
+      <div><div class="k">Voice Cues</div><div class="d">Speak weather + turn prompts over Bluetooth helmet</div></div>
+      <label class="switch"><input type="checkbox" id="voiceEnabled"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Data</h3>
+    <div class="row">
+      <button class="btn ghost" id="exportBtn">Export All (JSON)</button>
+      <button class="btn ghost" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" accept="application/json" class="hide">
+      <button class="btn danger" id="wipeBtn">Wipe All Data</button>
+    </div>
+    <p class="tiny muted mt-12">Everything (bike, rides, routes, settings, badges, photos) lives on this device. Nothing is sent to a server. Shared routes and Ride DNA cards are encoded client-side.</p>
+  </div>
+
+  <div class="card">
+    <h3>About</h3>
+    <p><strong>Bad Decision Sidekick V2</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, and one-tap Ride DNA share cards.</p>
+    <p class="tiny muted">v2.0 · <span id="buildId">2026.04.17</span></p>
+  </div>
+</section>
+
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ======================== STATE & STORAGE ======================== */
+const K = {
+  bike: 'bds_bike', rides: 'bds_rides', routes: 'bds_routes', settings: 'bds_settings',
+  badges: 'bds_badges', maint: 'bds_maint', room: 'bds_room', lastRide: 'bds_last_ride'
+};
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} };
+
+const State = {
+  bike: lsGet(K.bike, { make:'', model:'', year:'', name:'', odo:0 }),
+  rides: lsGet(K.rides, []),
+  routes: lsGet(K.routes, []),
+  settings: lsGet(K.settings, { units:'imperial', voice:false, fuelTank:4.5, fuelMpg:38, fuelReserve:0.8 }),
+  badges: lsGet(K.badges, {}),
+  maint: lsGet(K.maint, null),
+  room: lsGet(K.room, null),
+  currentRoute: { waypoints: [], geometry: null, distMi: 0, durationMin: 0, twisty: 0, elevFt: 0, name:'' },
+  liveRide: null
+};
+
+// Init maintenance if empty
+if (!State.maint) {
+  State.maint = [
+    { k:'oil',    n:'Oil Change',       everyMi:4000,  everyDays:180, lastMi:0, lastDate:Date.now() },
+    { k:'chain',  n:'Chain Lube/Adjust', everyMi:500,   everyDays:30,  lastMi:0, lastDate:Date.now() },
+    { k:'tires',  n:'Tire Pressure',    everyMi:0,     everyDays:7,   lastMi:0, lastDate:Date.now() },
+    { k:'pads',   n:'Brake Pads',       everyMi:12000, everyDays:365, lastMi:0, lastDate:Date.now() },
+    { k:'coolant',n:'Coolant Flush',    everyMi:24000, everyDays:730, lastMi:0, lastDate:Date.now() },
+    { k:'valves', n:'Valve Clearance',  everyMi:15000, everyDays:730, lastMi:0, lastDate:Date.now() }
+  ];
+  lsSet(K.maint, State.maint);
+}
+
+/* ======================== UTILS ======================== */
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const units = () => State.settings.units;
+const miPerKm = 0.621371;
+const mToMi = m => m * 0.000621371;
+const mToKm = m => m / 1000;
+const distLabel = () => units() === 'imperial' ? 'mi' : 'km';
+const speedLabel = () => units() === 'imperial' ? 'mph' : 'km/h';
+const tempLabel = () => units() === 'imperial' ? '°F' : '°C';
+const distConv = mi => units() === 'imperial' ? mi : mi / miPerKm;
+const speedConv = mph => units() === 'imperial' ? mph : mph / miPerKm;
+const round = (n, d=1) => { const p = Math.pow(10, d); return Math.round(n * p) / p; };
+const toast = (msg, ms=2500) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), ms); };
+const haversineMi = (a, b) => {
+  const R = 3958.8, dLat = (b.lat-a.lat)*Math.PI/180, dLng = (b.lng-a.lng)*Math.PI/180;
+  const la1 = a.lat*Math.PI/180, la2 = b.lat*Math.PI/180;
+  const x = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+};
+const speak = msg => {
+  if (!State.settings.voice || !('speechSynthesis' in window)) return;
+  try { const u = new SpeechSynthesisUtterance(msg); u.rate = 1; u.pitch = 1; speechSynthesis.speak(u); } catch(_) {}
+};
+
+/* ======================== TAB NAV ======================== */
+$$('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  $$('nav.tabs button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
+  b.classList.add('active'); b.setAttribute('aria-selected','true');
+  $$('.view').forEach(v => v.classList.remove('active'));
+  const target = $('#view-' + b.dataset.view);
+  if (target) target.classList.add('active');
+  if (b.dataset.view === 'ride') setTimeout(() => map && map.invalidateSize(), 50);
+  if (b.dataset.view === 'rides') drawDNA();
+  if (b.dataset.view === 'garage') { renderMaint(); renderBadges(); renderPhotoStrip(); }
+  if (b.dataset.view === 'weather') renderWeatherTab();
+}));
+const switchTo = v => { const b = document.querySelector(`nav.tabs button[data-view="${v}"]`); if (b) b.click(); };
+
+/* ======================== MAP ======================== */
+const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([30.2672, -97.7431], 9);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18, attribution: '© OSM contributors'
+}).addTo(map);
+let waypointMarkers = [], routeLine = null, breadcrumbLine = null, liveMarker = null, groupMarkers = {};
+let photoMarkers = [];
+
+function addWaypoint(ll) {
+  const idx = waypointMarkers.length;
+  const marker = L.marker([ll.lat, ll.lng], { draggable: true });
+  marker.bindTooltip((idx === 0 ? 'START' : '#' + (idx)), { permanent: false });
+  marker.on('dragend', () => { const p = marker.getLatLng(); State.currentRoute.waypoints[idx] = { lat:p.lat, lng:p.lng, label: ll.label }; recalcRoute(); });
+  marker.on('click', () => { waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = []; State.currentRoute.waypoints.splice(idx,1); State.currentRoute.waypoints.forEach(addWaypoint); recalcRoute(); });
+  marker.addTo(map);
+  waypointMarkers.push(marker);
+  State.currentRoute.waypoints[idx] = { lat:ll.lat, lng:ll.lng, label: ll.label };
+}
+
+map.on('click', e => {
+  if (State.liveRide) { toast('End the ride to edit the route.'); return; }
+  addWaypoint({ lat:e.latlng.lat, lng:e.latlng.lng });
+  recalcRoute();
+});
+
+async function recalcRoute() {
+  const wps = State.currentRoute.waypoints;
+  if (wps.length < 2) { if (routeLine) { map.removeLayer(routeLine); routeLine = null; } renderRouteStats(); renderWxRibbon(); return; }
+  try {
+    const coords = wps.map(w => `${w.lng},${w.lat}`).join(';');
+    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+    const j = await res.json();
+    if (!j.routes || !j.routes.length) throw new Error('no route');
+    const r = j.routes[0];
+    State.currentRoute.geometry = r.geometry.coordinates.map(([lng,lat]) => [lat,lng]);
+    State.currentRoute.distMi = mToMi(r.distance);
+    State.currentRoute.durationMin = r.duration / 60;
+    State.currentRoute.twisty = curvinessScore(State.currentRoute.geometry);
+    drawRouteLine(State.currentRoute.geometry);
+    renderRouteStats();
+    renderWxRibbon();
+    renderFuel();
+    updateHudChips();
+  } catch (err) {
+    // Offline fallback: dashed straight line
+    const latlngs = wps.map(w => [w.lat, w.lng]);
+    State.currentRoute.geometry = latlngs;
+    State.currentRoute.distMi = 0;
+    for (let i=1;i<wps.length;i++) State.currentRoute.distMi += haversineMi(wps[i-1], wps[i]);
+    State.currentRoute.durationMin = State.currentRoute.distMi / 45 * 60;
+    State.currentRoute.twisty = 0;
+    drawRouteLine(latlngs, true);
+    renderRouteStats();
+    renderFuel();
+    updateHudChips();
+    toast('Offline — straight-line estimate.');
+  }
+}
+
+function drawRouteLine(latlngs, dashed=false) {
+  if (routeLine) map.removeLayer(routeLine);
+  routeLine = L.polyline(latlngs, {
+    color: '#ff3b00', weight: 5, opacity: .9,
+    dashArray: dashed ? '8,8' : null
+  }).addTo(map);
+  try { map.fitBounds(routeLine.getBounds(), { padding:[40,40] }); } catch(_) {}
+}
+
+/* ======================== CURVINESS INDEX ======================== */
+function curvinessScore(latlngs) {
+  if (!latlngs || latlngs.length < 3) return 0;
+  let curves = 0, totalMi = 0;
+  for (let i=2;i<latlngs.length;i++) {
+    const a = latlngs[i-2], b = latlngs[i-1], c = latlngs[i];
+    const h1 = bearing(a,b), h2 = bearing(b,c);
+    let dh = Math.abs(h2-h1); if (dh > 180) dh = 360-dh;
+    const segMi = haversineMi({lat:b[0],lng:b[1]},{lat:c[0],lng:c[1]});
+    totalMi += segMi;
+    if (dh > 15 && segMi < 0.2) curves++;
+  }
+  if (totalMi < 1) return 0;
+  const cpm = curves / totalMi; // curves per mile
+  if (cpm > 12) return 5;
+  if (cpm > 8)  return 4;
+  if (cpm > 5)  return 3;
+  if (cpm > 3)  return 2;
+  if (cpm > 1)  return 1;
+  return 0;
+}
+function bearing(a, b) {
+  const lat1 = a[0]*Math.PI/180, lat2 = b[0]*Math.PI/180;
+  const dLng = (b[1]-a[1])*Math.PI/180;
+  const y = Math.sin(dLng)*Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  return (Math.atan2(y,x)*180/Math.PI + 360) % 360;
+}
+function twistyBar(score) {
+  return '<div class="twisty-badge">' + Array.from({length:5},(_,i) =>
+    `<span class="twisty-cell${i<score?' on':''}"></span>`).join('') +
+    ` <span class="tiny mono">&nbsp;${score}/5 TWISTIES</span></div>`;
+}
+
+/* ======================== ROUTE STATS ======================== */
+function renderRouteStats() {
+  const r = State.currentRoute;
+  const box = $('#routeStats');
+  if (!box) return;
+  if (r.waypoints.length < 2) { box.innerHTML = '<span class="tiny muted">No route yet.</span>'; $('#twistyBar').innerHTML = ''; return; }
+  const d = distConv(r.distMi);
+  const h = Math.floor(r.durationMin/60), m = Math.round(r.durationMin%60);
+  box.innerHTML = `
+    <div class="stat"><div class="v">${round(d,1)}</div><div class="l">Dist (${distLabel()})</div></div>
+    <div class="stat"><div class="v">${h}h ${m}m</div><div class="l">Est. Time</div></div>
+    <div class="stat"><div class="v">${r.waypoints.length}</div><div class="l">Waypoints</div></div>
+    <div class="stat"><div class="v">${r.twisty}/5</div><div class="l">Twisty</div></div>`;
+  $('#twistyBar').innerHTML = twistyBar(r.twisty);
+}
+
+/* ======================== SEARCH ======================== */
+async function searchPlace() {
+  const q = $('#searchInput').value.trim(); if (!q) return;
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
+    const j = await res.json();
+    if (!j.length) { toast('Place not found.'); return; }
+    const p = j[0]; map.setView([+p.lat, +p.lon], 12); toast(p.display_name.split(',')[0]);
+  } catch(_) { toast('Search failed — offline?'); }
+}
+
+/* ======================== WEATHER ======================== */
+async function fetchWx(lat, lng) {
+  const u = units();
+  const tUnit = u === 'imperial' ? 'fahrenheit' : 'celsius';
+  const wUnit = u === 'imperial' ? 'mph' : 'kmh';
+  const pUnit = u === 'imperial' ? 'inch' : 'mm';
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code,precipitation` +
+    `&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m` +
+    `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code` +
+    `&forecast_days=7&temperature_unit=${tUnit}&wind_speed_unit=${wUnit}&precipitation_unit=${pUnit}&timezone=auto`;
+  const res = await fetch(url); return await res.json();
+}
+function wxEmoji(c) {
+  if (c >= 95) return '⛈';
+  if (c >= 80) return '🌧';
+  if (c >= 71) return '❄️';
+  if (c >= 61) return '🌧';
+  if (c >= 51) return '🌦';
+  if (c >= 45) return '🌫';
+  if (c >= 3)  return '☁️';
+  if (c >= 1)  return '⛅';
+  return '☀️';
+}
+function wxRideable(c, wind) {
+  if (c >= 80) return { v:'NOPE', cls:'danger', why:'Storms.' };
+  if (c >= 61) return { v:'TOUGH', cls:'danger', why:'Rain.' };
+  if (wind > 25) return { v:'WINDY', cls:'warn', why:'Crosswind.' };
+  if (c >= 51) return { v:'DAMP', cls:'warn', why:'Drizzle.' };
+  if (c >= 45) return { v:'FOG', cls:'warn', why:'Low vis.' };
+  return { v:'SEND IT', cls:'ok', why:'Clear.' };
+}
+
+async function renderWeatherTab() {
+  if (!renderWeatherTab._lat) return;
+  try {
+    const j = await fetchWx(renderWeatherTab._lat, renderWeatherTab._lng);
+    const cur = j.current, verd = wxRideable(cur.weather_code, cur.wind_speed_10m);
+    $('#wxCurrent').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat"><div class="v">${wxEmoji(cur.weather_code)} ${Math.round(cur.temperature_2m)}${tempLabel()}</div><div class="l">Temp</div></div>
+        <div class="stat"><div class="v">${Math.round(cur.wind_speed_10m)} ${speedLabel()}</div><div class="l">Wind · gust ${Math.round(cur.wind_gusts_10m)}</div></div>
+        <div class="stat"><div class="v" style="color:var(--${verd.cls})">${verd.v}</div><div class="l">${verd.why}</div></div>
+        <div class="stat"><div class="v">${Math.round(cur.relative_humidity_2m)}%</div><div class="l">Humidity</div></div>
+      </div>`;
+    const hrs = j.hourly.time.slice(0,12);
+    $('#wxHourly').innerHTML = '<div class="row" style="overflow-x:auto">' +
+      hrs.map((t,i) => `<div class="wx-seg"><div class="tiny muted">${new Date(t).getHours()}h</div><div class="t">${wxEmoji(j.hourly.weather_code[i])} ${Math.round(j.hourly.temperature_2m[i])}°</div><div class="r">${j.hourly.precipitation_probability[i]}%</div></div>`).join('') + '</div>';
+    $('#wxDaily').innerHTML = j.daily.time.map((t,i) =>
+      `<div class="pref"><div><div class="k">${new Date(t).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div><div class="d">${wxEmoji(j.daily.weather_code[i])} rain ${j.daily.precipitation_probability_max[i]}%</div></div><div>${Math.round(j.daily.temperature_2m_min[i])}° / ${Math.round(j.daily.temperature_2m_max[i])}°</div></div>`
+    ).join('');
+    const chip = $('#hudWxChip');
+    chip.classList.remove('hide','warn','danger');
+    if (verd.cls === 'warn') chip.classList.add('warn');
+    if (verd.cls === 'danger') chip.classList.add('danger');
+    $('#hudWxText').textContent = `${Math.round(cur.temperature_2m)}${tempLabel()} ${verd.v}`;
+  } catch(_) { toast('Weather offline.'); }
+}
+$('#wxLocBtn').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    renderWeatherTab._lat = p.coords.latitude; renderWeatherTab._lng = p.coords.longitude; renderWeatherTab();
+  }, () => toast('Location denied.'), { enableHighAccuracy:false, timeout:8000 });
+});
+$('#wxRouteBtn').addEventListener('click', () => {
+  const w = State.currentRoute.waypoints[0]; if (!w) { toast('No route.'); return; }
+  renderWeatherTab._lat = w.lat; renderWeatherTab._lng = w.lng; renderWeatherTab();
+});
+
+/* ======================== WEATHER RIBBON (along route) ======================== */
+let lastRibbon = [];
+async function renderWxRibbon() {
+  const geom = State.currentRoute.geometry;
+  const box = $('#wxRibbon');
+  if (!geom || geom.length < 2) { box.innerHTML = '<span class="tiny muted">Plan a route to see segment weather.</span>'; lastRibbon = []; return; }
+  const pts = sampleN(geom, 5);
+  box.innerHTML = '<span class="tiny muted">Loading…</span>';
+  try {
+    const results = await Promise.all(pts.map(p => fetchWx(p[0], p[1]).catch(() => null)));
+    lastRibbon = results.map((r,i) => r ? { lat:pts[i][0], lng:pts[i][1], current:r.current, rainPct:r.daily.precipitation_probability_max[0]||0 } : null).filter(Boolean);
+    if (!lastRibbon.length) throw new Error('no wx');
+    box.innerHTML = lastRibbon.map((r,i) => {
+      const rain = r.rainPct;
+      const cls = rain >= 70 ? 'danger' : rain >= 40 ? 'warn' : '';
+      return `<div class="wx-seg ${cls}"><div class="tiny muted">Seg ${i+1}</div><div class="t">${wxEmoji(r.current.weather_code)} ${Math.round(r.current.temperature_2m)}°</div><div class="r">${rain}% rain</div></div>`;
+    }).join('');
+  } catch(_) { box.innerHTML = '<span class="tiny muted">Could not load segment weather.</span>'; }
+}
+function sampleN(geom, n) {
+  const step = (geom.length - 1) / (n - 1);
+  const out = [];
+  for (let i=0;i<n;i++) out.push(geom[Math.min(geom.length-1, Math.round(i*step))]);
+  return out;
+}
+
+// Re-route around rain: drop the worst rain segment's midpoint as a deterrent (simple heuristic: pick the segment waypoint and nudge perpendicular)
+$('#rerouteWxBtn').addEventListener('click', () => {
+  if (!lastRibbon.length) { toast('Load route weather first.'); return; }
+  const worst = lastRibbon.reduce((a,b) => b.rainPct > a.rainPct ? b : a, lastRibbon[0]);
+  if (worst.rainPct < 40) { toast('No rain worth dodging. Send it.'); return; }
+  // Insert a nudge waypoint ~5 miles north of the worst segment
+  const nudge = { lat: worst.lat + 0.07, lng: worst.lng };
+  const wps = State.currentRoute.waypoints;
+  if (wps.length < 2) return;
+  // Insert at the middle
+  wps.splice(Math.floor(wps.length/2), 0, nudge);
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute.waypoints = [];
+  wps.forEach(addWaypoint);
+  recalcRoute();
+  toast('Re-routed around worst segment. Re-check ribbon.');
+});
+
+/* ======================== FUEL ======================== */
+function renderFuel() {
+  const s = State.settings;
+  $('#fuelTank').value = s.fuelTank; $('#fuelMpg').value = s.fuelMpg; $('#fuelReserve').value = s.fuelReserve;
+  const full = s.fuelTank * s.fuelMpg, safe = Math.max(0, (s.fuelTank - s.fuelReserve) * s.fuelMpg);
+  $('#fuelSafeRange').textContent = round(distConv(safe), 1);
+  $('#fuelFullRange').textContent = round(distConv(full), 1);
+  const r = State.currentRoute;
+  if (r.distMi > 0) {
+    const stops = Math.max(0, Math.ceil(r.distMi / safe) - 1);
+    const delta = r.distMi - safe;
+    $('#fuelRouteInfo').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat"><div class="v">${round(distConv(r.distMi),1)}</div><div class="l">Route (${distLabel()})</div></div>
+        <div class="stat"><div class="v">${round(distConv(safe),1)}</div><div class="l">Safe Range</div></div>
+        <div class="stat"><div class="v">${stops}</div><div class="l">Gas Stops</div></div>
+        <div class="stat"><div class="v" style="color:var(--${delta<=0?'ok':'accent-2'})">${delta<=0?'✔':'+'+round(delta,0)+'mi'}</div><div class="l">${delta<=0?'Within range':'Overshoot'}</div></div>
+      </div>`;
+  } else {
+    $('#fuelRouteInfo').innerHTML = '<span class="tiny muted">Plan a route to see gas stops.</span>';
+  }
+}
+['fuelTank','fuelMpg','fuelReserve'].forEach(id => $('#'+id).addEventListener('input', e => {
+  State.settings[id] = parseFloat(e.target.value) || 0; lsSet(K.settings, State.settings); renderFuel();
+}));
+
+/* ======================== BIKE ======================== */
+function renderBike() {
+  const b = State.bike;
+  $('#bikeMake').value = b.make || ''; $('#bikeModel').value = b.model || '';
+  $('#bikeYear').value = b.year || ''; $('#bikeName').value = b.name || '';
+  $('#bikeOdo').value = b.odo || 0;
+}
+$('#saveBikeBtn').addEventListener('click', () => {
+  State.bike = {
+    make:$('#bikeMake').value.trim(), model:$('#bikeModel').value.trim(),
+    year:$('#bikeYear').value, name:$('#bikeName').value.trim(),
+    odo: parseFloat($('#bikeOdo').value) || 0
+  };
+  lsSet(K.bike, State.bike); toast('Bike saved.'); renderMaint();
+});
+renderBike();
+
+/* ======================== MAINTENANCE ======================== */
+function totalRideMi() { return State.rides.reduce((s,r) => s + (r.miles||0), 0); }
+function currentOdo()  { return (State.bike.odo || 0) + totalRideMi(); }
+
+function renderMaint() {
+  const odo = currentOdo();
+  const box = $('#maintList');
+  if (!box) return;
+  box.innerHTML = State.maint.map(m => {
+    const milesSince = odo - m.lastMi;
+    const daysSince = (Date.now() - m.lastDate) / 86400000;
+    const miPct = m.everyMi ? milesSince/m.everyMi : 0;
+    const dayPct = m.everyDays ? daysSince/m.everyDays : 0;
+    const pct = Math.min(1.3, Math.max(miPct, dayPct));
+    const cls = pct >= 1 ? 'danger' : pct >= 0.8 ? 'warn' : '';
+    const due = m.everyMi ? `${Math.round(milesSince)}/${m.everyMi} mi` : `${Math.round(daysSince)}/${m.everyDays} days`;
+    return `<div class="maint-item">
+      <div style="flex:1">
+        <div class="k">${esc(m.n)}</div>
+        <div class="maint-bar"><div class="maint-bar-fill ${cls}" style="width:${Math.min(100,pct*100)}%"></div></div>
+        <div class="tiny muted mt-12" style="margin-top:4px">${due}${pct>=1?' · DUE':''}</div>
+      </div>
+      <button class="btn sm ghost" data-serviced="${m.k}">✓ Serviced</button>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-serviced]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.serviced;
+    const m = State.maint.find(x => x.k === k); if (!m) return;
+    m.lastMi = currentOdo(); m.lastDate = Date.now();
+    lsSet(K.maint, State.maint); renderMaint(); toast(m.n + ' marked serviced.');
+  }));
+}
+$('#resetMaintBtn').addEventListener('click', () => {
+  State.maint.forEach(m => { m.lastMi = currentOdo(); m.lastDate = Date.now(); });
+  lsSet(K.maint, State.maint); renderMaint(); toast('All intervals reset.');
+});
+
+/* ======================== BADGES ======================== */
+const BADGES = [
+  { k:'firstride',  n:'Initiate',       d:'Log ride #1',           ico:'🔰', test: s => s.rides >= 1 },
+  { k:'r10',        n:'Regular',        d:'10 rides',               ico:'🏁', test: s => s.rides >= 10 },
+  { k:'r50',        n:'Lifer',          d:'50 rides',               ico:'💀', test: s => s.rides >= 50 },
+  { k:'m100',       n:'First 100',      d:'100 miles',              ico:'💯', test: s => s.miles >= 100 },
+  { k:'m1000',      n:'Four Digits',    d:'1,000 miles',            ico:'📈', test: s => s.miles >= 1000 },
+  { k:'m10000',     n:'Five Digits',    d:'10,000 miles',           ico:'🗿', test: s => s.miles >= 10000 },
+  { k:'night',      n:'Night Shift',    d:'Ride logged after 8pm',  ico:'🌙', test: s => s.nightRide },
+  { k:'dawn',       n:'Dawn Patrol',    d:'Ride before 7am',        ico:'🌅', test: s => s.dawnRide },
+  { k:'long100',    n:'Century',        d:'Single ride ≥100mi',     ico:'🎯', test: s => s.longestMi >= 100 },
+  { k:'long200',    n:'Twisted Sister', d:'Single ride ≥200mi',     ico:'🌀', test: s => s.longestMi >= 200 },
+  { k:'fast',       n:'Velocity',       d:'Hit 100+ mph',           ico:'⚡', test: s => s.topMph >= 100 },
+  { k:'lean',       n:'Knee Down',      d:'Recorded lean ≥45°',     ico:'🏍',  test: s => s.maxLean >= 45 },
+  { k:'rainbad',    n:'Bad Decision',   d:'Rode in 70%+ rain',      ico:'🌧',  test: s => s.rainRide },
+  { k:'fuelprophet',n:'Fuel Prophet',   d:'Route within 5mi of safe range', ico:'⛽', test: s => s.fuelProphet },
+  { k:'twisty5',    n:'Twisty God',     d:'Planned 5/5 twisty route', ico:'🐍', test: s => s.twisty5 },
+  { k:'hillcountry',n:'Hill Country',   d:'Ride in TX Hill Country', ico:'⛰',  test: s => s.hillCountry },
+  { k:'photog',     n:'Ride Photog',    d:'Pin a photo mid-ride',   ico:'📸', test: s => s.photoPins >= 1 },
+  { k:'group',      n:'Pack Dog',       d:'Create a group room',    ico:'🐺', test: s => s.groupRooms >= 1 },
+  { k:'share',      n:'Loud Mouth',     d:'Share a Ride DNA card',  ico:'📣', test: s => s.shares >= 1 },
+  { k:'saved5',     n:'The Architect',  d:'Save 5 routes',          ico:'🗺', test: s => s.saved >= 5 }
+];
+function deriveStats() {
+  const miles = totalRideMi();
+  const rides = State.rides.length;
+  let nightRide=false, dawnRide=false, longestMi=0, topMph=0, maxLean=0, rainRide=false, hillCountry=false, photoPins=0, shares=0;
+  State.rides.forEach(r => {
+    if (r.date) { const h = new Date(r.date).getHours(); if (h >= 20) nightRide = true; if (h < 7 && h >= 0) dawnRide = true; }
+    if (r.miles > longestMi) longestMi = r.miles;
+    if (r.topMph && r.topMph > topMph) topMph = r.topMph;
+    if (r.maxLean && r.maxLean > maxLean) maxLean = r.maxLean;
+    if (r.rainPct && r.rainPct >= 70) rainRide = true;
+    if (r.photos && r.photos.length) photoPins += r.photos.length;
+    if (r.shared) shares++;
+    if (r.hillCountry) hillCountry = true;
+  });
+  const twisty5 = State.routes.some(r => r.twisty >= 5) || State.currentRoute.twisty >= 5;
+  const saved = State.routes.length;
+  const s = State.settings;
+  const r = State.currentRoute;
+  const safeRange = (s.fuelTank - s.fuelReserve) * s.fuelMpg;
+  const fuelProphet = r.distMi > 0 && Math.abs(r.distMi - safeRange) <= 5;
+  return { rides, miles, nightRide, dawnRide, longestMi, topMph, maxLean, rainRide, hillCountry, photoPins, shares, twisty5, saved, fuelProphet, groupRooms: State.room ? 1 : 0 };
+}
+function checkBadges() {
+  const s = deriveStats();
+  let newOnes = [];
+  BADGES.forEach(b => { if (b.test(s) && !State.badges[b.k]) { State.badges[b.k] = Date.now(); newOnes.push(b); } });
+  if (newOnes.length) { lsSet(K.badges, State.badges); newOnes.forEach(b => toast(`🏆 UNLOCKED: ${b.n}`, 3500)); speak('New badge unlocked'); }
+  return newOnes;
+}
+function renderBadges() {
+  const box = $('#badgesGrid'); if (!box) return;
+  box.innerHTML = BADGES.map(b => {
+    const un = !!State.badges[b.k];
+    // TODO(store): when Shopify store is live, wrap the unlocked badge in an <a> to a pre-filtered collection
+    // Example: `<a href="https://store.baddecision.example/?code=${b.k.toUpperCase()}10" ... >`
+    return `<div class="badge ${un?'unlocked':'locked'}" title="${esc(b.d)}"><div class="ico">${b.ico}</div><div class="n">${esc(b.n)}</div><div class="d">${esc(b.d)}</div></div>`;
+  }).join('');
+}
+
+/* ======================== PHOTO PINS (IndexedDB) ======================== */
+const photoDB = (() => {
+  let db;
+  const open = () => new Promise((res, rej) => {
+    const req = indexedDB.open('bds_photos', 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore('photos', { keyPath:'id', autoIncrement:true }); };
+    req.onsuccess = () => { db = req.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+  return {
+    async put(rec) { if (!db) await open(); return new Promise((res,rej) => { const tx = db.transaction('photos','readwrite'); const r = tx.objectStore('photos').add(rec); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+    async listByRide(rideId) { if (!db) await open(); return new Promise((res,rej) => { const tx = db.transaction('photos','readonly'); const all = []; tx.objectStore('photos').openCursor().onsuccess = e => { const c = e.target.result; if (c) { if (c.value.rideId === rideId) all.push(c.value); c.continue(); } else res(all); }; tx.onerror = () => rej(tx.error); }); }
+  };
+})();
+
+async function renderPhotoStrip() {
+  const box = $('#photoStrip'); if (!box) return;
+  const last = lsGet(K.lastRide, null);
+  if (!last) { box.innerHTML = '<span class="tiny muted">Add photos during a live ride.</span>'; return; }
+  try {
+    const photos = await photoDB.listByRide(last.id);
+    if (!photos.length) { box.innerHTML = '<span class="tiny muted">No photos for the last ride.</span>'; return; }
+    box.innerHTML = '<div class="row" style="overflow-x:auto;gap:6px">' + photos.map(p => `<img src="${p.dataUrl}" alt="Ride photo" style="height:88px;border-radius:8px;border:1px solid var(--border)">`).join('') + '</div>';
+  } catch(_) { box.innerHTML = '<span class="tiny muted">Photo store unavailable.</span>'; }
+}
+
+/* ======================== LIVE RIDE ======================== */
+let motionHandler = null, orientHandler = null, watchId = null, liveTimer = null;
+
+async function requestMotion() {
+  // iOS 13+ requires explicit permission for DeviceMotion
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try { const p = await DeviceMotionEvent.requestPermission(); return p === 'granted'; } catch(_) { return false; }
+  }
+  return true;
+}
+
+async function startRide() {
+  if (State.liveRide) return;
+  if (!('geolocation' in navigator)) { toast('No GPS support.'); return; }
+
+  const motionOk = await requestMotion();
+
+  State.liveRide = {
+    id: 'r_' + Date.now(), startTs: Date.now(), breadcrumb: [],
+    speeds: [], leans: [], accels: [],
+    topMph: 0, maxLean: 0, maxG: 0, distMi: 0,
+    rainPct: 0, hillCountry: false, photos: []
+  };
+
+  // Breadcrumb line
+  if (breadcrumbLine) map.removeLayer(breadcrumbLine);
+  breadcrumbLine = L.polyline([], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
+
+  // Watch position
+  watchId = navigator.geolocation.watchPosition(onPos, err => toast('GPS error: ' + err.message), {
+    enableHighAccuracy: true, maximumAge: 1000, timeout: 15000
+  });
+
+  // Motion (lean + g)
+  if (motionOk && 'DeviceMotionEvent' in window) {
+    motionHandler = e => {
+      const a = e.accelerationIncludingGravity || {};
+      const x = a.x || 0, y = a.y || 0, z = a.z || 0;
+      const g = Math.hypot(x,y,z) / 9.81;
+      if (g > State.liveRide.maxG) State.liveRide.maxG = g;
+      State.liveRide.accels.push(g);
+      if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+    };
+    window.addEventListener('devicemotion', motionHandler, { passive:true });
+  }
+  if (motionOk && 'DeviceOrientationEvent' in window) {
+    orientHandler = e => {
+      const lean = Math.abs(e.gamma || 0); // phone roll ~ bike lean
+      if (lean > State.liveRide.maxLean) State.liveRide.maxLean = lean;
+      State.liveRide.leans.push(lean);
+      if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
+      // Update HUD
+      const tile = $('#hudLeanTile');
+      $('#hudLean').textContent = Math.round(lean);
+      tile.classList.remove('mid','hi');
+      if (lean >= 35) tile.classList.add('hi');
+      else if (lean >= 20) tile.classList.add('mid');
+    };
+    window.addEventListener('deviceorientation', orientHandler, { passive:true });
+  }
+
+  // Live timer
+  liveTimer = setInterval(() => {
+    const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
+    $('#hudDistL').textContent = distLabel().toUpperCase() + ' · ' + mins + 'M';
+  }, 5000);
+
+  $('#rideCTA').textContent = 'END RIDE';
+  $('#rideCTA').classList.add('end');
+  $('#rideCTA').setAttribute('aria-label', 'End ride — stop tracking and log it');
+  $('#livePill').classList.remove('hide');
+  switchTo('ride');
+  speak('Ride started');
+  toast('Ride started. Stay safe out there.');
+}
+
+function onPos(pos) {
+  if (!State.liveRide) return;
+  const { latitude:lat, longitude:lng, speed:ms } = pos.coords;
+  const mph = ms != null ? ms * 2.23694 : null;
+  const lastPt = State.liveRide.breadcrumb[State.liveRide.breadcrumb.length - 1];
+  const pt = [lat,lng];
+  State.liveRide.breadcrumb.push(pt);
+  if (lastPt) State.liveRide.distMi += haversineMi({lat:lastPt[0],lng:lastPt[1]}, {lat,lng});
+  breadcrumbLine.addLatLng(pt);
+  // HC zone check — very rough bounding box for Texas Hill Country
+  if (lat > 29.5 && lat < 30.8 && lng < -97.8 && lng > -99.8) State.liveRide.hillCountry = true;
+  if (liveMarker) liveMarker.setLatLng(pt); else liveMarker = L.circleMarker(pt, { radius:7, color:'#ffb400', fillColor:'#ff3b00', fillOpacity:1, weight:3 }).addTo(map);
+  if (mph != null) {
+    State.liveRide.speeds.push(mph);
+    if (mph > State.liveRide.topMph) State.liveRide.topMph = mph;
+    $('#hudSpeed').textContent = Math.round(speedConv(mph));
+    $('#hudSpeedL').textContent = speedLabel().toUpperCase();
+  }
+  $('#hudDist').textContent = round(distConv(State.liveRide.distMi), 1);
+  map.panTo(pt, { animate:true, duration:.4 });
+}
+
+async function endRide() {
+  if (!State.liveRide) return;
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  if (motionHandler) window.removeEventListener('devicemotion', motionHandler);
+  if (orientHandler) window.removeEventListener('deviceorientation', orientHandler);
+  clearInterval(liveTimer); watchId = null; motionHandler = null; orientHandler = null; liveTimer = null;
+
+  const r = State.liveRide;
+  const durHr = (Date.now() - r.startTs) / 3600000;
+  const rideRec = {
+    id: r.id, ts: Date.now(), date: new Date(r.startTs).toISOString().slice(0,10),
+    name: 'Live Ride · ' + new Date(r.startTs).toLocaleDateString(undefined,{month:'short',day:'numeric'}),
+    miles: round(r.distMi, 1), hours: round(durHr, 2),
+    topMph: round(r.topMph, 1), maxLean: round(r.maxLean, 1), maxG: round(r.maxG, 2),
+    breadcrumb: r.breadcrumb, hillCountry: r.hillCountry,
+    rainPct: lastRibbon.length ? Math.max(...lastRibbon.map(x=>x.rainPct)) : 0
+  };
+  State.rides.unshift(rideRec); lsSet(K.rides, State.rides);
+  lsSet(K.lastRide, rideRec);
+  State.liveRide = null;
+
+  $('#rideCTA').textContent = 'START RIDE';
+  $('#rideCTA').classList.remove('end');
+  $('#rideCTA').setAttribute('aria-label', 'Start ride — begin GPS tracking');
+  $('#livePill').classList.add('hide');
+  $('#hudSpeed').textContent = '—'; $('#hudLean').textContent = '—'; $('#hudDist').textContent = '0.0'; $('#hudDistL').textContent = distLabel().toUpperCase();
+
+  renderRides(); renderMaint(); checkBadges(); drawDNA(); renderPhotoStrip();
+  speak('Ride ended');
+  toast(`Logged ${rideRec.miles} ${distLabel()} · top ${Math.round(speedConv(rideRec.topMph))} ${speedLabel()} · lean ${Math.round(rideRec.maxLean)}°`, 4500);
+}
+
+$('#rideCTA').addEventListener('click', () => { State.liveRide ? endRide() : startRide(); });
+$('#recenterBtn').addEventListener('click', () => {
+  if (State.liveRide && liveMarker) map.setView(liveMarker.getLatLng(), 14);
+  else if (routeLine) map.fitBounds(routeLine.getBounds(), { padding:[40,40] });
+  else navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 13));
+});
+
+function updateHudChips() {
+  const r = State.currentRoute;
+  if (r.waypoints.length >= 2) {
+    $('#hudRouteChip').classList.remove('hide');
+    $('#hudRouteName').textContent = r.name || `${r.waypoints.length} stops · ${round(distConv(r.distMi),1)} ${distLabel()}`;
+    $('#hudTwistyChip').classList.remove('hide');
+    $('#hudTwistyText').textContent = `${r.twisty}/5 twisty`;
+  } else {
+    $('#hudRouteChip').classList.add('hide');
+    $('#hudTwistyChip').classList.add('hide');
+  }
+}
+
+/* ======================== RIDES LIST & STATS ======================== */
+function renderRides() {
+  const box = $('#ridesList');
+  if (!box) return;
+  box.innerHTML = State.rides.length ? State.rides.map(r => `
+    <div class="pref">
+      <div>
+        <div class="k">${esc(r.name)}</div>
+        <div class="d">${esc(r.date || '')} · ${r.miles} ${distLabel()} · ${r.hours}h${r.topMph?' · top '+Math.round(speedConv(r.topMph))+' '+speedLabel():''}${r.maxLean?' · lean '+Math.round(r.maxLean)+'°':''}</div>
+      </div>
+      <button class="icon-btn" data-delride="${r.id}" aria-label="Delete ride">✕</button>
+    </div>
+  `).join('') : '<span class="tiny muted">No rides logged yet.</span>';
+  box.querySelectorAll('[data-delride]').forEach(b => b.addEventListener('click', () => {
+    State.rides = State.rides.filter(r => r.id !== b.dataset.delride); lsSet(K.rides, State.rides); renderRides(); renderStats(); renderMaint(); checkBadges();
+  }));
+  renderStats();
+}
+function renderStats() {
+  const n = State.rides.length, mi = totalRideMi(), hr = State.rides.reduce((s,r) => s + (r.hours||0), 0);
+  $('#statRides').textContent = n;
+  $('#statMiles').textContent = Math.round(distConv(mi));
+  $('#statHours').textContent = hr.toFixed(1);
+  $('#statAvg').textContent = n ? Math.round(distConv(mi/n)) : 0;
+}
+$('#saveRideBtn').addEventListener('click', () => {
+  const name = $('#rideName').value.trim() || 'Ride';
+  const miles = parseFloat($('#rideMiles').value) || 0;
+  const hours = parseFloat($('#rideHours').value) || 0;
+  const date = $('#rideDate').value || new Date().toISOString().slice(0,10);
+  if (!miles) { toast('Add a distance.'); return; }
+  State.rides.unshift({ id:'r_'+Date.now(), ts:Date.now(), name, miles, hours, date });
+  lsSet(K.rides, State.rides); renderRides(); renderMaint(); checkBadges();
+  $('#rideName').value = ''; $('#rideMiles').value = ''; $('#rideHours').value = '';
+  toast('Ride saved.');
+});
+$('#fillFromRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (!r.distMi) { toast('No route.'); return; }
+  $('#rideMiles').value = round(r.distMi, 1);
+  $('#rideHours').value = round(r.durationMin/60, 1);
+  $('#rideName').value = r.name || 'Route Ride';
+  $('#rideDate').value = new Date().toISOString().slice(0,10);
+});
+
+/* ======================== ROUTES: save/share/load/pre-cache ======================== */
+$('#saveRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (r.waypoints.length < 2) { toast('Add waypoints first.'); return; }
+  const name = prompt('Route name?', r.name || 'My Route') || 'My Route';
+  const rec = { id:'rt_'+Date.now(), name, waypoints:r.waypoints, geometry:r.geometry, distMi:r.distMi, durationMin:r.durationMin, twisty:r.twisty, ts:Date.now() };
+  State.routes.unshift(rec); lsSet(K.routes, State.routes);
+  State.currentRoute.name = name;
+  renderSavedRoutes(); checkBadges();
+  toast('Route saved.');
+});
+function renderSavedRoutes() {
+  const box = $('#savedRoutesList'); if (!box) return;
+  box.innerHTML = State.routes.length ? State.routes.map(r => `
+    <div class="pref">
+      <div>
+        <div class="k">${esc(r.name)}</div>
+        <div class="d">${round(distConv(r.distMi),1)} ${distLabel()} · ${r.twisty}/5 twisty</div>
+      </div>
+      <div class="row">
+        <button class="icon-btn" data-load="${r.id}" aria-label="Load">↑</button>
+        <button class="icon-btn" data-share="${r.id}" aria-label="Share">↗</button>
+        <button class="icon-btn" data-delrt="${r.id}" aria-label="Delete">✕</button>
+      </div>
+    </div>
+  `).join('') : '<span class="tiny muted">No saved routes.</span>';
+  box.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => {
+    const r = State.routes.find(x => x.id === b.dataset.load); if (!r) return;
+    State.currentRoute = JSON.parse(JSON.stringify({ ...r, name:r.name }));
+    waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+    State.currentRoute.waypoints = [];
+    r.waypoints.forEach(addWaypoint);
+    recalcRoute(); switchTo('ride'); toast('Loaded: ' + r.name);
+  }));
+  box.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', () => {
+    const r = State.routes.find(x => x.id === b.dataset.share); if (!r) return;
+    shareRoute(r);
+  }));
+  box.querySelectorAll('[data-delrt]').forEach(b => b.addEventListener('click', () => {
+    State.routes = State.routes.filter(x => x.id !== b.dataset.delrt); lsSet(K.routes, State.routes); renderSavedRoutes();
+  }));
+}
+function shareRoute(r) {
+  const payload = btoa(JSON.stringify({ n:r.name, w:r.waypoints.map(w => [w.lat.toFixed(5), w.lng.toFixed(5)]) }));
+  const url = location.origin + location.pathname + '#r=' + encodeURIComponent(payload);
+  if (navigator.share) navigator.share({ title:r.name, text:'Bad Decision Sidekick route', url }).catch(()=>{});
+  else { navigator.clipboard.writeText(url).then(() => toast('Link copied.')); }
+}
+$('#shareRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute; if (r.waypoints.length < 2) { toast('No route.'); return; }
+  shareRoute({ name:r.name || 'Route', waypoints:r.waypoints });
+});
+function loadHashRoute() {
+  const m = location.hash.match(/#r=([^&]+)/);
+  if (!m) return;
+  try {
+    const payload = JSON.parse(atob(decodeURIComponent(m[1])));
+    waypointMarkers.forEach(x => map.removeLayer(x)); waypointMarkers = [];
+    State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:payload.n };
+    payload.w.forEach(([lat,lng]) => addWaypoint({ lat:+lat, lng:+lng }));
+    recalcRoute();
+    toast('Loaded shared route.');
+  } catch(_) {}
+}
+
+/* ---- OFFLINE TILE PRE-CACHE ---- */
+$('#precacheBtn').addEventListener('click', async () => {
+  const geom = State.currentRoute.geometry;
+  if (!geom || geom.length < 2) { toast('Plan a route first.'); return; }
+  const lats = geom.map(p => p[0]), lngs = geom.map(p => p[1]);
+  const bounds = { n: Math.max(...lats), s: Math.min(...lats), e: Math.max(...lngs), w: Math.min(...lngs) };
+  const urls = [];
+  for (let z = 10; z <= 14; z++) {
+    const tn = (lat, z) => Math.floor((1 - Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180)) / Math.PI) / 2 * Math.pow(2, z));
+    const tx = (lng, z) => Math.floor((lng + 180) / 360 * Math.pow(2, z));
+    const xMin = tx(bounds.w, z), xMax = tx(bounds.e, z);
+    const yMin = tn(bounds.n, z), yMax = tn(bounds.s, z);
+    for (let x = xMin; x <= xMax; x++) for (let y = yMin; y <= yMax; y++) urls.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+  }
+  if (urls.length > 1500) { toast('Area too big — zoom in to plan a smaller route, then cache.'); return; }
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type:'PRECACHE_TILES', urls });
+    toast(`Caching ${urls.length} tiles for offline…`);
+  } else { toast('Offline cache needs the service worker. Reload once.'); }
+});
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'PRECACHE_DONE') toast(`Cached ${e.data.ok}/${e.data.total} tiles ✔`);
+  });
+}
+
+/* ======================== GENERATE A RIDE ======================== */
+const ROUTE_NODES = {
+  north: [
+    {lat:30.676, lng:-97.677, name:'Georgetown'}, {lat:30.631, lng:-97.678, name:'Round Rock'},
+    {lat:30.750, lng:-98.239, name:'Burnet'},     {lat:30.574, lng:-98.273, name:'Marble Falls'},
+    {lat:30.759, lng:-97.847, name:'Liberty Hill'},{lat:30.860, lng:-98.430, name:'Llano'}
+  ],
+  south: [
+    {lat:29.884, lng:-97.941, name:'San Marcos'}, {lat:29.703, lng:-98.125, name:'New Braunfels'},
+    {lat:29.565, lng:-98.276, name:'Schertz'},    {lat:29.895, lng:-98.044, name:'Canyon Lake'},
+    {lat:29.708, lng:-97.613, name:'Lockhart'}
+  ],
+  east: [
+    {lat:30.093, lng:-97.314, name:'Bastrop'},    {lat:30.078, lng:-96.996, name:'Smithville'},
+    {lat:30.386, lng:-97.543, name:'Elgin'},      {lat:30.236, lng:-97.030, name:'La Grange'}
+  ],
+  west: [
+    {lat:30.295, lng:-98.871, name:'Fredericksburg'},{lat:30.194, lng:-98.429, name:'Johnson City'},
+    {lat:30.345, lng:-98.411, name:'Stonewall'},  {lat:30.247, lng:-97.971, name:'Dripping Springs'},
+    {lat:29.962, lng:-99.137, name:'Kerrville'}
+  ],
+  twisties: [
+    {lat:30.499, lng:-98.707, name:'Willow City Loop'}, {lat:30.082, lng:-99.256, name:'RR337 / Medina'},
+    {lat:29.790, lng:-99.761, name:'RR337 Leakey'},     {lat:29.912, lng:-99.718, name:'Vanderpool'},
+    {lat:30.050, lng:-99.590, name:'Junction Detour'},  {lat:30.098, lng:-98.103, name:'Wimberley'},
+    {lat:30.0353,lng:-98.0211, name:'Devil\'s Backbone'}
+  ]
+};
+function generateRoute() {
+  let dir = $('#rideDirection').value, dist = $('#rideDistance').value, style = $('#rideStyle').value, loop = $('#rideLoop').value;
+  const ranges = { short:[25,50], medium:[50,100], long:[100,175], epic:[175,300] };
+  const r = ranges[dist] || [50,100];
+  const targetDist = (r[0]+r[1])/2;
+  if (dir === 'any') dir = ['north','south','east','west'][Math.floor(Math.random()*4)];
+  let pool = ROUTE_NODES[dir].slice();
+  if (style === 'twisties') pool = pool.concat(ROUTE_NODES.twisties);
+  const start = { lat:30.2672, lng:-97.7431, label:'Austin' };
+  const wps = [start];
+  let totalDist = 0; const used = {};
+  const maxWps = dist==='short'?3:dist==='medium'?5:dist==='long'?6:8;
+  for (let i=0;i<maxWps && totalDist<targetDist*0.85;i++) {
+    let best=null, bestScore=Infinity;
+    for (let j=0;j<pool.length;j++) {
+      if (used[j]) continue;
+      const d = haversineMi(wps[wps.length-1], pool[j]);
+      if (d < 3) continue;
+      const newTotal = totalDist + d;
+      if (newTotal > r[1]*1.1) continue;
+      const score = Math.abs(d - (targetDist - totalDist)/(maxWps - i));
+      if (score < bestScore) { bestScore = score; best = j; }
+    }
+    if (best === null) break;
+    used[best] = true;
+    wps.push({ lat:pool[best].lat, lng:pool[best].lng, label:pool[best].name });
+    totalDist += haversineMi(wps[wps.length-2], wps[wps.length-1]);
+  }
+  if (loop === 'loop' && wps.length > 2) { wps.push(start); totalDist += haversineMi(wps[wps.length-2], start); }
+  if (wps.length < 2) { toast('Could not generate. Try different options.'); return; }
+
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:'' };
+  wps.forEach(addWaypoint);
+
+  const routeName = dir[0].toUpperCase() + dir.slice(1) + ' ' + dist[0].toUpperCase() + dist.slice(1) + ' · ' + style;
+  State.currentRoute.name = routeName;
+  $('#generatedRideInfo').innerHTML = `<div class="card" style="margin-top:10px;border-color:var(--accent)"><div style="font-weight:800;color:var(--accent);margin-bottom:4px">${esc(routeName)}</div><div class="tiny muted">~${Math.round(totalDist)} mi · ${wps.length} waypoints${loop==='loop'?' (loop)':''}</div><div class="tiny mt-12">Via: ${wps.filter(w=>w.label).map(w=>esc(w.label)).join(' → ')}</div></div>`;
+  recalcRoute();
+  switchTo('ride');
+  toast('Route generated: ' + routeName);
+}
+$('#generateRideBtn').addEventListener('click', generateRoute);
+
+/* ======================== GROUP ROOMS ======================== */
+$('#createRoomBtn').addEventListener('click', () => {
+  const code = Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+  State.room = { code, host:true, createdAt:Date.now() };
+  lsSet(K.room, State.room);
+  renderRoom();
+  checkBadges();
+  toast('Room ' + code + ' created.');
+});
+$('#joinRoomBtn').addEventListener('click', () => {
+  const code = ($('#joinRoomInput').value || '').trim().toUpperCase();
+  if (code.length !== 6) { toast('6-char code required.'); return; }
+  State.room = { code, host:false, createdAt:Date.now() }; lsSet(K.room, State.room);
+  renderRoom(); toast('Joined ' + code + '.');
+});
+function renderRoom() {
+  const box = $('#roomInfo');
+  if (!State.room) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <div class="card" style="border-color:var(--accent-2)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="tiny muted">Your code</div>
+          <div class="mono" style="font-size:32px;font-weight:800;letter-spacing:.15em">${esc(State.room.code)}</div>
+        </div>
+        <button class="btn ghost sm" id="leaveRoomBtn">Leave</button>
+      </div>
+      <p class="tiny muted mt-12">Live pin sharing drops in the next update. For now: tell your crew the code — we'll flip the switch on and you'll all show up on each other's maps without re-joining.</p>
+    </div>`;
+  $('#leaveRoomBtn').addEventListener('click', () => {
+    State.room = null; lsSet(K.room, null); renderRoom();
+  });
+}
+renderRoom();
+
+/* ======================== RIDE DNA SHARE CARD ======================== */
+function drawDNA() {
+  const canvas = $('#dnaPreview');
+  if (!canvas) return;
+  const fmt = $('#dnaFormat').value;
+  const w = fmt === 'tw' ? 1200 : 1080;
+  const h = fmt === 'tw' ? 630 : 1350;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const last = State.rides[0] || lsGet(K.lastRide, null);
+
+  // BG gradient
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, '#1a0800');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
+  // Glow
+  const rad = ctx.createRadialGradient(w*0.3, h*0.25, 0, w*0.3, h*0.25, w*0.7);
+  rad.addColorStop(0, 'rgba(255,59,0,.35)'); rad.addColorStop(1, 'rgba(255,59,0,0)');
+  ctx.fillStyle = rad; ctx.fillRect(0, 0, w, h);
+
+  // Brand mark
+  ctx.fillStyle = '#ff3b00';
+  ctx.beginPath(); ctx.arc(90, 90, 36, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffb400';
+  ctx.beginPath(); ctx.arc(78, 78, 14, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#f5f5f5';
+  ctx.font = '800 36px -apple-system, system-ui, sans-serif';
+  ctx.fillText('BAD DECISION SIDEKICK', 150, 98);
+  ctx.fillStyle = '#9a9a9a';
+  ctx.font = '600 20px -apple-system, system-ui, sans-serif';
+  ctx.fillText('PLAN · RIDE · SURVIVE · SHARE', 150, 128);
+
+  if (!last) {
+    ctx.fillStyle = '#9a9a9a';
+    ctx.font = '700 42px -apple-system, system-ui, sans-serif';
+    ctx.fillText('Log a ride to unlock your DNA.', 60, h/2);
+    return;
+  }
+
+  // Route polyline (scaled into a display box)
+  if (last.breadcrumb && last.breadcrumb.length > 5) {
+    const pts = last.breadcrumb;
+    const lats = pts.map(p=>p[0]), lngs = pts.map(p=>p[1]);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const padX = 60, padY = fmt === 'tw' ? 180 : 280;
+    const boxW = w - padX*2, boxH = fmt === 'tw' ? h*0.55 : h*0.40;
+    const boxY = fmt === 'tw' ? 180 : 220;
+    const sx = boxW / Math.max(1e-6, maxLng-minLng);
+    const sy = boxH / Math.max(1e-6, maxLat-minLat);
+    const s = Math.min(sx, sy);
+    ctx.strokeStyle = '#ff3b00'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(255,59,0,.6)'; ctx.shadowBlur = 20;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const x = padX + (p[1]-minLng) * s + (boxW - (maxLng-minLng)*s)/2;
+      const y = boxY + boxH - ((p[0]-minLat) * s + (boxH - (maxLat-minLat)*s)/2);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Stats
+  const statY = fmt === 'tw' ? h - 180 : h - 420;
+  ctx.fillStyle = '#f5f5f5';
+  ctx.font = '800 64px -apple-system, system-ui, sans-serif';
+  ctx.fillText(`${Math.round(distConv(last.miles))} ${distLabel().toUpperCase()}`, 60, statY);
+  ctx.font = '600 22px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = '#9a9a9a';
+  ctx.fillText(esc(last.name || 'Ride'), 60, statY + 36);
+
+  // Sub-stats row
+  const subs = [
+    { v: (last.topMph ? Math.round(speedConv(last.topMph)) : '—'), l: 'TOP ' + speedLabel().toUpperCase() },
+    { v: (last.maxLean ? Math.round(last.maxLean) + '°' : '—'), l: 'MAX LEAN' },
+    { v: (last.hours || 0).toFixed(1) + 'H', l: 'DURATION' }
+  ];
+  const subY = statY + 90;
+  subs.forEach((s, i) => {
+    const x = 60 + i * (w/3.2 - 20);
+    ctx.fillStyle = '#ff3b00';
+    ctx.font = '800 44px -apple-system, system-ui, sans-serif';
+    ctx.fillText(String(s.v), x, subY);
+    ctx.fillStyle = '#9a9a9a';
+    ctx.font = '700 16px -apple-system, system-ui, sans-serif';
+    ctx.fillText(s.l, x, subY + 26);
+  });
+
+  // Tagline
+  ctx.fillStyle = '#ffb400';
+  ctx.font = '900 34px -apple-system, system-ui, sans-serif';
+  ctx.fillText('MADE A BAD DECISION.', 60, h - 80);
+  ctx.fillStyle = '#f5f5f5';
+  ctx.fillText('WORTH IT.', 60, h - 40);
+}
+$('#dnaFormat').addEventListener('change', drawDNA);
+$('#dnaDownloadBtn').addEventListener('click', () => {
+  const canvas = $('#dnaPreview');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png'); a.download = 'ride-dna.png'; a.click();
+  const last = State.rides[0]; if (last) { last.shared = true; lsSet(K.rides, State.rides); checkBadges(); }
+  toast('DNA card saved.');
+});
+$('#dnaShareBtn').addEventListener('click', async () => {
+  const canvas = $('#dnaPreview');
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file = new File([blob], 'ride-dna.png', { type:'image/png' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })) {
+      await navigator.share({ files:[file], title:'My Ride DNA', text:'Bad Decision Sidekick — made a bad decision. Worth it.' });
+      const last = State.rides[0]; if (last) { last.shared = true; lsSet(K.rides, State.rides); checkBadges(); }
+      return;
+    }
+  } catch(_) {}
+  $('#dnaDownloadBtn').click();
+});
+
+/* ======================== SETTINGS & DATA ======================== */
+function renderSettings() {
+  $('#unitsSelect').value = State.settings.units;
+  $('#voiceEnabled').checked = !!State.settings.voice;
+}
+$('#unitsSelect').addEventListener('change', e => { State.settings.units = e.target.value; lsSet(K.settings, State.settings); renderFuel(); renderRides(); renderRouteStats(); });
+$('#voiceEnabled').addEventListener('change', e => { State.settings.voice = e.target.checked; lsSet(K.settings, State.settings); if (e.target.checked) speak('Voice cues on'); });
+
+$('#exportBtn').addEventListener('click', () => {
+  const data = { bike:State.bike, rides:State.rides, routes:State.routes, settings:State.settings, badges:State.badges, maint:State.maint, room:State.room, exportedAt:Date.now() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bds-sidekick-backup.json'; a.click();
+});
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const txt = await f.text(); const d = JSON.parse(txt);
+    ['bike','rides','routes','settings','badges','maint','room'].forEach(k => { if (d[k] != null) { State[k] = d[k]; lsSet(K[k], d[k]); } });
+    renderBike(); renderRides(); renderSavedRoutes(); renderFuel(); renderMaint(); renderBadges(); renderRoom(); renderSettings();
+    toast('Data imported.');
+  } catch(_) { toast('Import failed.'); }
+});
+$('#wipeBtn').addEventListener('click', () => {
+  if (!confirm('Wipe everything on this device? This cannot be undone.')) return;
+  Object.values(K).forEach(k => localStorage.removeItem(k));
+  location.reload();
+});
+
+/* ======================== SEARCH & LOCATION ======================== */
+$('#searchBtn').addEventListener('click', searchPlace);
+$('#searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchPlace(); });
+$('#locBtn').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    map.setView([p.coords.latitude, p.coords.longitude], 13); toast('Centered.');
+  }, () => toast('Location denied.'));
+});
+$('#clearBtn').addEventListener('click', () => {
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:'' };
+  renderRouteStats(); renderWxRibbon(); renderFuel(); updateHudChips();
+  toast('Route cleared.');
+});
+
+/* ======================== ONLINE / OFFLINE ======================== */
+function updateOnline() {
+  const p = $('#onlinePill');
+  if (navigator.onLine) { p.textContent = 'Online'; p.classList.remove('offline'); }
+  else { p.textContent = 'Offline'; p.classList.add('offline'); }
+}
+addEventListener('online', updateOnline); addEventListener('offline', updateOnline);
+
+/* ======================== BOOT ======================== */
+function boot() {
+  // Restore current date field default
+  if (!$('#rideDate').value) $('#rideDate').value = new Date().toISOString().slice(0,10);
+  renderBike(); renderFuel(); renderRides(); renderSavedRoutes(); renderMaint(); renderBadges(); renderSettings(); updateOnline();
+  loadHashRoute();
+  // Query-string shortcuts
+  const q = new URLSearchParams(location.search);
+  if (q.get('start') === '1') setTimeout(startRide, 400);
+  if (q.get('gen') === '1')   setTimeout(generateRoute, 400);
+  if (q.get('tab'))           switchTo(q.get('tab'));
+  drawDNA();
+  // Register SW
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  checkBadges();
+  setTimeout(() => map.invalidateSize(), 60);
+}
+boot();
+
+// Expose for debugging
+window.BDS = { State, map, checkBadges, drawDNA };
+
+})();
+</script>
+</body>
+</html>
