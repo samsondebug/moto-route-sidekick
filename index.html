@@ -319,7 +319,7 @@ a:hover{text-decoration:underline}
 /* V3: SWITCH (toggle) */
 .switch{position:relative;display:inline-block;width:44px;height:26px}
 .switch input{opacity:0;width:0;height:0}
-.switch .slider{position:absolute;inset:0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:999px;transition:.15s ease;cursor:pointer}
+.switch .slider{position:absolute;inset:0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:999px;transition:transform .15s ease;cursor:pointer}
 .switch .slider::before{content:"";position:absolute;left:3px;top:2px;width:18px;height:18px;background:var(--text);border-radius:50%;transition:.15s ease}
 .switch input:checked + .slider{background:var(--accent);border-color:var(--accent)}
 .switch input:checked + .slider::before{transform:translateX(18px);background:#fff}
@@ -761,7 +761,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17d</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17e</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -2505,7 +2505,25 @@ $('#dnaShareBtn').addEventListener('click', async () => {
 
 /* ======================== SETTINGS & DATA ======================== */
 function applyTheme(t) {
-  document.body.setAttribute('data-theme', t || 'classic');
+  const theme = t || 'classic';
+  document.body.setAttribute('data-theme', theme);
+  // V4.0d: Force repaint of toggle sliders whose computed background-color gets
+  // stuck due to CSS transitions when --accent var changes across themes.
+  // We disable the transition, force reflow, flip the attribute on/off, then restore.
+  requestAnimationFrame(() => {
+    const sliders = document.querySelectorAll('.switch input:checked + .slider');
+    sliders.forEach(el => {
+      const prevTransition = el.style.transition;
+      el.style.transition = 'none';
+      // Read computed background to trigger style flush, then clear to let CSS var take over
+      void getComputedStyle(el).backgroundColor;
+      void el.offsetWidth;
+      // Nudge by temporarily clearing any inherited paint, then restore transition
+      el.style.background = '';
+      el.style.borderColor = '';
+      requestAnimationFrame(() => { el.style.transition = prevTransition; });
+    });
+  });
 }
 function applyBatterySaver(on) {
   document.body.setAttribute('data-battery-saver', on ? '1' : '0');
