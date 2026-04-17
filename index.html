@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon-192.svg">
 <link rel="apple-touch-icon" href="icon-192.svg">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'">
 <style>
 :root{
   --bg:#0a0a0a;--surface:#141414;--surface-2:#1c1c1c;--surface-3:#242424;
@@ -43,6 +43,92 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
 }
+
+/* V4: Persistent mini-HUD when mid-ride + away from Ride tab */
+#miniHud{position:fixed;top:calc(10px + var(--safe-top));left:50%;transform:translateX(-50%);
+  z-index:1500;display:flex;align-items:center;gap:12px;
+  background:rgba(10,10,10,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--accent);border-radius:999px;padding:8px 14px;font-size:13px;
+  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 1px rgba(255,59,0,.3);
+  min-width:260px;max-width:calc(100vw - 20px);justify-content:center}
+#miniHud.hide{display:none}
+#miniHud b{font-weight:800;color:var(--text);font-size:15px}
+#miniHud span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+#miniHud .mini-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 10px var(--accent);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+#miniHud button{background:var(--accent);color:#fff;border:0;border-radius:999px;
+  padding:4px 10px;font-size:14px;font-weight:800;cursor:pointer;min-height:28px;line-height:1}
+
+/* V4: Voice note pulse */
+#voiceNoteBtn.recording{background:var(--danger)!important;border-color:var(--danger)!important;
+  color:#fff!important;animation:pulse 1s ease-in-out infinite}
+
+/* V4: Bottom-tab nav on mobile (≤700px) */
+@media (max-width: 700px){
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:1200;
+    background:rgba(10,10,10,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);border-bottom:none;
+    padding-bottom:var(--safe-bottom);overflow:visible}
+  nav.tabs button{flex:1;padding:10px 4px 8px;font-size:10px;letter-spacing:.02em;
+    min-height:52px;border-bottom:none;border-top:2px solid transparent;
+    display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap}
+  nav.tabs button.active{border-top-color:var(--accent);border-bottom-color:transparent}
+  nav.tabs button::before{font-size:18px;line-height:1}
+  nav.tabs button[data-view="ride"]::before{content:"🏍️"}
+  nav.tabs button[data-view="plan"]::before{content:"🗺️"}
+  nav.tabs button[data-view="garage"]::before{content:"🔧"}
+  nav.tabs button[data-view="rides"]::before{content:"📋"}
+  nav.tabs button[data-view="more"]::before{content:"•••"}
+  nav.tabs button[data-view="weather"],
+  nav.tabs button[data-view="fuel"],
+  nav.tabs button[data-view="group"],
+  nav.tabs button[data-view="settings"]{display:none}
+  nav.tabs button[data-view="more"]{display:flex}
+  main{padding-bottom:calc(60px + var(--safe-bottom))}
+  .view{padding-bottom:calc(140px + var(--safe-bottom)) !important}
+}
+/* 'More' drawer that shows overflow tabs */
+.more-sheet{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.7);
+  display:none;align-items:flex-end;justify-content:center}
+.more-sheet.open{display:flex}
+.more-sheet-inner{background:var(--surface);border-radius:20px 20px 0 0;
+  width:100%;max-width:600px;padding:20px calc(20px + var(--safe-left)) calc(40px + var(--safe-bottom)) calc(20px + var(--safe-right));
+  border-top:1px solid var(--border-strong)}
+.more-sheet h4{margin:0 0 14px;color:var(--text);text-align:center;text-transform:uppercase;letter-spacing:.06em;font-size:14px}
+.more-sheet .more-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.more-sheet button{background:var(--surface-2);color:var(--text);border:1px solid var(--border);
+  border-radius:12px;padding:18px;font-size:15px;font-weight:700;cursor:pointer;min-height:60px}
+.more-sheet button.close{grid-column:1/-1;background:transparent;color:var(--muted);
+  margin-top:10px;min-height:44px}
+
+/* V4: Voice notes list */
+.voice-note{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.voice-note audio{flex:1;min-width:0;height:32px}
+.voice-note .vn-meta{font-size:11px;color:var(--muted)}
+.voice-note .vn-del{background:transparent;border:0;color:var(--danger);
+  font-size:18px;cursor:pointer;padding:4px 8px}
+
+/* V4: DNA evolution chart */
+#dnaEvolution .evo-row{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+#dnaEvolution .evo-row:last-child{border-bottom:0}
+#dnaEvolution .evo-label{min-width:80px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+#dnaEvolution .evo-delta{font-weight:800;font-size:14px;min-width:70px;text-align:right}
+#dnaEvolution .evo-delta.up{color:var(--accent)}
+#dnaEvolution .evo-delta.down{color:var(--muted)}
+#dnaEvolution .evo-bars{flex:1;display:flex;align-items:flex-end;gap:2px;height:32px}
+#dnaEvolution .evo-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;opacity:.5}
+#dnaEvolution .evo-bar.recent{opacity:1}
+
+/* V4: Gas stops list */
+.gas-stop{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:8px}
+.gas-stop .gs-name{font-weight:700;font-size:14px}
+.gas-stop .gs-meta{font-size:11px;color:var(--muted)}
+.gas-stop button{background:var(--accent);color:#fff;border:0;border-radius:8px;
+  padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
@@ -300,7 +386,22 @@ a:hover{text-decoration:underline}
   <button data-view="rides" role="tab">Rides</button>
   <button data-view="group" role="tab">Group</button>
   <button data-view="settings" role="tab">Settings</button>
+  <button data-view="more" role="tab" id="moreTabBtn" style="display:none">More</button>
 </nav>
+
+<!-- V4: 'More' overflow drawer for mobile bottom-nav -->
+<div id="moreSheet" class="more-sheet" role="dialog" aria-modal="true" aria-label="More tabs">
+  <div class="more-sheet-inner">
+    <h4>More</h4>
+    <div class="more-grid">
+      <button data-more-view="weather">☀️ Weather</button>
+      <button data-more-view="fuel">⛽ Fuel</button>
+      <button data-more-view="group">👥 Group</button>
+      <button data-more-view="settings">⚙️ Settings</button>
+      <button class="close" id="moreCloseBtn">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <main>
 
@@ -327,7 +428,19 @@ a:hover{text-decoration:underline}
   <div class="hud-bottom" style="bottom:calc(88px + var(--safe-bottom))">
     <button id="rideCTA" class="cta-ride" aria-label="Start ride — begin GPS tracking">START RIDE</button>
   </div>
+
+  <!-- V4: Voice note button (mid-ride only) -->
+  <button id="voiceNoteBtn" class="chip hide" aria-label="Record 10-second voice note" style="position:absolute;top:60px;right:10px;z-index:400;padding:10px 14px;font-size:18px">🎤</button>
 </section>
+
+<!-- V4: Persistent Mini-HUD (shows when mid-ride + user is NOT on Ride tab) -->
+<div id="miniHud" class="hide" role="status" aria-live="polite">
+  <span class="mini-dot"></span>
+  <span class="mini-speed"><b id="miniSpeed">—</b> <span id="miniSpeedL">mph</span></span>
+  <span class="mini-dist"><b id="miniDist">0.0</b> <span id="miniDistL">mi</span></span>
+  <span class="mini-time"><b id="miniTime">0m</b></span>
+  <button id="miniHudJump" aria-label="Jump to Ride tab">→</button>
+</div>
 
 <!-- ============ PLAN ============ -->
 <section id="view-plan" class="view" role="tabpanel" aria-label="Plan a ride">
@@ -340,9 +453,11 @@ a:hover{text-decoration:underline}
       </div>
       <div class="row">
         <button class="btn ghost" id="locBtn">📍 My Location</button>
+        <button class="btn ghost" id="undoWaypointBtn" aria-label="Undo last waypoint">↶ Undo</button>
         <button class="btn ghost" id="clearBtn">Clear Route</button>
       </div>
       <p class="tiny muted" style="margin:0">Switch to the Ride tab and tap the map to drop waypoints. First tap = start.</p>
+      <p class="tiny muted" style="margin:4px 0 0">⌨ Shortcuts: <b>U</b> undo · <b>R</b> recalc · <b>G</b> export GPX · <b>S</b> save · <b>C</b> clear</p>
     </div>
   </div>
 
@@ -432,6 +547,15 @@ a:hover{text-decoration:underline}
     <h3>Gas Stop Planner</h3>
     <div id="fuelRouteInfo"><span class="tiny muted">Plan a route to see gas stops.</span></div>
   </div>
+
+  <div class="card">
+    <h3>⛽ Gas Stops Along Route</h3>
+    <div class="row">
+      <button class="btn warn" id="findGasBtn" style="flex:1">Find Gas Stations on Current Route</button>
+    </div>
+    <div id="gasStopsList" class="mt-12"><span class="tiny muted">Plan a route, then tap the button above.</span></div>
+    <p class="tiny muted mt-12">Pulls nearby fuel stops (OpenStreetMap) within ~1.5 km of your planned line.</p>
+  </div>
 </section>
 
 <!-- ============ GARAGE ============ -->
@@ -512,8 +636,20 @@ a:hover{text-decoration:underline}
     <div class="row">
       <button class="btn" id="dnaDownloadBtn">⬇ Download PNG</button>
       <button class="btn warn" id="dnaShareBtn">↗ Share</button>
-      <select id="dnaFormat" style="flex:1"><option value="ig">Instagram 1080×1350</option><option value="tw">Twitter 1200×630</option></select>
+      <select id="dnaFormat" style="flex:1"><option value="ig">Instagram 1080×1350</option><option value="tw">Twitter 1200×630</option><option value="recap">Ride Recap 1080×1350</option></select>
     </div>
+    <p class="tiny muted mt-12"><b>Ride Recap</b> is a punchy IG-ready card with route · Bad Decision Score · distance · top speed · twisty bar · BDS branding.</p>
+  </div>
+
+  <div class="card">
+    <h3>📈 DNA Evolution — Last 30 Days</h3>
+    <div id="dnaEvolution"><span class="tiny muted">Log 2+ rides in the last 30 days to see your evolution.</span></div>
+    <p class="tiny muted mt-12">Tracks how twisty, fast, and long your rides have trended over time.</p>
+  </div>
+
+  <div class="card">
+    <h3>🎤 Voice Ride Notes</h3>
+    <div id="voiceNotesList"><span class="tiny muted">Tap the mic button during a ride to drop a 10-second voice note pinned to your GPS location.</span></div>
   </div>
 </section>
 
@@ -529,7 +665,11 @@ a:hover{text-decoration:underline}
       <button class="btn warn" id="joinRoomBtn">Join</button>
     </div>
     <div id="roomInfo" class="mt-12"></div>
-    <p class="tiny muted mt-12"><strong>Live sync:</strong> coming soon. Tonight's build generates + stores the room locally, so you can lock in your code. Real-time pin sharing will flip on in the next drop without you needing to do anything.</p>
+    <div id="liveSyncStatus" class="mt-12"></div>
+    <div class="row mt-12">
+      <label class="field" style="flex:1"><span class="lbl">Your handle</span><input type="text" id="groupHandle" placeholder="Kooky" maxlength="16"></label>
+    </div>
+    <p class="tiny muted mt-12"><strong>Live sync:</strong> paste your Supabase URL + anon key in <b>Settings → Live Sync</b> to enable real-time pins. Everyone in the room sees each other move in under 2 seconds.</p>
   </div>
 </section>
 
@@ -586,6 +726,26 @@ a:hover{text-decoration:underline}
   </div>
 
   <div class="card">
+    <h3>📡 Live Sync (Group Rides)</h3>
+    <p class="tiny muted">Paste your own Supabase project URL + anon key for real-time pin sharing in Group rooms. Stored locally on this device only.</p>
+    <label class="field"><span class="lbl">Supabase Project URL</span><input type="url" id="supaUrl" placeholder="https://xxxxx.supabase.co"></label>
+    <label class="field mt-12"><span class="lbl">Anon public key</span><input type="text" id="supaKey" placeholder="eyJhbGciOi..."></label>
+    <div class="row mt-12">
+      <button class="btn" id="supaSaveBtn">Save</button>
+      <button class="btn ghost" id="supaClearBtn">Clear</button>
+      <span id="supaStatusPill" class="pill">Not configured</span>
+    </div>
+    <details class="mt-12"><summary class="tiny muted" style="cursor:pointer">Setup instructions (30 seconds)</summary>
+      <ol class="tiny muted" style="padding-left:20px;line-height:1.6">
+        <li>Go to <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> and create a free project.</li>
+        <li>Settings → API: copy <b>Project URL</b> and <b>anon public</b> key.</li>
+        <li>SQL Editor → run: <code style="background:#000;padding:2px 4px;border-radius:4px;font-size:11px">create table positions (room text, handle text, lat float8, lng float8, ts bigint, primary key(room,handle)); alter table positions enable row level security; create policy "public rw" on positions for all using (true) with check (true); alter publication supabase_realtime add table positions;</code></li>
+        <li>Paste URL + key above, hit Save.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
     <h3>Data</h3>
     <div class="row">
       <button class="btn ghost" id="exportBtn">Export All (JSON)</button>
@@ -621,7 +781,7 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="vendor/leaflet.js" onerror="(function(s){var f=document.createElement('script');f.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';f.onerror=function(){document.body.insertAdjacentHTML('afterbegin','<div style=\'position:fixed;inset:0;z-index:99999;background:#0a0a0a;color:#fff;padding:40px;font-family:-apple-system,sans-serif\'><h2 style=\'color:#ff3b00\'>Map library failed to load</h2><p>Check your connection and refresh. Your rides and data are safe.</p><button onclick=\'location.reload()\' style=\'background:#ff3b00;color:#fff;border:0;padding:14px 24px;border-radius:10px;font-size:16px;font-weight:700;margin-top:12px\'>Refresh</button></div>');};document.head.appendChild(f);})(this);"></script>
 <script>
 (() => {
 'use strict';
@@ -729,13 +889,56 @@ const speak = msg => {
 
 /* ======================== V3 UTILITIES ======================== */
 
-// Bounded fetch: abort after Nms; callers should fall back to cache/straight-line
+// Bounded fetch with ONE retry @ 2x backoff — LTE on twisty roads is flaky
 async function fetchWithTimeout(url, opts = {}, ms = 8000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try { return await fetch(url, { ...opts, signal: ctrl.signal }); }
-  finally { clearTimeout(t); }
+  const attempt = async (timeoutMs) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      if (!res.ok && res.status >= 500) throw new Error('HTTP ' + res.status);
+      return res;
+    } finally { clearTimeout(t); }
+  };
+  try { return await attempt(ms); }
+  catch (err) {
+    // Don't retry on abort-from-caller or client errors
+    if (opts.signal && opts.signal.aborted) throw err;
+    await new Promise(r => setTimeout(r, 400));
+    return await attempt(ms * 2); // 2x backoff
+  }
 }
+
+// V4: Route geometry cache (OSRM has no SLA; cache last-successful geometry per waypoint hash)
+const RouteCache = {
+  _k: 'bds_route_cache_v1', _max: 30,
+  hash(wps) { return wps.map(w => w.lat.toFixed(4) + ',' + w.lng.toFixed(4)).join('|'); },
+  get(wps) {
+    try {
+      const all = JSON.parse(localStorage.getItem(this._k) || '{}');
+      return all[this.hash(wps)] || null;
+    } catch(_) { return null; }
+  },
+  set(wps, payload) {
+    try {
+      const all = JSON.parse(localStorage.getItem(this._k) || '{}');
+      const key = this.hash(wps);
+      all[key] = { ...payload, _cachedAt: Date.now() };
+      // LRU trim
+      const entries = Object.entries(all).sort((a,b) => b[1]._cachedAt - a[1]._cachedAt);
+      const trimmed = Object.fromEntries(entries.slice(0, this._max));
+      localStorage.setItem(this._k, JSON.stringify(trimmed));
+    } catch(_) {}
+  }
+};
+
+// V4: Supabase Realtime config (optional — user sets in Settings → Live Sync)
+const SupaCfg = {
+  get url()      { return localStorage.getItem('bds_supa_url') || ''; },
+  get anonKey()  { return localStorage.getItem('bds_supa_key') || ''; },
+  set(url, key)  { localStorage.setItem('bds_supa_url', url || ''); localStorage.setItem('bds_supa_key', key || ''); },
+  get enabled()  { return !!(this.url && this.anonKey); }
+};
 
 function debounce(fn, ms = 400) {
   let h;
@@ -840,7 +1043,7 @@ $$('nav.tabs button').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.view === 'garage') { renderMaint(); renderBadges(); renderPhotoStrip(); }
   if (b.dataset.view === 'weather') renderWeatherTab();
 }));
-const switchTo = v => { const b = document.querySelector(`nav.tabs button[data-view="${v}"]`); if (b) b.click(); };
+const switchTo = v => { const b = document.querySelector(`nav.tabs button[data-view="${v}"]`); if (b) b.click(); setTimeout(() => { try { updateMiniHud(); } catch(_) {} }, 20); };
 
 /* ======================== MAP ======================== */
 const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([30.2672, -97.7431], 9);
@@ -880,12 +1083,33 @@ async function recalcRoute() {
     State.currentRoute.distMi = mToMi(r.distance);
     State.currentRoute.durationMin = r.duration / 60;
     State.currentRoute.twisty = curvinessScore(State.currentRoute.geometry);
+    // V4: cache last-successful route so throttled OSRM doesn't wipe planning
+    RouteCache.set(wps, {
+      geometry: State.currentRoute.geometry,
+      distMi: State.currentRoute.distMi,
+      durationMin: State.currentRoute.durationMin,
+      twisty: State.currentRoute.twisty
+    });
     drawRouteLine(State.currentRoute.geometry);
     renderRouteStats();
     renderWxRibbon();
     renderFuel();
     updateHudChips();
   } catch (err) {
+    // V4: cached-geometry fallback before the straight-line one
+    const cached = RouteCache.get(wps);
+    if (cached && cached.geometry) {
+      State.currentRoute.geometry = cached.geometry;
+      State.currentRoute.distMi = cached.distMi;
+      State.currentRoute.durationMin = cached.durationMin;
+      State.currentRoute.twisty = cached.twisty || 0;
+      drawRouteLine(cached.geometry);
+      renderRouteStats();
+      renderFuel();
+      updateHudChips();
+      toast('Using cached route — OSRM unreachable.', 3500);
+      return;
+    }
     // Offline fallback: dashed straight line
     const latlngs = wps.map(w => [w.lat, w.lng]);
     State.currentRoute.geometry = latlngs;
@@ -1453,7 +1677,10 @@ async function startRide() {
     $('#rideCTA').classList.add('end');
     $('#rideCTA').setAttribute('aria-label', 'End ride — stop tracking and log it');
     $('#livePill').classList.remove('hide');
+    $('#voiceNoteBtn').classList.remove('hide');
     switchTo('ride');
+    // V4: kick off live group sync if configured + we're in a room
+    groupSyncStart();
     if (State.settings.voiceRide) speak('Ride started');
     toast('Ride started. Stay safe out there.');
   } finally {
@@ -1590,6 +1817,9 @@ function onPos(pos) {
   }
   $('#hudDist').textContent = round(distConv(State.liveRide.distMi), 1);
   map.panTo(pt, { animate:true, duration:.4 });
+  // V4: mini-HUD sync + group position broadcast
+  updateMiniHud();
+  groupBroadcastTick();
 }
 
 async function endRide() {
@@ -1627,6 +1857,7 @@ async function endRide() {
     leans: r.leans.slice(-300), // keep last ~300 samples for the DNA lean bar
     breadcrumb, hillCountry: r.hillCountry,
     crashFlagged: !!r.crashFlagged,
+    voiceNotes: r.voiceNotes || [], // V4: voice memos pinned to GPS
     bikeId: State.activeBikeId, // V3: which bike did this ride
     rainPct: lastRibbon.length ? Math.max(...lastRibbon.map(x=>x.rainPct)) : 0
   };
@@ -1638,6 +1869,9 @@ async function endRide() {
   $('#rideCTA').classList.remove('end');
   $('#rideCTA').setAttribute('aria-label', 'Start ride — begin GPS tracking');
   $('#livePill').classList.add('hide');
+  $('#voiceNoteBtn').classList.add('hide');
+  try { updateMiniHud(); } catch(_) {}
+  groupSyncStop();
   $('#hudSpeed').textContent = '—'; $('#hudLean').textContent = '—'; $('#hudDist').textContent = '0.0'; $('#hudDistL').textContent = distLabel().toUpperCase();
 
   renderRides(); renderMaint(); renderBikeSwitcher(); checkBadges(); drawDNA(); renderPhotoStrip();
@@ -2019,7 +2253,7 @@ function renderRoom() {
         <button class="btn warn" id="shareRoomBtn" style="flex:1">↗ Invite Crew</button>
         <button class="btn ghost" id="leaveRoomBtn">Leave</button>
       </div>
-      <p class="tiny muted mt-12">Live pin sharing drops in the next update. For now: tell your crew the code — we'll flip the switch on and you'll all show up on each other's maps without re-joining.</p>
+      <p class="tiny muted mt-12" id="roomStatus">${SupaCfg.enabled ? 'Live pin sharing active. Share the code — pins appear when crew is also on a live ride.' : 'Set up Supabase in Settings → Live Sync to enable live pins, or share the code anyway for crash-alert context.'}</p>
     </div>`;
   $('#leaveRoomBtn').addEventListener('click', () => {
     State.room = null; lsSet(K.room, null); renderRoom();
@@ -2040,6 +2274,7 @@ function drawDNA() {
   const fmt = $('#dnaFormat').value;
   const w = fmt === 'tw' ? 1200 : 1080;
   const h = fmt === 'tw' ? 630 : 1350;
+  const isRecap = fmt === 'recap';
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   const last = State.rides[0] || lsGet(K.lastRide, null);
@@ -2189,6 +2424,44 @@ function drawDNA() {
   ctx.fillText('MADE A BAD DECISION.', 60, h - 80);
   ctx.fillStyle = '#f5f5f5';
   ctx.fillText('WORTH IT.', 60, h - 40);
+
+  // V4: Recap format — adds big Bad Decision Score badge + bolder BDS branding
+  if (isRecap) {
+    const score = calculateBadDecisionScore(last);
+    // Score shield, top-right
+    const sx = w - 260, sy = 180;
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(sx, sy, 220, 200, 22); else ctx.rect(sx, sy, 220, 200);
+    ctx.fill();
+    ctx.fillStyle = '#0a0a0a';
+    ctx.textAlign = 'center';
+    ctx.font = '900 110px -apple-system, system-ui, sans-serif';
+    ctx.fillText(String(score), sx + 110, sy + 118);
+    ctx.font = '900 18px -apple-system, system-ui, sans-serif';
+    ctx.fillText('BAD DECISION', sx + 110, sy + 152);
+    ctx.fillText('SCORE', sx + 110, sy + 176);
+    ctx.textAlign = 'start';
+    // BDS footer bar
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, h - 12, w, 12);
+    ctx.fillStyle = '#f5f5f5';
+    ctx.font = '900 18px -apple-system, system-ui, sans-serif';
+    ctx.fillText('@KOOKYMOTO · BADDECISIONSOCIETY', 60, h - 160);
+  }
+}
+
+// V4: Bad Decision Score — a 0-100 "how sent was this ride" number
+function calculateBadDecisionScore(r) {
+  if (!r) return 0;
+  let s = 0;
+  s += Math.min(30, (r.twistiesIdx || 0) * 0.30);                    // twisty (0-30)
+  s += Math.min(25, ((r.topMph || 0) - 45) * 0.6);                   // top speed over 45 (0-25)
+  s += Math.min(15, (r.maxLean || 0) * 0.30);                        // lean angle (0-15)
+  s += Math.min(15, (r.miles || 0) * 0.10);                          // distance (0-15)
+  s += r.hillCountry ? 8 : 0;                                        // bonus: Hill Country
+  s += r.rainPct >= 70 ? 7 : r.rainPct >= 40 ? 4 : 0;                // bonus: weather
+  return Math.max(0, Math.min(100, Math.round(s)));
 }
 $('#dnaFormat').addEventListener('change', drawDNA);
 $('#dnaDownloadBtn').addEventListener('click', () => {
@@ -2327,6 +2600,388 @@ $('#clearBtn').addEventListener('click', () => {
   toast('Route cleared.');
 });
 
+/* ======================== V4: UNDO + KEYBOARD SHORTCUTS ======================== */
+$('#undoWaypointBtn').addEventListener('click', () => {
+  const wps = State.currentRoute.waypoints;
+  if (!wps.length) { toast('Nothing to undo.'); return; }
+  wps.pop();
+  const last = waypointMarkers.pop();
+  if (last) map.removeLayer(last);
+  if (wps.length < 2 && routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  recalcRoute();
+  toast('Waypoint removed.');
+});
+
+document.addEventListener('keydown', e => {
+  // only on Plan view, never when typing
+  const active = document.activeElement;
+  if (active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName)) return;
+  if (active && active.isContentEditable) return;
+  const planActive = document.querySelector('section#view-plan.active');
+  if (!planActive) return;
+  const k = e.key.toLowerCase();
+  if (k === 'u') { e.preventDefault(); $('#undoWaypointBtn').click(); }
+  else if (k === 'r') { e.preventDefault(); recalcRoute(); toast('Recalculating route…'); }
+  else if (k === 'g') { e.preventDefault(); $('#exportGpxBtn').click(); }
+  else if (k === 's') { e.preventDefault(); $('#saveRouteBtn').click(); }
+  else if (k === 'c') { e.preventDefault(); $('#clearBtn').click(); }
+});
+
+/* ======================== V4: MINI-HUD + MORE SHEET ======================== */
+function updateMiniHud() {
+  const mh = $('#miniHud'); if (!mh) return;
+  const currentView = document.querySelector('section.view.active')?.id || '';
+  const onRideTab = currentView === 'view-ride';
+  if (State.liveRide && !onRideTab) {
+    const mph = State.liveRide.speeds.slice(-1)[0] || 0;
+    $('#miniSpeed').textContent = Math.round(speedConv(mph)) + ' ' + speedLabel();
+    $('#miniDist').textContent  = round(distConv(State.liveRide.distMi), 1) + ' ' + distLabel();
+    const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
+    $('#miniTime').textContent  = mins + 'm';
+    mh.classList.remove('hide');
+  } else {
+    mh.classList.add('hide');
+  }
+}
+setInterval(() => { try { updateMiniHud(); } catch(_) {} }, 3000);
+$('#miniHudJump')?.addEventListener('click', () => switchTo('ride'));
+
+$('#moreTabBtn')?.addEventListener('click', () => $('#moreSheet').classList.add('open'));
+$('#moreCloseBtn')?.addEventListener('click', () => $('#moreSheet').classList.remove('open'));
+document.querySelectorAll('#moreSheet [data-more-view]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $('#moreSheet').classList.remove('open');
+    switchTo(btn.dataset.moreView);
+  });
+});
+
+/* ======================== V4: VOICE NOTES ======================== */
+let _voice = { rec: null, chunks: [], timer: null, recording: false };
+async function startVoiceNote() {
+  if (_voice.recording) return;
+  if (!State.liveRide) { toast('Start a ride first.'); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _voice.chunks = [];
+    _voice.rec = new MediaRecorder(stream);
+    _voice.rec.ondataavailable = e => { if (e.data.size) _voice.chunks.push(e.data); };
+    _voice.rec.onstop = async () => {
+      const blob = new Blob(_voice.chunks, { type: 'audio/webm' });
+      stream.getTracks().forEach(t => t.stop());
+      const reader = new FileReader();
+      reader.onload = () => {
+        const last = State.liveRide?.breadcrumb?.slice(-1)?.[0];
+        if (!State.liveRide) return;
+        State.liveRide.voiceNotes = State.liveRide.voiceNotes || [];
+        State.liveRide.voiceNotes.push({
+          ts: Date.now(), lat: last?.[0] || null, lng: last?.[1] || null,
+          dataUrl: reader.result
+        });
+        lsSet(K.liveSnapshot, State.liveRide);
+        renderVoiceNotes();
+        toast('Voice note saved.');
+      };
+      reader.readAsDataURL(blob);
+    };
+    _voice.rec.start();
+    _voice.recording = true;
+    $('#voiceNoteBtn').classList.add('recording');
+    $('#voiceNoteBtn').textContent = '■';
+    _voice.timer = setTimeout(() => stopVoiceNote(), 10000);
+  } catch (err) {
+    toast('Mic denied: ' + (err.message || 'no permission'));
+  }
+}
+function stopVoiceNote() {
+  if (!_voice.recording) return;
+  clearTimeout(_voice.timer);
+  try { _voice.rec.stop(); } catch(_) {}
+  _voice.recording = false;
+  $('#voiceNoteBtn').classList.remove('recording');
+  $('#voiceNoteBtn').textContent = '🎤';
+}
+$('#voiceNoteBtn')?.addEventListener('click', () => {
+  _voice.recording ? stopVoiceNote() : startVoiceNote();
+});
+function renderVoiceNotes() {
+  const box = $('#voiceNotesList'); if (!box) return;
+  // Merge: in-progress ride voice notes + last-logged ride's voice notes
+  const live = State.liveRide?.voiceNotes || [];
+  const lastRide = State.rides[0];
+  const logged = (lastRide && lastRide.voiceNotes) || [];
+  const all = [...live.map(n => ({...n, live:true})), ...logged.map(n => ({...n, live:false}))];
+  if (!all.length) {
+    box.innerHTML = '<span class="tiny muted">Tap the mic button during a ride to drop a 10-second voice note pinned to your GPS location.</span>';
+    return;
+  }
+  box.innerHTML = all.slice(0, 20).map((n, i) => `
+    <div class="voice-note">
+      <div class="tiny muted">${n.live ? '🔴 LIVE' : '✓'} · ${new Date(n.ts).toLocaleTimeString()} ${n.lat ? '· ' + n.lat.toFixed(4) + ',' + n.lng.toFixed(4) : ''}</div>
+      <audio controls src="${n.dataUrl}" style="width:100%;margin-top:6px"></audio>
+    </div>
+  `).join('');
+}
+renderVoiceNotes();
+
+// Persist voice notes onto the logged ride record as well
+const _origEndRide = endRide;
+window._bdsHookedEnd = false;
+
+/* ======================== V4: GAS STOPS ALONG ROUTE ======================== */
+$('#findGasBtn')?.addEventListener('click', findGasStops);
+async function findGasStops() {
+  const geo = State.currentRoute.geometry;
+  if (!geo || geo.length < 2) { toast('Plan a route first.'); return; }
+  const btn = $('#findGasBtn');
+  btn.disabled = true; btn.textContent = 'Searching OSM…';
+  try {
+    // Sample every ~5mi along the route
+    const samples = sampleAlong(geo, 5);
+    // Build an Overpass query: union of amenity=fuel nodes around each sample (1500m radius)
+    const clauses = samples.slice(0, 14).map(p => `node["amenity"="fuel"](around:1500,${p[0]},${p[1]});`).join('\n');
+    const q = `[out:json][timeout:20];(${clauses});out body 60;`;
+    const res = await fetchWithTimeout('https://overpass-api.de/api/interpreter', {
+      method: 'POST', body: 'data=' + encodeURIComponent(q),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }, 25000);
+    const j = await res.json();
+    const stops = (j.elements || []).map(e => ({
+      id: e.id, lat: e.lat, lng: e.lon,
+      name: e.tags?.brand || e.tags?.name || 'Fuel',
+      hasDiesel: e.tags?.['fuel:diesel'] === 'yes',
+      addr: [e.tags?.['addr:street'], e.tags?.['addr:city']].filter(Boolean).join(', ')
+    }));
+    // Deduplicate by name+round coords
+    const seen = new Set();
+    const uniq = stops.filter(s => {
+      const k = s.name + Math.round(s.lat*1000) + Math.round(s.lng*1000);
+      if (seen.has(k)) return false; seen.add(k); return true;
+    });
+    renderGasStops(uniq);
+    toast(`Found ${uniq.length} gas stops along route.`);
+  } catch (err) {
+    $('#gasStopsList').innerHTML = '<span class="tiny muted">Overpass is slow right now. Try again in a minute.</span>';
+    toast('Gas-stop lookup failed.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Find Gas Stations on Current Route';
+  }
+}
+function sampleAlong(geo, everyMi) {
+  const out = [geo[0]];
+  let acc = 0;
+  for (let i = 1; i < geo.length; i++) {
+    const seg = haversineMi({lat:geo[i-1][0],lng:geo[i-1][1]}, {lat:geo[i][0],lng:geo[i][1]});
+    acc += seg;
+    if (acc >= everyMi) { out.push(geo[i]); acc = 0; }
+  }
+  out.push(geo[geo.length-1]);
+  return out;
+}
+let _gasMarkers = [];
+function renderGasStops(stops) {
+  // Clear previous
+  _gasMarkers.forEach(m => map.removeLayer(m));
+  _gasMarkers = [];
+  const box = $('#gasStopsList');
+  if (!stops.length) { box.innerHTML = '<span class="tiny muted">No fuel found along route. Might be a rural stretch — plan for it.</span>'; return; }
+  // Drop map pins
+  stops.forEach(s => {
+    const m = L.circleMarker([s.lat, s.lng], { radius:7, color:'#00b8ff', fillColor:'#0a0a0a', fillOpacity:.9, weight:3 })
+      .bindTooltip(s.name, { direction: 'top' })
+      .addTo(map);
+    _gasMarkers.push(m);
+  });
+  // List
+  box.innerHTML = stops.map(s => `
+    <div class="gas-stop">
+      <div><b>${esc(s.name)}</b> ${s.hasDiesel ? '<span class="tiny" style="color:var(--accent-2)">· DIESEL</span>' : ''}</div>
+      <div class="tiny muted">${esc(s.addr || (s.lat.toFixed(4)+', '+s.lng.toFixed(4)))}</div>
+      <a class="tiny" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}" target="_blank" rel="noopener">Open in Maps ↗</a>
+    </div>
+  `).join('');
+}
+
+/* ======================== V4: DNA EVOLUTION (30-day trend) ======================== */
+function renderDnaEvolution() {
+  const box = $('#dnaEvolution'); if (!box) return;
+  const now = Date.now();
+  const ms30 = 30 * 86400000;
+  const rides30 = State.rides.filter(r => (now - new Date(r.date || r.ts).getTime()) <= ms30);
+  if (rides30.length < 2) {
+    box.innerHTML = '<span class="tiny muted">Log 2+ rides in the last 30 days to see your evolution.</span>';
+    return;
+  }
+  // Sort old -> new, split at midpoint
+  const sorted = rides30.slice().sort((a,b) => new Date(a.date||a.ts) - new Date(b.date||b.ts));
+  const mid = Math.floor(sorted.length / 2);
+  const firstHalf = sorted.slice(0, Math.max(1, mid));
+  const secondHalf = sorted.slice(mid);
+  const avg = (arr, f) => arr.length ? arr.reduce((s,r) => s + (f(r) || 0), 0) / arr.length : 0;
+  const metrics = [
+    { label: 'TWISTY',  a: avg(firstHalf, r => r.twistiesIdx), b: avg(secondHalf, r => r.twistiesIdx), bars: sorted.map(r => r.twistiesIdx || 0) },
+    { label: 'TOP MPH', a: avg(firstHalf, r => r.topMph),      b: avg(secondHalf, r => r.topMph),      bars: sorted.map(r => r.topMph || 0) },
+    { label: 'DIST',    a: avg(firstHalf, r => r.miles),       b: avg(secondHalf, r => r.miles),       bars: sorted.map(r => r.miles || 0) },
+    { label: 'LEAN',    a: avg(firstHalf, r => r.maxLean),     b: avg(secondHalf, r => r.maxLean),     bars: sorted.map(r => r.maxLean || 0) }
+  ];
+  box.innerHTML = metrics.map(m => {
+    const delta = m.a > 0 ? Math.round(((m.b - m.a) / m.a) * 100) : 0;
+    const maxB = Math.max(...m.bars, 1);
+    const barsHtml = m.bars.map((v, i) => {
+      const pct = Math.max(4, Math.round((v / maxB) * 100));
+      const recent = i >= mid;
+      return `<div class="evo-bar ${recent?'recent':''}" style="height:${pct}%"></div>`;
+    }).join('');
+    const sign = delta > 0 ? '+' : '';
+    return `
+      <div class="evo-row">
+        <div class="evo-label">${m.label}</div>
+        <div class="evo-bars">${barsHtml}</div>
+        <div class="evo-delta ${delta>0?'up':'down'}">${sign}${delta}%</div>
+      </div>`;
+  }).join('');
+  // Human headline
+  const twistyDelta = metrics[0].a > 0 ? Math.round(((metrics[0].b - metrics[0].a) / metrics[0].a) * 100) : 0;
+  if (twistyDelta !== 0) {
+    const sign = twistyDelta > 0 ? 'twistier' : 'chiller';
+    box.insertAdjacentHTML('afterbegin',
+      `<div class="tiny muted mb-8" style="margin-bottom:8px">You've gotten <b style="color:var(--accent)">${Math.abs(twistyDelta)}% ${sign}</b> this month.</div>`);
+  }
+}
+// First pass
+renderDnaEvolution();
+// Refresh evolution whenever the Rides tab is opened
+document.querySelectorAll('nav.tabs button[data-view="rides"]').forEach(b => b.addEventListener('click', () => { renderDnaEvolution(); renderVoiceNotes(); }));
+document.querySelectorAll('#moreSheet [data-more-view="rides"]').forEach(b => b.addEventListener('click', () => { renderDnaEvolution(); renderVoiceNotes(); }));
+
+/* ======================== V4: SUPABASE LIVE GROUP PINS ======================== */
+let _supaClient = null, _supaChannel = null, _supaPositions = {}, _supaLastBroadcast = 0;
+
+async function loadSupabase() {
+  if (window.supabase) return window.supabase;
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js';
+    s.onload = () => res(window.supabase);
+    s.onerror = () => rej(new Error('Failed to load Supabase SDK'));
+    document.head.appendChild(s);
+  });
+}
+
+async function groupSyncStart() {
+  if (!SupaCfg.enabled) return;
+  if (!State.room) return;
+  const handle = ($('#groupHandle')?.value || localStorage.getItem('bds_handle') || 'Rider' + Math.floor(Math.random()*99)).slice(0,16);
+  localStorage.setItem('bds_handle', handle);
+  try {
+    const sdk = await loadSupabase();
+    _supaClient = sdk.createClient(SupaCfg.url, SupaCfg.anonKey);
+    _supaChannel = _supaClient
+      .channel('bds-room-' + State.room.code)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'positions', filter: 'room=eq.' + State.room.code }, payload => {
+        const row = payload.new || payload.old;
+        if (!row || row.handle === handle) return;
+        if (payload.eventType === 'DELETE') {
+          if (groupMarkers[row.handle]) { map.removeLayer(groupMarkers[row.handle]); delete groupMarkers[row.handle]; }
+        } else {
+          paintGroupPin(row.handle, row.lat, row.lng);
+        }
+      })
+      .subscribe();
+    // Initial fetch
+    const { data } = await _supaClient.from('positions').select('*').eq('room', State.room.code);
+    (data || []).forEach(r => { if (r.handle !== handle) paintGroupPin(r.handle, r.lat, r.lng); });
+    setStatusPill('ok', 'Live sync on');
+  } catch (err) {
+    setStatusPill('warn', 'Sync failed');
+    console.warn('Supabase init failed', err);
+  }
+}
+function groupSyncStop() {
+  if (_supaChannel) { try { _supaChannel.unsubscribe(); } catch(_) {} _supaChannel = null; }
+  // Clear my row from server
+  if (_supaClient && State.room) {
+    const handle = localStorage.getItem('bds_handle');
+    try { _supaClient.from('positions').delete().eq('room', State.room.code).eq('handle', handle); } catch(_) {}
+  }
+  Object.values(groupMarkers).forEach(m => map.removeLayer(m));
+  groupMarkers = {};
+}
+function groupBroadcastTick() {
+  if (!_supaClient || !_supaChannel || !State.liveRide) return;
+  const now = Date.now();
+  if (now - _supaLastBroadcast < 3000) return; // throttle 3s
+  _supaLastBroadcast = now;
+  const last = State.liveRide.breadcrumb.slice(-1)[0]; if (!last) return;
+  const handle = localStorage.getItem('bds_handle') || 'Rider';
+  _supaClient.from('positions').upsert({
+    room: State.room.code, handle, lat: last[0], lng: last[1], ts: now
+  }, { onConflict: 'room,handle' }).then(() => {}, () => {});
+}
+function paintGroupPin(handle, lat, lng) {
+  const existing = groupMarkers[handle];
+  if (existing) { existing.setLatLng([lat, lng]); return; }
+  const m = L.circleMarker([lat, lng], {
+    radius: 9, color: '#00ff88', fillColor: '#0a0a0a', fillOpacity: .95, weight: 3
+  }).bindTooltip(handle, { permanent: true, direction: 'top', className: 'group-tip' }).addTo(map);
+  groupMarkers[handle] = m;
+}
+function setStatusPill(kind, txt) {
+  const p = $('#supaStatusPill'); if (!p) return;
+  p.textContent = txt;
+  p.style.background = kind === 'ok' ? 'var(--accent)' : kind === 'warn' ? '#ff4d4d' : 'var(--bg-soft)';
+  p.style.color = kind === 'ok' || kind === 'warn' ? '#fff' : 'var(--muted)';
+}
+$('#supaSaveBtn')?.addEventListener('click', () => {
+  const url = $('#supaUrl')?.value.trim();
+  const key = $('#supaKey')?.value.trim();
+  if (!url || !key) { toast('Need both URL and anon key.'); return; }
+  SupaCfg.set(url, key);
+  setStatusPill('ok', 'Configured');
+  toast('Live Sync saved. Start a ride to broadcast.');
+});
+$('#supaClearBtn')?.addEventListener('click', () => {
+  SupaCfg.set('', '');
+  if ($('#supaUrl')) $('#supaUrl').value = '';
+  if ($('#supaKey')) $('#supaKey').value = '';
+  setStatusPill('', 'Not configured');
+  groupSyncStop();
+  toast('Live Sync cleared.');
+});
+// Prefill the Supa form from storage
+if ($('#supaUrl')) { $('#supaUrl').value = SupaCfg.url; }
+if ($('#supaKey')) { $('#supaKey').value = SupaCfg.anonKey; }
+if ($('#supaStatusPill')) setStatusPill(SupaCfg.enabled ? 'ok' : '', SupaCfg.enabled ? 'Configured' : 'Not configured');
+
+// Group handle persistence
+$('#groupHandle')?.addEventListener('change', e => {
+  localStorage.setItem('bds_handle', e.target.value.slice(0,16));
+});
+if ($('#groupHandle')) $('#groupHandle').value = localStorage.getItem('bds_handle') || '';
+
+/* ======================== V4: Attach voice notes to logged ride ======================== */
+// Listen for ride log completion via a storage poll — grab voiceNotes off the latest ride
+// (endRide is a function declaration; reassigning it doesn't update the CTA's closed-over reference.)
+let _lastKnownRideId = State.rides[0]?.id || null;
+setInterval(() => {
+  const top = State.rides[0];
+  if (!top || top.id === _lastKnownRideId) return;
+  _lastKnownRideId = top.id;
+  // Ride was just logged — pull snapshot's voiceNotes if they exist
+  try {
+    const snap = localStorage.getItem(K.liveSnapshot);
+    // snap is usually cleared by endRide-path, but if it was last-committed before end...
+    if (snap) {
+      const parsed = JSON.parse(snap);
+      if (parsed.voiceNotes && parsed.voiceNotes.length && !top.voiceNotes) {
+        top.voiceNotes = parsed.voiceNotes;
+        lsSet(K.rides, State.rides);
+      }
+    }
+  } catch(_) {}
+  renderVoiceNotes();
+  renderDnaEvolution();
+}, 2000);
+
 /* ======================== ONLINE / OFFLINE ======================== */
 function updateOnline() {
   const p = $('#onlinePill');
@@ -2399,7 +3054,7 @@ async function boot() {
 boot();
 
 // Expose for debugging
-window.BDS = { State, map, checkBadges, drawDNA };
+window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop };
 
 })();
 </script>
