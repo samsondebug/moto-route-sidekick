@@ -1,211 +1,2407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bad Decision Sidekick • v4</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0a0a; color: #fff; margin: 0; padding: 16px; }
-        .container { max-width: 480px; margin: 0 auto; }
-        .btn-big { width: 100%; height: 78px; font-size: 26px; font-weight: 800; background: #ff3b30; color: white; border: none; border-radius: 20px; margin: 20px 0; }
-        #map { height: 380px; border-radius: 16px; margin-bottom: 20px; }
-        .section { background: #111; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BDS Sidekick">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Bad Decision Sidekick — the moto cockpit for bad decisions. Plan. Ride. Survive. Share.">
+<title>Bad Decision Sidekick</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon-192.svg">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface-2:#1c1c1c;--surface-3:#242424;
+  --border:#262626;--border-strong:#3a3a3a;
+  --text:#f5f5f5;--muted:#9a9a9a;--dim:#6a6a6a;
+  --accent:#ff3b00;--accent-2:#ffb400;--ok:#23d18b;--danger:#ff4d4d;
+  --lean-low:#23d18b;--lean-mid:#ffb400;--lean-hi:#ff3b00;
+  --radius:10px;--radius-lg:14px;
+  --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
+  --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
+}
+/* Theme: Ghost (acid-green accent on charcoal) */
+body[data-theme="ghost"]{--accent:#00ff88;--accent-2:#a6ff00;--lean-hi:#00ff88}
+/* Theme: Ion (cyan + electric blue) */
+body[data-theme="ion"]{--accent:#00b8ff;--accent-2:#00ffe1;--lean-hi:#00b8ff}
+/* Battery-saver dims HUD chrome but keeps primary CTA full-strength */
+body[data-battery-saver="1"] .hud-tile,
+body[data-battery-saver="1"] .hud-top .chip{opacity:.55;filter:saturate(.6)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none;touch-action:manipulation}
+body{display:flex;flex-direction:column}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + var(--safe-top)) 14px 10px 14px;
+  background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:32px;height:32px;border-radius:8px;
+  background:radial-gradient(circle at 30% 30%,var(--accent-2),var(--accent) 70%);
+  box-shadow:0 0 16px rgba(255,59,0,.5);flex-shrink:0}
+.brand h1{font-size:15px;margin:0;letter-spacing:.06em;text-transform:uppercase;font-weight:800}
+.brand small{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:8px}
+.pill{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted)}
+.pill.live{background:var(--accent);color:#fff;border-color:var(--accent);
+  box-shadow:0 0 12px rgba(255,59,0,.6);animation:pulse 2s ease-in-out infinite}
+.pill.offline{background:var(--danger);color:#fff;border-color:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* TAB NAV */
+nav.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{background:transparent;border:none;color:var(--muted);
+  padding:12px 16px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s ease;min-height:44px}
+nav.tabs button.active{color:var(--text);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--text)}
+
+/* VIEWS */
+main{flex:1;position:relative;overflow:hidden}
+.view{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px calc(100px + var(--safe-bottom)) 14px}
+.view.active{display:block}
+.view#view-ride{padding:0;position:relative}
+h2{font-size:16px;margin:14px 0 10px;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
+h3{font-size:13px;margin:12px 0 6px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+p{line-height:1.5;color:var(--muted);margin:6px 0}
+
+/* RIDE HUD */
+#map{width:100%;height:100%;background:#0a0a0a}
+.hud-top{position:absolute;top:10px;left:10px;right:10px;z-index:400;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.hud-top .chip{pointer-events:auto}
+.chip{background:rgba(20,20,20,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--border-strong);border-radius:10px;padding:6px 10px;
+  font-size:12px;font-weight:600;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.chip.warn{border-color:var(--accent-2);color:var(--accent-2)}
+.chip.danger{border-color:var(--danger);color:var(--danger)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+
+.hud-bottom{position:absolute;bottom:calc(12px + var(--safe-bottom));left:10px;right:10px;z-index:400;
+  display:flex;gap:8px;pointer-events:none}
+.hud-bottom .btn,.hud-bottom .cta-ride,.hud-bottom .hud-tiles{pointer-events:auto}
+.hud-tiles{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hud-tile{background:rgba(20,20,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--border-strong);border-radius:12px;padding:8px 10px;text-align:center}
+.hud-tile .v{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--text);line-height:1.1}
+.hud-tile .l{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.hud-tile.lean .v{color:var(--lean-low)}
+.hud-tile.lean.mid .v{color:var(--lean-mid)}
+.hud-tile.lean.hi .v{color:var(--lean-hi)}
+
+/* PRIMARY CTA — START/END RIDE */
+.cta-ride{height:64px;border-radius:14px;font-size:18px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;border:none;color:#fff;background:var(--accent);
+  box-shadow:0 12px 32px rgba(255,59,0,.35);transition:transform .1s ease,background .15s ease;width:100%}
+.cta-ride:hover{background:#d93100}
+.cta-ride:active{transform:scale(.98)}
+.cta-ride.end{background:var(--danger);box-shadow:0 12px 32px rgba(255,77,77,.35)}
+.cta-ride.end:hover{background:#d93535}
+
+/* BOTTOM SHEET */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:1500;
+  background:var(--surface);border-top:1px solid var(--border-strong);
+  border-radius:18px 18px 0 0;
+  transform:translateY(100%);transition:transform .22s cubic-bezier(.2,.8,.2,1);
+  max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 14px calc(18px + var(--safe-bottom))}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:44px;height:4px;background:var(--border-strong);border-radius:4px;margin:6px auto 10px}
+.sheet-close{position:absolute;top:10px;right:14px;background:var(--surface-2);border:1px solid var(--border);
+  width:36px;height:36px;border-radius:50%;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center}
+
+/* FORM + BUTTONS */
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row.stack{flex-direction:column}
+label.field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:120px}
+label.field .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 12px;color:var(--text);font-size:15px;min-height:44px}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:var(--accent-2);outline:none}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+  padding:12px 16px;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  min-height:44px;transition:background .15s ease,transform .05s ease}
+.btn:hover{background:#d93100}
+.btn:active{transform:scale(.98)}
+.btn:disabled{background:var(--surface-3);color:var(--dim);cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.warn{background:var(--accent-2);color:#0a0a0a}
+.btn.warn:hover{background:#e3a000}
+.btn.ok{background:var(--ok);color:#0a0a0a}
+.btn.danger{background:var(--danger)}
+.btn.sm{padding:8px 12px;font-size:12px;min-height:36px}
+.icon-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin:10px 0}
+.card.accent{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,59,0,.15),0 8px 24px rgba(0,0,0,.3)}
+.card h3:first-child{margin-top:0}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:520px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.stat .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .l{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+
+/* WEATHER RIBBON */
+.wx-ribbon{display:flex;gap:4px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.wx-ribbon::-webkit-scrollbar{display:none}
+.wx-seg{flex:0 0 auto;min-width:64px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:6px 8px;text-align:center}
+.wx-seg.warn{border-color:var(--accent-2);background:rgba(255,180,0,.08)}
+.wx-seg.danger{border-color:var(--danger);background:rgba(255,77,77,.08)}
+.wx-seg .t{font-size:14px;font-weight:700}
+.wx-seg .r{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* BADGES */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.badge{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 8px;text-align:center;position:relative;overflow:hidden}
+.badge.unlocked{border-color:var(--accent-2);background:linear-gradient(180deg,rgba(255,180,0,.08),rgba(255,59,0,.04))}
+.badge.locked{opacity:.35;filter:grayscale(1)}
+.badge .ico{font-size:26px;line-height:1;margin-bottom:6px}
+.badge .n{font-size:11px;font-weight:700;letter-spacing:.03em}
+.badge .d{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+
+/* TWISTY BADGE */
+.twisty-badge{display:inline-flex;gap:2px;align-items:center;font-family:monospace;letter-spacing:.05em}
+.twisty-cell{width:12px;height:16px;border-radius:2px;background:var(--surface-3)}
+.twisty-cell.on{background:var(--accent-2);box-shadow:0 0 6px rgba(255,180,0,.5)}
+
+/* TOAST */
+#toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-bottom));transform:translateX(-50%) translateY(40px);
+  background:var(--surface);border:1px solid var(--accent);color:var(--text);
+  padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:3000;
+  opacity:0;pointer-events:none;transition:all .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MAP OVERLAYS */
+.leaflet-control-attribution{font-size:9px!important;background:rgba(20,20,20,.7)!important;color:var(--muted)!important}
+.leaflet-container{background:#0a0a0a!important}
+.leaflet-container a{color:var(--accent-2)}
+
+/* PREFERENCES ROW */
+.pref{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.pref:last-child{border-bottom:none}
+.pref .k{font-weight:600}
+.pref .d{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* MUTED LINK */
+a{color:var(--accent-2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* V3: CRASH DETECTION MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border:2px solid var(--danger);border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 0 40px rgba(255,77,77,.5)}
+.modal h3{margin:0 0 8px;font-size:20px;color:var(--danger);letter-spacing:.04em}
+.modal .count{font-size:64px;font-weight:900;font-variant-numeric:tabular-nums;text-align:center;color:var(--danger);line-height:1;margin:16px 0;font-family:ui-monospace,monospace}
+
+/* V3: MULTI-BIKE SWITCHER */
+.bike-switcher{display:flex;gap:6px;overflow-x:auto;padding:4px 0;scrollbar-width:none;margin-bottom:10px}
+.bike-switcher::-webkit-scrollbar{display:none}
+.bike-chip{flex:0 0 auto;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px}
+.bike-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bike-chip.add{background:transparent;border:1px dashed var(--border-strong);color:var(--muted)}
+
+/* V3: LARGE ROOM CODE / SHARE */
+.room-code-big{font-family:ui-monospace,SFMono-Regular,monospace;font-size:clamp(48px,14vw,88px);font-weight:900;letter-spacing:.15em;text-align:center;color:var(--accent);padding:20px 0;line-height:1;user-select:all;-webkit-user-select:all}
+
+/* V3: SWITCH (toggle) */
+.switch{position:relative;display:inline-block;width:44px;height:26px}
+.switch input{opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:999px;transition:.15s ease;cursor:pointer}
+.switch .slider::before{content:"";position:absolute;left:3px;top:2px;width:18px;height:18px;background:var(--text);border-radius:50%;transition:.15s ease}
+.switch input:checked + .slider{background:var(--accent);border-color:var(--accent)}
+.switch input:checked + .slider::before{transform:translateX(18px);background:#fff}
+
+/* V3: LEAN PROFILE MINI-BAR (used in DNA preview + rides list) */
+.lean-profile{display:flex;align-items:flex-end;gap:2px;height:28px;padding:2px 0}
+.lean-profile-cell{flex:1;min-width:2px;background:var(--lean-low);border-radius:1px;transition:height .2s ease}
+.lean-profile-cell.mid{background:var(--lean-mid)}
+.lean-profile-cell.hi{background:var(--lean-hi)}
+
+/* V3: PRIORITIZED PLAN-TAB BUTTON ROW */
+.plan-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
+.plan-actions .btn{min-height:40px}
+.plan-actions .btn.wide{grid-column:1/-1}
+
+/* V3: PREDICTIVE MAINT LABEL */
+.maint-predict{font-size:10px;color:var(--muted);letter-spacing:.04em;margin-top:4px}
+.maint-predict.warn{color:var(--accent-2)}
+.maint-predict.danger{color:var(--danger)}
+
+/* HELPER */
+.hide{display:none!important}
+.spacer{flex:1}
+.muted{color:var(--muted)}
+.tiny{font-size:11px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.center{text-align:center}
+.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}
+.sep{height:1px;background:var(--border);margin:14px 0}
+
+/* MAINT item */
+.maint-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:10px}
+.maint-item:last-child{border-bottom:none}
+.maint-bar{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:4px}
+.maint-bar-fill{height:100%;background:var(--ok);transition:width .2s ease}
+.maint-bar-fill.warn{background:var(--accent-2)}
+.maint-bar-fill.danger{background:var(--danger)}
+
+/* DNA card preview */
+#dnaPreviewWrap{display:flex;justify-content:center;margin:10px 0}
+#dnaPreview{max-width:100%;border-radius:var(--radius);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1 style="text-align:center; color:#ff3b30; margin:0 0 8px;">BAD DECISION SIDEKICK</h1>
-        <p style="text-align:center; color:#666; margin:0 0 24px;">v4 • 2026.04.17</p>
 
-        <!-- MAP -->
-        <div id="map"></div>
-
-        <!-- 1-TAP START RIDE -->
-        <button id="start-btn" onclick="startRide()" class="btn-big">START RIDE</button>
-
-        <!-- LIVE STATS -->
-        <div id="live-stats" style="display:none; text-align:center; margin:20px 0;">
-            <div style="display:flex; justify-content:space-around; font-size:13px;">
-                <div><span id="speed" style="font-size:42px; font-weight:800;">0</span><br>MPH</div>
-                <div><span id="lean" style="font-size:42px; font-weight:800;">0</span><br>LEAN°</div>
-                <div><span id="dist" style="font-size:42px; font-weight:800;">0.0</span><br>MI</div>
-            </div>
-        </div>
+<header role="banner">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div>
+      <h1>Bad Decision Sidekick</h1>
+      <small>Plan. Ride. Survive. Share.</small>
     </div>
+  </div>
+  <div class="header-right">
+    <span id="onlinePill" class="pill">Online</span>
+    <span id="livePill" class="pill hide">● Live</span>
+  </div>
+</header>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        let map, currentRide = null, rideInterval = null, pathLayer = null;
+<nav class="tabs" role="tablist" aria-label="Primary">
+  <button data-view="ride" class="active" role="tab" aria-selected="true">Ride</button>
+  <button data-view="plan" role="tab">Plan</button>
+  <button data-view="weather" role="tab">Weather</button>
+  <button data-view="fuel" role="tab">Fuel</button>
+  <button data-view="garage" role="tab">Garage</button>
+  <button data-view="rides" role="tab">Rides</button>
+  <button data-view="group" role="tab">Group</button>
+  <button data-view="settings" role="tab">Settings</button>
+</nav>
 
-        function initMap() {
-            map = L.map('map').setView([30.2672, -97.7431], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+<main>
+
+<!-- ============ RIDE HUD (home) ============ -->
+<section id="view-ride" class="view active" role="tabpanel" aria-label="Ride HUD">
+  <div id="map" aria-label="Map"></div>
+
+  <div class="hud-top" aria-live="polite">
+    <span id="hudRouteChip" class="chip hide">📍 <span id="hudRouteName">Route</span></span>
+    <span id="hudTwistyChip" class="chip hide">🌀 <span id="hudTwistyText">—</span></span>
+    <span id="hudWxChip" class="chip hide">☀️ <span id="hudWxText">—</span></span>
+    <span class="spacer"></span>
+    <button id="recenterBtn" class="chip" aria-label="Recenter map">🎯 Recenter</button>
+  </div>
+
+  <div class="hud-bottom">
+    <div class="hud-tiles" id="hudTiles">
+      <div class="hud-tile"><div class="v" id="hudSpeed" aria-live="polite">—</div><div class="l" id="hudSpeedL">MPH</div></div>
+      <div class="hud-tile lean" id="hudLeanTile"><div class="v" id="hudLean">—</div><div class="l">LEAN °</div></div>
+      <div class="hud-tile"><div class="v" id="hudDist">0.0</div><div class="l" id="hudDistL">MI</div></div>
+    </div>
+  </div>
+
+  <div class="hud-bottom" style="bottom:calc(88px + var(--safe-bottom))">
+    <button id="rideCTA" class="cta-ride" aria-label="Start ride — begin GPS tracking">START RIDE</button>
+  </div>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section id="view-plan" class="view" role="tabpanel" aria-label="Plan a ride">
+  <h2>Plan a Ride</h2>
+  <div class="card">
+    <div class="row stack">
+      <div class="row">
+        <input type="text" id="searchInput" placeholder="Search a place…" style="flex:1">
+        <button class="btn" id="searchBtn">Find</button>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="locBtn">📍 My Location</button>
+        <button class="btn ghost" id="clearBtn">Clear Route</button>
+      </div>
+      <p class="tiny muted" style="margin:0">Switch to the Ride tab and tap the map to drop waypoints. First tap = start.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Generate a Ride</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Direction</span>
+        <select id="rideDirection"><option value="any">Any</option><option value="north">North</option><option value="south">South</option><option value="east">East</option><option value="west">West</option></select>
+      </label>
+      <label class="field"><span class="lbl">Distance</span>
+        <select id="rideDistance"><option value="short">Short (25–50mi)</option><option value="medium" selected>Medium (50–100mi)</option><option value="long">Long (100–175mi)</option><option value="epic">Epic (175–300mi)</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Style</span>
+        <select id="rideStyle">
+          <option value="twisties">Max Twisties</option>
+          <option value="sportbike">Sportbike Max Lean</option>
+          <option value="mixed">Mixed Cruise</option>
+          <option value="scenic">Scenic</option>
+          <option value="fastest">Fastest</option>
+        </select>
+      </label>
+      <label class="field"><span class="lbl">Loop</span>
+        <select id="rideLoop"><option value="out">One-way</option><option value="loop" selected>Loop</option></select>
+      </label>
+    </div>
+    <button id="generateRideBtn" class="btn warn mt-12" style="width:100%">GENERATE RIDE FOR ME</button>
+    <button id="regenTwistierBtn" class="btn ghost mt-12" style="width:100%">🌀 Regenerate Twistier</button>
+    <div id="generatedRideInfo"></div>
+  </div>
+
+  <div class="card">
+    <h3>Current Route</h3>
+    <div id="routeStats" class="stats-grid"></div>
+    <div id="twistyBar" class="mt-12"></div>
+    <div class="plan-actions">
+      <button class="btn" id="saveRouteBtn">💾 Save</button>
+      <button class="btn warn" id="shareRouteBtn">↗ Share Link</button>
+      <button class="btn ghost" id="precacheBtn">📥 Cache Offline</button>
+      <button class="btn ghost" id="rerouteWxBtn">🌦 Dodge Rain</button>
+      <button class="btn ghost" id="exportGpxBtn">⬇ Export GPX</button>
+      <button class="btn ghost" id="importGpxBtn">⬆ Import GPX</button>
+      <input type="file" id="importGpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" class="hide">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Weather Along the Route</h3>
+    <div id="wxRibbon" class="wx-ribbon"><span class="tiny muted">Plan a route to see segment weather.</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Saved Routes</h3>
+    <div id="savedRoutesList"><span class="tiny muted">No saved routes.</span></div>
+  </div>
+</section>
+
+<!-- ============ WEATHER ============ -->
+<section id="view-weather" class="view" role="tabpanel" aria-label="Weather">
+  <h2>Weather</h2>
+  <div class="row">
+    <button class="btn" id="wxLocBtn">Use My Location</button>
+    <button class="btn ghost" id="wxRouteBtn">Use Route Start</button>
+  </div>
+  <div class="card"><h3>Current Conditions</h3><div id="wxCurrent"><span class="tiny muted">Tap "Use My Location" to load weather.</span></div></div>
+  <div class="card"><h3>Next 12 Hours</h3><div id="wxHourly"></div></div>
+  <div class="card"><h3>7-Day Outlook</h3><div id="wxDaily"></div></div>
+</section>
+
+<!-- ============ FUEL ============ -->
+<section id="view-fuel" class="view" role="tabpanel" aria-label="Fuel calculator">
+  <h2>Fuel</h2>
+  <div class="card">
+    <h3>Tank &amp; Range Calculator</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Tank (gal)</span><input type="number" id="fuelTank" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">MPG</span><input type="number" id="fuelMpg" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">Reserve (gal)</span><input type="number" id="fuelReserve" step="0.1" min="0"></label>
+    </div>
+    <div class="stats-grid mt-12">
+      <div class="stat"><div class="v" id="fuelSafeRange">—</div><div class="l">Safe Range (mi)</div></div>
+      <div class="stat"><div class="v" id="fuelFullRange">—</div><div class="l">Full Range (mi)</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Gas Stop Planner</h3>
+    <div id="fuelRouteInfo"><span class="tiny muted">Plan a route to see gas stops.</span></div>
+  </div>
+</section>
+
+<!-- ============ GARAGE ============ -->
+<section id="view-garage" class="view" role="tabpanel" aria-label="Garage">
+  <h2>The Garage</h2>
+  <div class="card">
+    <h3>Bikes</h3>
+    <div id="bikeSwitcher" class="bike-switcher"></div>
+    <div class="row">
+      <label class="field"><span class="lbl">Make</span><input type="text" id="bikeMake" placeholder="Kawasaki"></label>
+      <label class="field"><span class="lbl">Model</span><input type="text" id="bikeModel" placeholder="Ninja ZX-6R"></label>
+      <label class="field"><span class="lbl">Year</span><input type="number" id="bikeYear" min="1900" max="2100"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Nickname</span><input type="text" id="bikeName" placeholder="Pumpkin"></label>
+      <label class="field"><span class="lbl">Odometer (mi)</span><input type="number" id="bikeOdo" step="1" min="0"></label>
+    </div>
+    <div class="row mt-12">
+      <button class="btn" id="saveBikeBtn">Save Bike</button>
+      <button class="btn ghost" id="deleteBikeBtn">🗑 Delete Bike</button>
+    </div>
+    <p class="tiny muted mt-12">Ride totals stick to the active bike. Switch bikes before logging a ride from a different one.</p>
+  </div>
+
+  <div class="card">
+    <h3>Maintenance</h3>
+    <div id="maintList"></div>
+    <button class="btn ghost sm mt-12" id="resetMaintBtn">Reset All Intervals to Today</button>
+    <p class="tiny muted mt-12">Based on typical sportbike intervals. Tap an item to mark serviced. Bike odometer = ride log total + starting odometer.</p>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Garage Wall</h3>
+    <div id="badgesGrid" class="badges-grid"></div>
+    <p class="tiny muted mt-12">Unlock badges by riding. <span class="muted">Merch rewards coming soon.</span></p>
+  </div>
+
+  <div class="card">
+    <h3>📸 Last Ride Photos</h3>
+    <div id="photoStrip"><span class="tiny muted">Add photos during a live ride.</span></div>
+  </div>
+</section>
+
+<!-- ============ RIDES ============ -->
+<section id="view-rides" class="view" role="tabpanel" aria-label="Ride log">
+  <h2>Rides</h2>
+  <div class="stats-grid">
+    <div class="stat"><div class="v" id="statRides">0</div><div class="l">Total Rides</div></div>
+    <div class="stat"><div class="v" id="statMiles">0</div><div class="l">Total Miles</div></div>
+    <div class="stat"><div class="v" id="statHours">0.0</div><div class="l">Total Hours</div></div>
+    <div class="stat"><div class="v" id="statAvg">0</div><div class="l">Avg Ride (mi)</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Log a Ride</h3>
+    <div class="row">
+      <label class="field"><span class="lbl">Name</span><input type="text" id="rideName" placeholder="Hill Country loop"></label>
+      <label class="field"><span class="lbl">Distance (mi)</span><input type="number" id="rideMiles" step="0.1" min="0"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="lbl">Hours</span><input type="number" id="rideHours" step="0.1" min="0"></label>
+      <label class="field"><span class="lbl">Date</span><input type="date" id="rideDate"></label>
+    </div>
+    <div class="row mt-12">
+      <button class="btn" id="saveRideBtn">Save Ride</button>
+      <button class="btn ghost" id="fillFromRouteBtn">Fill From Current Route</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ride Log</h3>
+    <div id="ridesList"><span class="tiny muted">No rides logged yet.</span></div>
+  </div>
+
+  <div class="card">
+    <h3>🎨 Ride DNA — Share the Last Ride</h3>
+    <div id="dnaPreviewWrap"><canvas id="dnaPreview" width="1080" height="1350" style="width:100%;max-width:360px"></canvas></div>
+    <div class="row">
+      <button class="btn" id="dnaDownloadBtn">⬇ Download PNG</button>
+      <button class="btn warn" id="dnaShareBtn">↗ Share</button>
+      <select id="dnaFormat" style="flex:1"><option value="ig">Instagram 1080×1350</option><option value="tw">Twitter 1200×630</option></select>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GROUP ============ -->
+<section id="view-group" class="view" role="tabpanel" aria-label="Group ride">
+  <h2>Group Ride</h2>
+  <div class="card accent">
+    <h3>Ride Rooms</h3>
+    <p>Create a 6-character code, share it with your crew, they tap it in, everyone sees each other on the map.</p>
+    <div class="row mt-12">
+      <button class="btn" id="createRoomBtn">Create Room</button>
+      <input type="text" id="joinRoomInput" placeholder="ABC123" maxlength="6" style="flex:1;text-transform:uppercase">
+      <button class="btn warn" id="joinRoomBtn">Join</button>
+    </div>
+    <div id="roomInfo" class="mt-12"></div>
+    <p class="tiny muted mt-12"><strong>Live sync:</strong> coming soon. Tonight's build generates + stores the room locally, so you can lock in your code. Real-time pin sharing will flip on in the next drop without you needing to do anything.</p>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="view-settings" class="view" role="tabpanel" aria-label="Settings">
+  <h2>Settings</h2>
+
+  <div class="card">
+    <h3>Units &amp; Display</h3>
+    <div class="pref">
+      <div><div class="k">Units</div><div class="d">Imperial (mph, mi, °F) or Metric (km/h, km, °C)</div></div>
+      <select id="unitsSelect"><option value="imperial">Imperial</option><option value="metric">Metric</option></select>
+    </div>
+    <div class="pref">
+      <div><div class="k">Theme</div><div class="d">Swap the HUD accent color</div></div>
+      <select id="themeSelect"><option value="classic">Classic Orange</option><option value="ghost">Ghost Green</option><option value="ion">Ion Blue</option></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ride Safety</h3>
+    <div class="pref">
+      <div><div class="k">Keep Screen On</div><div class="d">Lock screen off during a live ride (Wake Lock)</div></div>
+      <label class="switch"><input type="checkbox" id="wakeLockEnabled"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Battery Saver</div><div class="d">Lower-accuracy GPS, dim HUD chrome</div></div>
+      <label class="switch"><input type="checkbox" id="batterySaver"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Crash Detection</div><div class="d">Flags sudden high-G events mid-ride (experimental — opt-in)</div></div>
+      <label class="switch"><input type="checkbox" id="crashDetect"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Voice Cues</h3>
+    <div class="pref">
+      <div><div class="k">Voice Cues Master</div><div class="d">Speak alerts over Bluetooth helmet</div></div>
+      <label class="switch"><input type="checkbox" id="voiceEnabled"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Ride Start / End</div><div class="d">"Ride started" / "Ride ended"</div></div>
+      <label class="switch"><input type="checkbox" id="voiceRide"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Badge Unlocks</div><div class="d">Announce new badges as you earn them</div></div>
+      <label class="switch"><input type="checkbox" id="voiceBadges"><span class="slider"></span></label>
+    </div>
+    <div class="pref">
+      <div><div class="k">Lean Alerts</div><div class="d">"Lean 35° — twisty incoming"</div></div>
+      <label class="switch"><input type="checkbox" id="voiceLean"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Data</h3>
+    <div class="row">
+      <button class="btn ghost" id="exportBtn">Export All (JSON)</button>
+      <button class="btn ghost" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" accept="application/json" class="hide">
+      <button class="btn danger" id="wipeBtn">Wipe All Data</button>
+    </div>
+    <p class="tiny muted mt-12">Everything (bike, rides, routes, settings, badges, photos) lives on this device. Nothing is sent to a server. Shared routes and Ride DNA cards are encoded client-side.</p>
+  </div>
+
+  <div class="card">
+    <h3>About</h3>
+    <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
+    <p class="tiny muted">v3.0 · <span id="buildId">2026.04.17</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+  </div>
+</section>
+
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- V3: CRASH DETECTION MODAL -->
+<div id="crashModal" class="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="crashModalTitle">
+  <div class="modal">
+    <h3 id="crashModalTitle">🚨 Possible Crash Detected</h3>
+    <p class="muted">High-G spike + sudden stop. If you're OK, cancel within:</p>
+    <div class="count" id="crashCount">15</div>
+    <div class="row">
+      <button class="btn danger" id="crashCancelBtn" style="flex:1">I'm OK — Cancel</button>
+      <button class="btn ghost" id="crashConfirmBtn" style="flex:1">Alert Group Now</button>
+    </div>
+    <p class="tiny muted mt-12">This flags the ride with a crash marker. If you've got a group room, a handoff message copies to your share sheet.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ======================== STATE & STORAGE ======================== */
+const K = {
+  bike: 'bds_bike', bikes: 'bds_bikes', activeBike: 'bds_active_bike',
+  rides: 'bds_rides', routes: 'bds_routes', settings: 'bds_settings',
+  badges: 'bds_badges', maint: 'bds_maint', room: 'bds_room', lastRide: 'bds_last_ride',
+  liveSnapshot: 'bds_live_ride' // V3: resume-in-progress
+};
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
+const lsSet = (k, v) => {
+  try { localStorage.setItem(k, JSON.stringify(v)); return true; }
+  catch(e) {
+    // V3: surface quota errors instead of swallowing silently
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      try { toast('Storage full — export + wipe to free space.', 4500); } catch(_) {}
+    }
+    return false;
+  }
+};
+
+const DEFAULT_SETTINGS = {
+  units:'imperial', voice:false, fuelTank:4.5, fuelMpg:38, fuelReserve:0.8,
+  // V3:
+  theme:'classic', wakeLock:true, batterySaver:false, crashDetect:false,
+  voiceRide:true, voiceBadges:true, voiceLean:false
+};
+
+const State = {
+  bikes: lsGet(K.bikes, null),
+  activeBikeId: lsGet(K.activeBike, null),
+  rides: lsGet(K.rides, []),
+  routes: lsGet(K.routes, []),
+  settings: Object.assign({}, DEFAULT_SETTINGS, lsGet(K.settings, {})),
+  badges: lsGet(K.badges, {}),
+  maint: lsGet(K.maint, null),
+  room: lsGet(K.room, null),
+  currentRoute: { waypoints: [], geometry: null, distMi: 0, durationMin: 0, twisty: 0, elevFt: 0, name:'' },
+  liveRide: null,
+  _wakeLock: null // V3: WakeLockSentinel
+};
+
+// V3: migrate legacy single-bike → bikes[] on first run
+(function migrateBike() {
+  if (State.bikes && State.bikes.length) { if (!State.activeBikeId) State.activeBikeId = State.bikes[0].id; return; }
+  const legacy = lsGet(K.bike, null);
+  if (legacy && (legacy.make || legacy.model || legacy.odo)) {
+    const id = 'b_' + Date.now();
+    State.bikes = [{ id, ...legacy }];
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+  } else {
+    const id = 'b_' + Date.now();
+    State.bikes = [{ id, make:'', model:'', year:'', name:'', odo:0 }];
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+  }
+})();
+
+// State.bike = shortcut to active bike record (mutations require lsSet(K.bikes, State.bikes))
+Object.defineProperty(State, 'bike', {
+  get() { return State.bikes.find(b => b.id === State.activeBikeId) || State.bikes[0]; }
+});
+
+// Init maintenance if empty
+if (!State.maint) {
+  State.maint = [
+    { k:'oil',    n:'Oil Change',       everyMi:4000,  everyDays:180, lastMi:0, lastDate:Date.now() },
+    { k:'chain',  n:'Chain Lube/Adjust', everyMi:500,   everyDays:30,  lastMi:0, lastDate:Date.now() },
+    { k:'tires',  n:'Tire Pressure',    everyMi:0,     everyDays:7,   lastMi:0, lastDate:Date.now() },
+    { k:'pads',   n:'Brake Pads',       everyMi:12000, everyDays:365, lastMi:0, lastDate:Date.now() },
+    { k:'coolant',n:'Coolant Flush',    everyMi:24000, everyDays:730, lastMi:0, lastDate:Date.now() },
+    { k:'valves', n:'Valve Clearance',  everyMi:15000, everyDays:730, lastMi:0, lastDate:Date.now() }
+  ];
+  lsSet(K.maint, State.maint);
+}
+
+/* ======================== UTILS ======================== */
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const units = () => State.settings.units;
+const miPerKm = 0.621371;
+const mToMi = m => m * 0.000621371;
+const mToKm = m => m / 1000;
+const distLabel = () => units() === 'imperial' ? 'mi' : 'km';
+const speedLabel = () => units() === 'imperial' ? 'mph' : 'km/h';
+const tempLabel = () => units() === 'imperial' ? '°F' : '°C';
+const distConv = mi => units() === 'imperial' ? mi : mi / miPerKm;
+const speedConv = mph => units() === 'imperial' ? mph : mph / miPerKm;
+const round = (n, d=1) => { const p = Math.pow(10, d); return Math.round(n * p) / p; };
+const toast = (msg, ms=2500) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), ms); };
+const haversineMi = (a, b) => {
+  const R = 3958.8, dLat = (b.lat-a.lat)*Math.PI/180, dLng = (b.lng-a.lng)*Math.PI/180;
+  const la1 = a.lat*Math.PI/180, la2 = b.lat*Math.PI/180;
+  const x = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+};
+const speak = msg => {
+  if (!State.settings.voice || !('speechSynthesis' in window)) return;
+  try { const u = new SpeechSynthesisUtterance(msg); u.rate = 1; u.pitch = 1; speechSynthesis.speak(u); } catch(_) {}
+};
+
+/* ======================== V3 UTILITIES ======================== */
+
+// Bounded fetch: abort after Nms; callers should fall back to cache/straight-line
+async function fetchWithTimeout(url, opts = {}, ms = 8000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try { return await fetch(url, { ...opts, signal: ctrl.signal }); }
+  finally { clearTimeout(t); }
+}
+
+function debounce(fn, ms = 400) {
+  let h;
+  const d = (...args) => { clearTimeout(h); h = setTimeout(() => fn(...args), ms); };
+  d.flush = () => { if (h) { clearTimeout(h); h = null; } fn(); };
+  return d;
+}
+
+/* ---- Wake Lock (keeps screen on during a ride) ---- */
+async function acquireWakeLock() {
+  if (!State.settings.wakeLock || !('wakeLock' in navigator)) return;
+  try {
+    State._wakeLock = await navigator.wakeLock.request('screen');
+    State._wakeLock.addEventListener('release', () => { State._wakeLock = null; });
+  } catch(_) {}
+}
+async function releaseWakeLock() {
+  try { if (State._wakeLock) await State._wakeLock.release(); } catch(_) {}
+  State._wakeLock = null;
+}
+// Re-acquire after visibility change (OS may release on tab hide)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && State.liveRide && !State._wakeLock) acquireWakeLock();
+});
+
+/* ---- GPX: parse + build ---- */
+function gpxParse(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('Invalid GPX');
+  // Prefer <rtept> (route points = waypoints); fallback to <trkpt> (track); finally <wpt>
+  const rtepts = [...doc.querySelectorAll('rtept')];
+  const trkpts = [...doc.querySelectorAll('trkpt')];
+  const wpts   = [...doc.querySelectorAll('wpt')];
+  let pts = rtepts.length ? rtepts : (wpts.length ? wpts : trkpts);
+  if (!pts.length) throw new Error('No GPX points');
+  // If it's a trkpt set, decimate to ~20 waypoints so OSRM doesn't choke
+  if (pts === trkpts && pts.length > 20) {
+    const step = Math.floor(pts.length / 20);
+    pts = pts.filter((_, i) => i % step === 0).slice(0, 20);
+  }
+  const name = doc.querySelector('metadata > name')?.textContent
+            || doc.querySelector('trk > name')?.textContent
+            || doc.querySelector('rte > name')?.textContent
+            || 'Imported Route';
+  return {
+    name: name.trim(),
+    waypoints: pts.map(p => ({
+      lat: parseFloat(p.getAttribute('lat')),
+      lng: parseFloat(p.getAttribute('lon')),
+      label: p.querySelector('name')?.textContent?.trim() || ''
+    })).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+  };
+}
+
+function gpxBuild({ name, waypoints, geometry, kind = 'rte' }) {
+  const escXml = s => String(s ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+  const now = new Date().toISOString();
+  const head = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Bad Decision Sidekick" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${escXml(name || 'Bad Decision Route')}</name>
+    <time>${now}</time>
+  </metadata>`;
+  let body = '';
+  if (kind === 'trk' && geometry && geometry.length) {
+    const seg = geometry.map(([lat,lng]) => `      <trkpt lat="${lat}" lon="${lng}"/>`).join('\n');
+    body = `
+  <trk><name>${escXml(name)}</name><trkseg>
+${seg}
+  </trkseg></trk>`;
+  } else {
+    const rtept = (waypoints || []).map(w =>
+      `    <rtept lat="${w.lat}" lon="${w.lng}">${w.label ? `<name>${escXml(w.label)}</name>` : ''}</rtept>`
+    ).join('\n');
+    body = `
+  <rte><name>${escXml(name)}</name>
+${rtept}
+  </rte>`;
+  }
+  return head + body + `
+</gpx>`;
+}
+
+function gpxDownload(filename, xml) {
+  const blob = new Blob([xml], { type: 'application/gpx+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename.endsWith('.gpx') ? filename : filename + '.gpx';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ======================== TAB NAV ======================== */
+$$('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  $$('nav.tabs button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
+  b.classList.add('active'); b.setAttribute('aria-selected','true');
+  $$('.view').forEach(v => v.classList.remove('active'));
+  const target = $('#view-' + b.dataset.view);
+  if (target) target.classList.add('active');
+  if (b.dataset.view === 'ride') setTimeout(() => map && map.invalidateSize(), 50);
+  if (b.dataset.view === 'rides') drawDNA();
+  if (b.dataset.view === 'garage') { renderMaint(); renderBadges(); renderPhotoStrip(); }
+  if (b.dataset.view === 'weather') renderWeatherTab();
+}));
+const switchTo = v => { const b = document.querySelector(`nav.tabs button[data-view="${v}"]`); if (b) b.click(); };
+
+/* ======================== MAP ======================== */
+const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([30.2672, -97.7431], 9);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18, attribution: '© OSM contributors'
+}).addTo(map);
+let waypointMarkers = [], routeLine = null, breadcrumbLine = null, liveMarker = null, groupMarkers = {};
+let photoMarkers = [];
+
+function addWaypoint(ll) {
+  const idx = waypointMarkers.length;
+  const marker = L.marker([ll.lat, ll.lng], { draggable: true });
+  marker.bindTooltip((idx === 0 ? 'START' : '#' + (idx)), { permanent: false });
+  marker.on('dragend', () => { const p = marker.getLatLng(); State.currentRoute.waypoints[idx] = { lat:p.lat, lng:p.lng, label: ll.label }; recalcRoute(); });
+  marker.on('click', () => { waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = []; State.currentRoute.waypoints.splice(idx,1); State.currentRoute.waypoints.forEach(addWaypoint); recalcRoute(); });
+  marker.addTo(map);
+  waypointMarkers.push(marker);
+  State.currentRoute.waypoints[idx] = { lat:ll.lat, lng:ll.lng, label: ll.label };
+}
+
+map.on('click', e => {
+  if (State.liveRide) { toast('End the ride to edit the route.'); return; }
+  addWaypoint({ lat:e.latlng.lat, lng:e.latlng.lng });
+  recalcRoute();
+});
+
+async function recalcRoute() {
+  const wps = State.currentRoute.waypoints;
+  if (wps.length < 2) { if (routeLine) { map.removeLayer(routeLine); routeLine = null; } renderRouteStats(); renderWxRibbon(); return; }
+  try {
+    const coords = wps.map(w => `${w.lng},${w.lat}`).join(';');
+    const res = await fetchWithTimeout(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+    const j = await res.json();
+    if (!j.routes || !j.routes.length) throw new Error('no route');
+    const r = j.routes[0];
+    State.currentRoute.geometry = r.geometry.coordinates.map(([lng,lat]) => [lat,lng]);
+    State.currentRoute.distMi = mToMi(r.distance);
+    State.currentRoute.durationMin = r.duration / 60;
+    State.currentRoute.twisty = curvinessScore(State.currentRoute.geometry);
+    drawRouteLine(State.currentRoute.geometry);
+    renderRouteStats();
+    renderWxRibbon();
+    renderFuel();
+    updateHudChips();
+  } catch (err) {
+    // Offline fallback: dashed straight line
+    const latlngs = wps.map(w => [w.lat, w.lng]);
+    State.currentRoute.geometry = latlngs;
+    State.currentRoute.distMi = 0;
+    for (let i=1;i<wps.length;i++) State.currentRoute.distMi += haversineMi(wps[i-1], wps[i]);
+    State.currentRoute.durationMin = State.currentRoute.distMi / 45 * 60;
+    State.currentRoute.twisty = 0;
+    drawRouteLine(latlngs, true);
+    renderRouteStats();
+    renderFuel();
+    updateHudChips();
+    toast('Offline — straight-line estimate.');
+  }
+}
+
+function drawRouteLine(latlngs, dashed=false) {
+  if (routeLine) map.removeLayer(routeLine);
+  routeLine = L.polyline(latlngs, {
+    color: '#ff3b00', weight: 5, opacity: .9,
+    dashArray: dashed ? '8,8' : null
+  }).addTo(map);
+  try { map.fitBounds(routeLine.getBounds(), { padding:[40,40] }); } catch(_) {}
+}
+
+/* ======================== CURVINESS INDEX ======================== */
+function curvinessScore(latlngs) {
+  if (!latlngs || latlngs.length < 3) return 0;
+  let curves = 0, totalMi = 0;
+  for (let i=2;i<latlngs.length;i++) {
+    const a = latlngs[i-2], b = latlngs[i-1], c = latlngs[i];
+    const h1 = bearing(a,b), h2 = bearing(b,c);
+    let dh = Math.abs(h2-h1); if (dh > 180) dh = 360-dh;
+    const segMi = haversineMi({lat:b[0],lng:b[1]},{lat:c[0],lng:c[1]});
+    totalMi += segMi;
+    if (dh > 15 && segMi < 0.2) curves++;
+  }
+  if (totalMi < 1) return 0;
+  const cpm = curves / totalMi; // curves per mile
+  if (cpm > 12) return 5;
+  if (cpm > 8)  return 4;
+  if (cpm > 5)  return 3;
+  if (cpm > 3)  return 2;
+  if (cpm > 1)  return 1;
+  return 0;
+}
+function bearing(a, b) {
+  const lat1 = a[0]*Math.PI/180, lat2 = b[0]*Math.PI/180;
+  const dLng = (b[1]-a[1])*Math.PI/180;
+  const y = Math.sin(dLng)*Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  return (Math.atan2(y,x)*180/Math.PI + 360) % 360;
+}
+function twistyBar(score) {
+  return '<div class="twisty-badge">' + Array.from({length:5},(_,i) =>
+    `<span class="twisty-cell${i<score?' on':''}"></span>`).join('') +
+    ` <span class="tiny mono">&nbsp;${score}/5 TWISTIES</span></div>`;
+}
+
+/* ======================== ROUTE STATS ======================== */
+function renderRouteStats() {
+  const r = State.currentRoute;
+  const box = $('#routeStats');
+  if (!box) return;
+  if (r.waypoints.length < 2) { box.innerHTML = '<span class="tiny muted">No route yet.</span>'; $('#twistyBar').innerHTML = ''; return; }
+  const d = distConv(r.distMi);
+  const h = Math.floor(r.durationMin/60), m = Math.round(r.durationMin%60);
+  box.innerHTML = `
+    <div class="stat"><div class="v">${round(d,1)}</div><div class="l">Dist (${distLabel()})</div></div>
+    <div class="stat"><div class="v">${h}h ${m}m</div><div class="l">Est. Time</div></div>
+    <div class="stat"><div class="v">${r.waypoints.length}</div><div class="l">Waypoints</div></div>
+    <div class="stat"><div class="v">${r.twisty}/5</div><div class="l">Twisty</div></div>`;
+  $('#twistyBar').innerHTML = twistyBar(r.twisty);
+}
+
+/* ======================== SEARCH ======================== */
+async function searchPlace() {
+  const q = $('#searchInput').value.trim(); if (!q) return;
+  try {
+    const res = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
+    const j = await res.json();
+    if (!j.length) { toast('Place not found.'); return; }
+    const p = j[0]; map.setView([+p.lat, +p.lon], 12); toast(p.display_name.split(',')[0]);
+  } catch(_) { toast('Search failed — offline or slow network.'); }
+}
+
+/* ======================== WEATHER ======================== */
+async function fetchWx(lat, lng) {
+  const u = units();
+  const tUnit = u === 'imperial' ? 'fahrenheit' : 'celsius';
+  const wUnit = u === 'imperial' ? 'mph' : 'kmh';
+  const pUnit = u === 'imperial' ? 'inch' : 'mm';
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code,precipitation` +
+    `&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m` +
+    `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code` +
+    `&forecast_days=7&temperature_unit=${tUnit}&wind_speed_unit=${wUnit}&precipitation_unit=${pUnit}&timezone=auto`;
+  const res = await fetchWithTimeout(url); return await res.json();
+}
+function wxEmoji(c) {
+  if (c >= 95) return '⛈';
+  if (c >= 80) return '🌧';
+  if (c >= 71) return '❄️';
+  if (c >= 61) return '🌧';
+  if (c >= 51) return '🌦';
+  if (c >= 45) return '🌫';
+  if (c >= 3)  return '☁️';
+  if (c >= 1)  return '⛅';
+  return '☀️';
+}
+function wxRideable(c, wind) {
+  if (c >= 80) return { v:'NOPE', cls:'danger', why:'Storms.' };
+  if (c >= 61) return { v:'TOUGH', cls:'danger', why:'Rain.' };
+  if (wind > 25) return { v:'WINDY', cls:'warn', why:'Crosswind.' };
+  if (c >= 51) return { v:'DAMP', cls:'warn', why:'Drizzle.' };
+  if (c >= 45) return { v:'FOG', cls:'warn', why:'Low vis.' };
+  return { v:'SEND IT', cls:'ok', why:'Clear.' };
+}
+
+async function renderWeatherTab() {
+  if (!renderWeatherTab._lat) return;
+  try {
+    const j = await fetchWx(renderWeatherTab._lat, renderWeatherTab._lng);
+    const cur = j.current, verd = wxRideable(cur.weather_code, cur.wind_speed_10m);
+    $('#wxCurrent').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat"><div class="v">${wxEmoji(cur.weather_code)} ${Math.round(cur.temperature_2m)}${tempLabel()}</div><div class="l">Temp</div></div>
+        <div class="stat"><div class="v">${Math.round(cur.wind_speed_10m)} ${speedLabel()}</div><div class="l">Wind · gust ${Math.round(cur.wind_gusts_10m)}</div></div>
+        <div class="stat"><div class="v" style="color:var(--${verd.cls})">${verd.v}</div><div class="l">${verd.why}</div></div>
+        <div class="stat"><div class="v">${Math.round(cur.relative_humidity_2m)}%</div><div class="l">Humidity</div></div>
+      </div>`;
+    const hrs = j.hourly.time.slice(0,12);
+    $('#wxHourly').innerHTML = '<div class="row" style="overflow-x:auto">' +
+      hrs.map((t,i) => `<div class="wx-seg"><div class="tiny muted">${new Date(t).getHours()}h</div><div class="t">${wxEmoji(j.hourly.weather_code[i])} ${Math.round(j.hourly.temperature_2m[i])}°</div><div class="r">${j.hourly.precipitation_probability[i]}%</div></div>`).join('') + '</div>';
+    $('#wxDaily').innerHTML = j.daily.time.map((t,i) =>
+      `<div class="pref"><div><div class="k">${new Date(t).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div><div class="d">${wxEmoji(j.daily.weather_code[i])} rain ${j.daily.precipitation_probability_max[i]}%</div></div><div>${Math.round(j.daily.temperature_2m_min[i])}° / ${Math.round(j.daily.temperature_2m_max[i])}°</div></div>`
+    ).join('');
+    const chip = $('#hudWxChip');
+    chip.classList.remove('hide','warn','danger');
+    if (verd.cls === 'warn') chip.classList.add('warn');
+    if (verd.cls === 'danger') chip.classList.add('danger');
+    $('#hudWxText').textContent = `${Math.round(cur.temperature_2m)}${tempLabel()} ${verd.v}`;
+  } catch(_) { toast('Weather offline.'); }
+}
+$('#wxLocBtn').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    renderWeatherTab._lat = p.coords.latitude; renderWeatherTab._lng = p.coords.longitude; renderWeatherTab();
+  }, () => toast('Location denied.'), { enableHighAccuracy:false, timeout:8000 });
+});
+$('#wxRouteBtn').addEventListener('click', () => {
+  const w = State.currentRoute.waypoints[0]; if (!w) { toast('No route.'); return; }
+  renderWeatherTab._lat = w.lat; renderWeatherTab._lng = w.lng; renderWeatherTab();
+});
+
+/* ======================== WEATHER RIBBON (along route) ======================== */
+let lastRibbon = [];
+async function renderWxRibbon() {
+  const geom = State.currentRoute.geometry;
+  const box = $('#wxRibbon');
+  if (!geom || geom.length < 2) { box.innerHTML = '<span class="tiny muted">Plan a route to see segment weather.</span>'; lastRibbon = []; return; }
+  const pts = sampleN(geom, 5);
+  box.innerHTML = '<span class="tiny muted">Loading…</span>';
+  try {
+    const results = await Promise.all(pts.map(p => fetchWx(p[0], p[1]).catch(() => null)));
+    lastRibbon = results.map((r,i) => r ? { lat:pts[i][0], lng:pts[i][1], current:r.current, rainPct:r.daily.precipitation_probability_max[0]||0 } : null).filter(Boolean);
+    if (!lastRibbon.length) throw new Error('no wx');
+    box.innerHTML = lastRibbon.map((r,i) => {
+      const rain = r.rainPct;
+      const cls = rain >= 70 ? 'danger' : rain >= 40 ? 'warn' : '';
+      return `<div class="wx-seg ${cls}"><div class="tiny muted">Seg ${i+1}</div><div class="t">${wxEmoji(r.current.weather_code)} ${Math.round(r.current.temperature_2m)}°</div><div class="r">${rain}% rain</div></div>`;
+    }).join('');
+  } catch(_) { box.innerHTML = '<span class="tiny muted">Could not load segment weather.</span>'; }
+}
+function sampleN(geom, n) {
+  const step = (geom.length - 1) / (n - 1);
+  const out = [];
+  for (let i=0;i<n;i++) out.push(geom[Math.min(geom.length-1, Math.round(i*step))]);
+  return out;
+}
+
+// V3: Rain re-route with delta — reports miles/time added
+$('#rerouteWxBtn').addEventListener('click', async () => {
+  if (!lastRibbon.length) { toast('Load route weather first.'); return; }
+  const worst = lastRibbon.reduce((a,b) => b.rainPct > a.rainPct ? b : a, lastRibbon[0]);
+  if (worst.rainPct < 40) { toast('No rain worth dodging. Send it.'); return; }
+
+  const before = { mi: State.currentRoute.distMi, min: State.currentRoute.durationMin };
+
+  // Nudge perpendicular to route heading at the worst segment (rough — 5 mi lateral)
+  const geom = State.currentRoute.geometry || [];
+  let nudgeLat = worst.lat + 0.07, nudgeLng = worst.lng;
+  if (geom.length >= 2) {
+    // pick the two geometry points nearest worst segment, compute heading, rotate 90°
+    let bestIdx = 0, bestD = Infinity;
+    for (let i = 0; i < geom.length - 1; i++) {
+      const d = haversineMi({lat:geom[i][0], lng:geom[i][1]}, {lat:worst.lat, lng:worst.lng});
+      if (d < bestD) { bestD = d; bestIdx = i; }
+    }
+    const a = geom[bestIdx], b = geom[Math.min(geom.length-1, bestIdx+1)];
+    const brg = bearing(a, b);
+    // Perpendicular = +90°; pick whichever nudge direction has lower rain centroid
+    const rad = (brg + 90) * Math.PI / 180;
+    const dLat = Math.cos(rad) * 0.07, dLng = Math.sin(rad) * 0.07;
+    nudgeLat = worst.lat + dLat; nudgeLng = worst.lng + dLng;
+  }
+
+  const wps = State.currentRoute.waypoints;
+  if (wps.length < 2) return;
+  wps.splice(Math.floor(wps.length/2), 0, { lat: nudgeLat, lng: nudgeLng, label: 'Rain Dodge' });
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute.waypoints = [];
+  wps.forEach(addWaypoint);
+  await recalcRoute();
+
+  const after = { mi: State.currentRoute.distMi, min: State.currentRoute.durationMin };
+  const dMi = round(after.mi - before.mi, 1);
+  const dMin = Math.round(after.min - before.min);
+  const sign = (n) => (n >= 0 ? '+' : '');
+  toast(`Re-routed. ${sign(dMi)}${dMi} ${distLabel()} · ${sign(dMin)}${dMin}m vs. original.`, 4500);
+});
+
+/* ======================== FUEL ======================== */
+function renderFuel() {
+  const s = State.settings;
+  $('#fuelTank').value = s.fuelTank; $('#fuelMpg').value = s.fuelMpg; $('#fuelReserve').value = s.fuelReserve;
+  const full = s.fuelTank * s.fuelMpg, safe = Math.max(0, (s.fuelTank - s.fuelReserve) * s.fuelMpg);
+  $('#fuelSafeRange').textContent = round(distConv(safe), 1);
+  $('#fuelFullRange').textContent = round(distConv(full), 1);
+  const r = State.currentRoute;
+  if (r.distMi > 0) {
+    const stops = Math.max(0, Math.ceil(r.distMi / safe) - 1);
+    const delta = r.distMi - safe;
+    $('#fuelRouteInfo').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat"><div class="v">${round(distConv(r.distMi),1)}</div><div class="l">Route (${distLabel()})</div></div>
+        <div class="stat"><div class="v">${round(distConv(safe),1)}</div><div class="l">Safe Range</div></div>
+        <div class="stat"><div class="v">${stops}</div><div class="l">Gas Stops</div></div>
+        <div class="stat"><div class="v" style="color:var(--${delta<=0?'ok':'accent-2'})">${delta<=0?'✔':'+'+round(delta,0)+'mi'}</div><div class="l">${delta<=0?'Within range':'Overshoot'}</div></div>
+      </div>`;
+  } else {
+    $('#fuelRouteInfo').innerHTML = '<span class="tiny muted">Plan a route to see gas stops.</span>';
+  }
+}
+['fuelTank','fuelMpg','fuelReserve'].forEach(id => $('#'+id).addEventListener('input', e => {
+  State.settings[id] = parseFloat(e.target.value) || 0; lsSet(K.settings, State.settings); renderFuel();
+}));
+
+/* ======================== V3: MULTI-BIKE ======================== */
+function renderBike() {
+  const b = State.bike;
+  $('#bikeMake').value = b.make || ''; $('#bikeModel').value = b.model || '';
+  $('#bikeYear').value = b.year || ''; $('#bikeName').value = b.name || '';
+  $('#bikeOdo').value = b.odo || 0;
+}
+function renderBikeSwitcher() {
+  const box = $('#bikeSwitcher'); if (!box) return;
+  box.innerHTML = State.bikes.map(b => {
+    const label = (b.name || b.model || b.make || 'New Bike') + (b.id === State.activeBikeId ? ' ✓' : '');
+    return `<button class="bike-chip${b.id === State.activeBikeId ? ' active' : ''}" data-bike="${b.id}">${esc(label)}</button>`;
+  }).join('') + `<button class="bike-chip add" id="addBikeChip">+ Add Bike</button>`;
+  box.querySelectorAll('[data-bike]').forEach(el => el.addEventListener('click', () => {
+    State.activeBikeId = el.dataset.bike;
+    lsSet(K.activeBike, State.activeBikeId);
+    renderBike(); renderBikeSwitcher(); renderMaint(); renderStats();
+    toast('Switched to ' + ($('#bikeSwitcher .bike-chip.active')?.textContent || 'bike').trim());
+  }));
+  $('#addBikeChip')?.addEventListener('click', () => {
+    const id = 'b_' + Date.now();
+    State.bikes.push({ id, make:'', model:'', year:'', name:'New Bike', odo:0 });
+    State.activeBikeId = id;
+    lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+    renderBike(); renderBikeSwitcher(); renderMaint();
+  });
+}
+$('#saveBikeBtn').addEventListener('click', () => {
+  const b = State.bike;
+  b.make = $('#bikeMake').value.trim();
+  b.model = $('#bikeModel').value.trim();
+  b.year = $('#bikeYear').value;
+  b.name = $('#bikeName').value.trim();
+  b.odo = parseFloat($('#bikeOdo').value) || 0;
+  lsSet(K.bikes, State.bikes);
+  toast('Bike saved.');
+  renderBikeSwitcher(); renderMaint();
+});
+$('#deleteBikeBtn')?.addEventListener('click', () => {
+  if (State.bikes.length <= 1) { toast('Keep at least one bike.'); return; }
+  if (!confirm('Delete this bike? Rides stay in the log.')) return;
+  State.bikes = State.bikes.filter(b => b.id !== State.activeBikeId);
+  State.activeBikeId = State.bikes[0].id;
+  lsSet(K.bikes, State.bikes); lsSet(K.activeBike, State.activeBikeId);
+  renderBike(); renderBikeSwitcher(); renderMaint();
+  toast('Bike removed.');
+});
+renderBike(); renderBikeSwitcher();
+
+/* ======================== MAINTENANCE ======================== */
+function totalRideMi() { return State.rides.reduce((s,r) => s + (r.miles||0), 0); }
+function currentOdo()  { return (State.bike.odo || 0) + totalRideMi(); }
+
+function renderMaint() {
+  const odo = currentOdo();
+  const box = $('#maintList');
+  if (!box) return;
+  // V3: average miles/day across rides in the last 60 days (predictive)
+  const now = Date.now(), cutoff = now - 60 * 86400000;
+  const recentMi = State.rides.filter(r => new Date(r.date).getTime() >= cutoff).reduce((s,r) => s + (r.miles||0), 0);
+  const miPerDay = recentMi / 60; // 0 if nothing recent
+  box.innerHTML = State.maint.map(m => {
+    const milesSince = odo - m.lastMi;
+    const daysSince = (Date.now() - m.lastDate) / 86400000;
+    const miPct = m.everyMi ? milesSince/m.everyMi : 0;
+    const dayPct = m.everyDays ? daysSince/m.everyDays : 0;
+    const pct = Math.min(1.3, Math.max(miPct, dayPct));
+    const cls = pct >= 1 ? 'danger' : pct >= 0.8 ? 'warn' : '';
+    const due = m.everyMi ? `${Math.round(milesSince)}/${m.everyMi} mi` : `${Math.round(daysSince)}/${m.everyDays} days`;
+    // V3: predictive label
+    let predictTxt = '';
+    if (m.everyMi && miPerDay > 0.5 && milesSince < m.everyMi) {
+      const miLeft = m.everyMi - milesSince;
+      const daysLeft = Math.round(miLeft / miPerDay);
+      const predictCls = daysLeft < 7 ? 'danger' : daysLeft < 21 ? 'warn' : '';
+      predictTxt = `<div class="maint-predict ${predictCls}">~${miLeft}mi / ${daysLeft}d at your current pace</div>`;
+    } else if (!m.everyMi && m.everyDays) {
+      const daysLeft = Math.max(0, Math.round(m.everyDays - daysSince));
+      predictTxt = `<div class="maint-predict ${daysLeft < 3 ? 'danger' : daysLeft < 7 ? 'warn' : ''}">~${daysLeft}d to due</div>`;
+    }
+    return `<div class="maint-item">
+      <div style="flex:1">
+        <div class="k">${esc(m.n)}</div>
+        <div class="maint-bar"><div class="maint-bar-fill ${cls}" style="width:${Math.min(100,pct*100)}%"></div></div>
+        <div class="tiny muted mt-12" style="margin-top:4px">${due}${pct>=1?' · DUE':''}</div>
+        ${predictTxt}
+      </div>
+      <button class="btn sm ghost" data-serviced="${m.k}">✓ Serviced</button>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-serviced]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.serviced;
+    const m = State.maint.find(x => x.k === k); if (!m) return;
+    m.lastMi = currentOdo(); m.lastDate = Date.now();
+    lsSet(K.maint, State.maint); renderMaint(); toast(m.n + ' marked serviced.');
+  }));
+}
+$('#resetMaintBtn').addEventListener('click', () => {
+  State.maint.forEach(m => { m.lastMi = currentOdo(); m.lastDate = Date.now(); });
+  lsSet(K.maint, State.maint); renderMaint(); toast('All intervals reset.');
+});
+
+/* ======================== BADGES ======================== */
+const BADGES = [
+  { k:'firstride',  n:'Initiate',       d:'Log ride #1',           ico:'🔰', test: s => s.rides >= 1 },
+  { k:'r10',        n:'Regular',        d:'10 rides',               ico:'🏁', test: s => s.rides >= 10 },
+  { k:'r50',        n:'Lifer',          d:'50 rides',               ico:'💀', test: s => s.rides >= 50 },
+  { k:'m100',       n:'First 100',      d:'100 miles',              ico:'💯', test: s => s.miles >= 100 },
+  { k:'m1000',      n:'Four Digits',    d:'1,000 miles',            ico:'📈', test: s => s.miles >= 1000 },
+  { k:'m10000',     n:'Five Digits',    d:'10,000 miles',           ico:'🗿', test: s => s.miles >= 10000 },
+  { k:'night',      n:'Night Shift',    d:'Ride logged after 8pm',  ico:'🌙', test: s => s.nightRide },
+  { k:'dawn',       n:'Dawn Patrol',    d:'Ride before 7am',        ico:'🌅', test: s => s.dawnRide },
+  { k:'long100',    n:'Century',        d:'Single ride ≥100mi',     ico:'🎯', test: s => s.longestMi >= 100 },
+  { k:'long200',    n:'Twisted Sister', d:'Single ride ≥200mi',     ico:'🌀', test: s => s.longestMi >= 200 },
+  { k:'fast',       n:'Velocity',       d:'Hit 100+ mph',           ico:'⚡', test: s => s.topMph >= 100 },
+  { k:'lean',       n:'Knee Down',      d:'Recorded lean ≥45°',     ico:'🏍',  test: s => s.maxLean >= 45 },
+  { k:'rainbad',    n:'Bad Decision',   d:'Rode in 70%+ rain',      ico:'🌧',  test: s => s.rainRide },
+  { k:'fuelprophet',n:'Fuel Prophet',   d:'Route within 5mi of safe range', ico:'⛽', test: s => s.fuelProphet },
+  { k:'twisty5',    n:'Twisty God',     d:'Planned 5/5 twisty route', ico:'🐍', test: s => s.twisty5 },
+  { k:'hillcountry',n:'Hill Country',   d:'Ride in TX Hill Country', ico:'⛰',  test: s => s.hillCountry },
+  { k:'photog',     n:'Ride Photog',    d:'Pin a photo mid-ride',   ico:'📸', test: s => s.photoPins >= 1 },
+  { k:'group',      n:'Pack Dog',       d:'Create a group room',    ico:'🐺', test: s => s.groupRooms >= 1 },
+  { k:'share',      n:'Loud Mouth',     d:'Share a Ride DNA card',  ico:'📣', test: s => s.shares >= 1 },
+  { k:'saved5',     n:'The Architect',  d:'Save 5 routes',          ico:'🗺', test: s => s.saved >= 5 },
+  // V3 additions
+  { k:'club45',       n:'45° Club',        d:'Avg lean ≥35° on a ride', ico:'📐', test: s => s.club45 },
+  { k:'epicTwisties', n:'Epic 200+ Twisties', d:'200+ mi ride, avg lean ≥25°', ico:'🐉', test: s => s.epicTwisties },
+  { k:'rainRider',    n:'Rain Rider',      d:'3 rides logged in 40%+ rain',  ico:'☔', test: s => s.rainRiderCount >= 3 },
+  { k:'weekendWarrior',n:'Weekend Warrior',d:'Ride on both Sat & Sun of same weekend', ico:'🏆', test: s => s.weekendWarrior },
+  { k:'twistyIdx80',  n:'Twisty Mind',     d:'Twisties Index ≥80 on a ride', ico:'🧠', test: s => s.topTwistiesIdx >= 80 },
+  { k:'survivor',     n:'Survivor',        d:'Cancelled a crash alert — lived to ride again', ico:'🛡', test: s => s.crashCancels >= 1 },
+  { k:'multibike',    n:'Two-Bike Garage', d:'Register a second bike',      ico:'🏎', test: s => s.bikes >= 2 },
+  { k:'gpxer',        n:'GPX Nerd',        d:'Import or export a GPX file', ico:'📁', test: s => s.gpxUses >= 1 }
+];
+function deriveStats() {
+  const miles = totalRideMi();
+  const rides = State.rides.length;
+  let nightRide=false, dawnRide=false, longestMi=0, topMph=0, maxLean=0, rainRide=false, hillCountry=false, photoPins=0, shares=0;
+  // V3 accumulators
+  let club45=false, epicTwisties=false, rainRiderCount=0, topTwistiesIdx=0;
+  const datesByWeek = {};
+  State.rides.forEach(r => {
+    if (r.date) {
+      const h = new Date(r.date).getHours();
+      if (h >= 20) nightRide = true;
+      if (h < 7 && h >= 0) dawnRide = true;
+      // Track Saturday/Sunday pairings by ISO-week bucket
+      const d = new Date(r.date);
+      const dow = d.getDay(); // 0 Sun, 6 Sat
+      if (dow === 0 || dow === 6) {
+        // Week key: year + weekOfYear
+        const jan1 = new Date(d.getFullYear(), 0, 1);
+        const week = Math.floor(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        const key = d.getFullYear() + '-' + week;
+        datesByWeek[key] = (datesByWeek[key] || 0) | (dow === 6 ? 1 : 2);
+      }
+    }
+    if (r.miles > longestMi) longestMi = r.miles;
+    if (r.topMph && r.topMph > topMph) topMph = r.topMph;
+    if (r.maxLean && r.maxLean > maxLean) maxLean = r.maxLean;
+    if (r.rainPct && r.rainPct >= 70) rainRide = true;
+    if (r.rainPct && r.rainPct >= 40) rainRiderCount++;
+    if (r.photos && r.photos.length) photoPins += r.photos.length;
+    if (r.shared) shares++;
+    if (r.hillCountry) hillCountry = true;
+    // V3 lean/twisty heuristics
+    if (r.avgLean && r.avgLean >= 35) club45 = true;
+    if (r.miles >= 200 && r.avgLean && r.avgLean >= 25) epicTwisties = true;
+    if (r.twistiesIdx && r.twistiesIdx > topTwistiesIdx) topTwistiesIdx = r.twistiesIdx;
+  });
+  const weekendWarrior = Object.values(datesByWeek).some(v => v === 3); // both Sat(1) + Sun(2)
+  const twisty5 = State.routes.some(r => r.twisty >= 5) || State.currentRoute.twisty >= 5;
+  const saved = State.routes.length;
+  const s = State.settings;
+  const r = State.currentRoute;
+  const safeRange = (s.fuelTank - s.fuelReserve) * s.fuelMpg;
+  const fuelProphet = r.distMi > 0 && Math.abs(r.distMi - safeRange) <= 5;
+  return {
+    rides, miles, nightRide, dawnRide, longestMi, topMph, maxLean, rainRide,
+    hillCountry, photoPins, shares, twisty5, saved, fuelProphet,
+    groupRooms: State.room ? 1 : 0,
+    // V3
+    club45, epicTwisties, rainRiderCount, weekendWarrior, topTwistiesIdx,
+    crashCancels: +(lsGet('bds_crash_cancels', 0) || 0),
+    bikes: State.bikes.length,
+    gpxUses: +(lsGet('bds_gpx_uses', 0) || 0)
+  };
+}
+function checkBadges() {
+  const s = deriveStats();
+  let newOnes = [];
+  BADGES.forEach(b => { if (b.test(s) && !State.badges[b.k]) { State.badges[b.k] = Date.now(); newOnes.push(b); } });
+  if (newOnes.length) { lsSet(K.badges, State.badges); newOnes.forEach(b => toast(`🏆 UNLOCKED: ${b.n}`, 3500)); speak('New badge unlocked'); }
+  return newOnes;
+}
+function renderBadges() {
+  const box = $('#badgesGrid'); if (!box) return;
+  box.innerHTML = BADGES.map(b => {
+    const un = !!State.badges[b.k];
+    // TODO(store): when Shopify store is live, wrap the unlocked badge in an <a> to a pre-filtered collection
+    // Example: `<a href="https://store.baddecision.example/?code=${b.k.toUpperCase()}10" ... >`
+    return `<div class="badge ${un?'unlocked':'locked'}" title="${esc(b.d)}"><div class="ico">${b.ico}</div><div class="n">${esc(b.n)}</div><div class="d">${esc(b.d)}</div></div>`;
+  }).join('');
+}
+
+/* ======================== PHOTO PINS (IndexedDB) ======================== */
+const photoDB = (() => {
+  let db;
+  const open = () => new Promise((res, rej) => {
+    const req = indexedDB.open('bds_photos', 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore('photos', { keyPath:'id', autoIncrement:true }); };
+    req.onsuccess = () => { db = req.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+  return {
+    async put(rec) { if (!db) await open(); return new Promise((res,rej) => { const tx = db.transaction('photos','readwrite'); const r = tx.objectStore('photos').add(rec); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+    async listByRide(rideId) { if (!db) await open(); return new Promise((res,rej) => { const tx = db.transaction('photos','readonly'); const all = []; tx.objectStore('photos').openCursor().onsuccess = e => { const c = e.target.result; if (c) { if (c.value.rideId === rideId) all.push(c.value); c.continue(); } else res(all); }; tx.onerror = () => rej(tx.error); }); }
+  };
+})();
+
+async function renderPhotoStrip() {
+  const box = $('#photoStrip'); if (!box) return;
+  const last = lsGet(K.lastRide, null);
+  if (!last) { box.innerHTML = '<span class="tiny muted">Add photos during a live ride.</span>'; return; }
+  try {
+    const photos = await photoDB.listByRide(last.id);
+    if (!photos.length) { box.innerHTML = '<span class="tiny muted">No photos for the last ride.</span>'; return; }
+    box.innerHTML = '<div class="row" style="overflow-x:auto;gap:6px">' + photos.map(p => `<img src="${p.dataUrl}" alt="Ride photo" style="height:88px;border-radius:8px;border:1px solid var(--border)">`).join('') + '</div>';
+  } catch(_) { box.innerHTML = '<span class="tiny muted">Photo store unavailable.</span>'; }
+}
+
+/* ======================== LIVE RIDE ======================== */
+let motionHandler = null, orientHandler = null, watchId = null, liveTimer = null;
+
+async function requestMotion() {
+  // iOS 13+: DeviceMotion and DeviceOrientation each need their own permission call.
+  // Without Orientation permission, lean (e.gamma) is silently 0 forever.
+  const needsM = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+  const needsO = typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
+  const [m, o] = await Promise.all([
+    needsM ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : 'granted',
+    needsO ? DeviceOrientationEvent.requestPermission().catch(() => 'denied') : 'granted'
+  ]);
+  return m === 'granted' && o === 'granted';
+}
+
+async function startRide() {
+  if (State.liveRide || startRide._pending) return;
+  startRide._pending = true;
+  const ctaEl = $('#rideCTA'); if (ctaEl) ctaEl.disabled = true;
+
+  try {
+    if (!('geolocation' in navigator)) { toast('No GPS support.'); return; }
+    const motionOk = await requestMotion();
+
+    State.liveRide = {
+      id: 'r_' + Date.now(), startTs: Date.now(), breadcrumb: [],
+      speeds: [], leans: [], accels: [],
+      topMph: 0, maxLean: 0, maxG: 0, distMi: 0,
+      rainPct: 0, hillCountry: false, photos: [],
+      crashFlagged: false, twistyMi: 0 // V3
+    };
+
+    // V3: wake lock (keeps screen on if enabled in settings)
+    acquireWakeLock();
+
+    // Breadcrumb line
+    if (breadcrumbLine) map.removeLayer(breadcrumbLine);
+    breadcrumbLine = L.polyline([], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
+
+    // V3: battery-saver toggles the GPS accuracy profile
+    const saver = !!State.settings.batterySaver;
+    watchId = navigator.geolocation.watchPosition(onPos, err => toast('GPS error: ' + err.message), {
+      enableHighAccuracy: !saver, maximumAge: saver ? 4000 : 1000, timeout: 15000
+    });
+
+    // Motion (lean + g + crash detection)
+    if (motionOk && 'DeviceMotionEvent' in window) {
+      motionHandler = e => {
+        const a = e.accelerationIncludingGravity || {};
+        const x = a.x || 0, y = a.y || 0, z = a.z || 0;
+        const g = Math.hypot(x,y,z) / 9.81;
+        if (g > State.liveRide.maxG) State.liveRide.maxG = g;
+        State.liveRide.accels.push(g);
+        if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+        // V3: crash detection — sustained >4g on accelIncludingGravity (~3g linear) is a reasonable fall heuristic
+        if (State.settings.crashDetect) checkCrash(g);
+      };
+      window.addEventListener('devicemotion', motionHandler, { passive:true });
+    }
+    if (motionOk && 'DeviceOrientationEvent' in window) {
+      orientHandler = e => {
+        const lean = Math.abs(e.gamma || 0);
+        if (lean > State.liveRide.maxLean) State.liveRide.maxLean = lean;
+        State.liveRide.leans.push(lean);
+        if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
+        const tile = $('#hudLeanTile');
+        $('#hudLean').textContent = Math.round(lean);
+        tile.classList.remove('mid','hi');
+        if (lean >= 35) { tile.classList.add('hi'); if (State.settings.voiceLean && lean >= 40) speak('Lean ' + Math.round(lean) + ', twisty incoming'); }
+        else if (lean >= 20) tile.classList.add('mid');
+      };
+      window.addEventListener('deviceorientation', orientHandler, { passive:true });
+    }
+
+    // Live timer
+    liveTimer = setInterval(() => {
+      const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
+      $('#hudDistL').textContent = distLabel().toUpperCase() + ' · ' + mins + 'M';
+    }, 5000);
+
+    // V3: persist snapshot every 10s so an iOS background-kill doesn't nuke the ride
+    State.liveRide._persistTick = setInterval(() => {
+      if (!State.liveRide) return;
+      lsSet(K.liveSnapshot, State.liveRide);
+    }, 10000);
+
+    $('#rideCTA').textContent = 'END RIDE';
+    $('#rideCTA').classList.add('end');
+    $('#rideCTA').setAttribute('aria-label', 'End ride — stop tracking and log it');
+    $('#livePill').classList.remove('hide');
+    switchTo('ride');
+    if (State.settings.voiceRide) speak('Ride started');
+    toast('Ride started. Stay safe out there.');
+  } finally {
+    startRide._pending = false;
+    if (ctaEl) ctaEl.disabled = false;
+  }
+}
+
+/* V3: Re-engage watchers for a resumed liveRide without resetting its counters */
+async function resumeLiveRideWatchers() {
+  if (!State.liveRide) return;
+  const motionOk = await requestMotion();
+  acquireWakeLock();
+  if (breadcrumbLine) map.removeLayer(breadcrumbLine);
+  breadcrumbLine = L.polyline(State.liveRide.breadcrumb || [], { color:'#ffb400', weight:5, opacity:.95, dashArray:'2,6' }).addTo(map);
+  const saver = !!State.settings.batterySaver;
+  watchId = navigator.geolocation.watchPosition(onPos, err => toast('GPS error: ' + err.message), {
+    enableHighAccuracy: !saver, maximumAge: saver ? 4000 : 1000, timeout: 15000
+  });
+  if (motionOk && 'DeviceMotionEvent' in window) {
+    motionHandler = e => {
+      const a = e.accelerationIncludingGravity || {};
+      const g = Math.hypot(a.x||0, a.y||0, a.z||0) / 9.81;
+      if (g > State.liveRide.maxG) State.liveRide.maxG = g;
+      State.liveRide.accels.push(g); if (State.liveRide.accels.length > 200) State.liveRide.accels.shift();
+      if (State.settings.crashDetect) checkCrash(g);
+    };
+    window.addEventListener('devicemotion', motionHandler, { passive:true });
+  }
+  if (motionOk && 'DeviceOrientationEvent' in window) {
+    orientHandler = e => {
+      const lean = Math.abs(e.gamma || 0);
+      if (lean > State.liveRide.maxLean) State.liveRide.maxLean = lean;
+      State.liveRide.leans.push(lean); if (State.liveRide.leans.length > 2000) State.liveRide.leans.shift();
+      const tile = $('#hudLeanTile'); $('#hudLean').textContent = Math.round(lean);
+      tile.classList.remove('mid','hi');
+      if (lean >= 35) tile.classList.add('hi'); else if (lean >= 20) tile.classList.add('mid');
+    };
+    window.addEventListener('deviceorientation', orientHandler, { passive:true });
+  }
+  liveTimer = setInterval(() => {
+    const mins = Math.floor((Date.now() - State.liveRide.startTs) / 60000);
+    $('#hudDistL').textContent = distLabel().toUpperCase() + ' · ' + mins + 'M';
+  }, 5000);
+  State.liveRide._persistTick = setInterval(() => { if (State.liveRide) lsSet(K.liveSnapshot, State.liveRide); }, 10000);
+  $('#rideCTA').textContent = 'END RIDE';
+  $('#rideCTA').classList.add('end');
+  $('#livePill').classList.remove('hide');
+  toast('Resumed in-progress ride.', 3500);
+}
+
+/* V3: Crash detection — debounced threshold with 15s cancellable alert */
+let _crashState = { peakCount: 0, lastPeakTs: 0, modalOpen: false };
+function checkCrash(g) {
+  if (_crashState.modalOpen) return;
+  const now = Date.now();
+  // Look for 3 peaks >4g inside a 500ms window (rejects single bumps / pothole spikes)
+  if (g >= 4.0) {
+    if (now - _crashState.lastPeakTs < 500) _crashState.peakCount++;
+    else _crashState.peakCount = 1;
+    _crashState.lastPeakTs = now;
+    if (_crashState.peakCount >= 3) {
+      _crashState.peakCount = 0;
+      openCrashModal();
+    }
+  }
+}
+function openCrashModal() {
+  if (!State.liveRide) return;
+  _crashState.modalOpen = true;
+  const modal = $('#crashModal');
+  const countEl = $('#crashCount');
+  modal.classList.add('open');
+  let n = 15;
+  countEl.textContent = n;
+  speak('Crash detected. Cancel if you are OK.');
+  const tick = setInterval(() => {
+    n--; countEl.textContent = n;
+    if (n <= 0) { clearInterval(tick); finalizeCrashAlert(); }
+  }, 1000);
+  const cancel = () => {
+    clearInterval(tick);
+    modal.classList.remove('open');
+    _crashState.modalOpen = false;
+    $('#crashCancelBtn').removeEventListener('click', cancel);
+    $('#crashConfirmBtn').removeEventListener('click', confirm);
+    // V3: track cancels for the "Survivor" badge
+    try {
+      const n = (+localStorage.getItem('bds_crash_cancels') || 0) + 1;
+      localStorage.setItem('bds_crash_cancels', String(n));
+    } catch(_) {}
+    checkBadges();
+    toast('False alarm cleared.');
+  };
+  const confirm = () => {
+    clearInterval(tick);
+    $('#crashCancelBtn').removeEventListener('click', cancel);
+    $('#crashConfirmBtn').removeEventListener('click', confirm);
+    finalizeCrashAlert();
+  };
+  $('#crashCancelBtn').addEventListener('click', cancel);
+  $('#crashConfirmBtn').addEventListener('click', confirm);
+}
+function finalizeCrashAlert() {
+  const modal = $('#crashModal');
+  modal.classList.remove('open');
+  _crashState.modalOpen = false;
+  if (State.liveRide) State.liveRide.crashFlagged = true;
+  const last = State.liveRide?.breadcrumb?.slice(-1)?.[0];
+  const locStr = last ? `${last[0].toFixed(5)},${last[1].toFixed(5)}` : 'unknown';
+  const msg = `🚨 Crash flagged at ${locStr}. Group room: ${State.room?.code || '(none)'}. Time: ${new Date().toISOString()}`;
+  if (navigator.share) navigator.share({ text: msg, title: 'Crash alert' }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(msg).then(() => toast('Crash alert copied to clipboard — paste to group.', 5000));
+  toast('Crash flagged on this ride.', 4500);
+}
+
+function onPos(pos) {
+  if (!State.liveRide) return;
+  const { latitude:lat, longitude:lng, speed:ms } = pos.coords;
+  const mph = ms != null ? ms * 2.23694 : null;
+  const lastPt = State.liveRide.breadcrumb[State.liveRide.breadcrumb.length - 1];
+  const pt = [lat,lng];
+  State.liveRide.breadcrumb.push(pt);
+  if (lastPt) State.liveRide.distMi += haversineMi({lat:lastPt[0],lng:lastPt[1]}, {lat,lng});
+  breadcrumbLine.addLatLng(pt);
+  // HC zone check — very rough bounding box for Texas Hill Country
+  if (lat > 29.5 && lat < 30.8 && lng < -97.8 && lng > -99.8) State.liveRide.hillCountry = true;
+  if (liveMarker) liveMarker.setLatLng(pt); else liveMarker = L.circleMarker(pt, { radius:7, color:'#ffb400', fillColor:'#ff3b00', fillOpacity:1, weight:3 }).addTo(map);
+  if (mph != null) {
+    State.liveRide.speeds.push(mph);
+    if (mph > State.liveRide.topMph) State.liveRide.topMph = mph;
+    $('#hudSpeed').textContent = Math.round(speedConv(mph));
+    $('#hudSpeedL').textContent = speedLabel().toUpperCase();
+  }
+  $('#hudDist').textContent = round(distConv(State.liveRide.distMi), 1);
+  map.panTo(pt, { animate:true, duration:.4 });
+}
+
+async function endRide() {
+  if (!State.liveRide) return;
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  if (motionHandler) window.removeEventListener('devicemotion', motionHandler);
+  if (orientHandler) window.removeEventListener('deviceorientation', orientHandler);
+  clearInterval(liveTimer); watchId = null; motionHandler = null; orientHandler = null; liveTimer = null;
+
+  // V3: stop persistence + release wake lock + clear snapshot
+  if (State.liveRide._persistTick) clearInterval(State.liveRide._persistTick);
+  try { localStorage.removeItem(K.liveSnapshot); } catch(_) {}
+  releaseWakeLock();
+
+  const r = State.liveRide;
+  const durHr = (Date.now() - r.startTs) / 3600000;
+
+  // V3: Twisties Index — lean-degree-seconds / ride-seconds, normalized to a 0-100 score
+  // A relaxed cruise averages ~5°; a hot twisty run can average 20°+.
+  const avgLean = r.leans.length ? r.leans.reduce((s,n) => s+n, 0) / r.leans.length : 0;
+  const twistiesIdx = Math.min(100, Math.round(avgLean * 3.5));
+  // Lean-mile estimate: fraction of ride above 20° lean × distance
+  const hotFraction = r.leans.length ? r.leans.filter(l => l >= 20).length / r.leans.length : 0;
+  const twistyMi = round(r.distMi * hotFraction, 1);
+
+  // V3: decimate breadcrumb to max 500 points so localStorage doesn't explode
+  const breadcrumb = decimateBreadcrumb(r.breadcrumb, 500);
+
+  const rideRec = {
+    id: r.id, ts: Date.now(), date: new Date(r.startTs).toISOString().slice(0,10),
+    name: 'Live Ride · ' + new Date(r.startTs).toLocaleDateString(undefined,{month:'short',day:'numeric'}),
+    miles: round(r.distMi, 1), hours: round(durHr, 2),
+    topMph: round(r.topMph, 1), maxLean: round(r.maxLean, 1), maxG: round(r.maxG, 2),
+    avgLean: round(avgLean, 1), twistiesIdx, twistyMi,
+    leans: r.leans.slice(-300), // keep last ~300 samples for the DNA lean bar
+    breadcrumb, hillCountry: r.hillCountry,
+    crashFlagged: !!r.crashFlagged,
+    bikeId: State.activeBikeId, // V3: which bike did this ride
+    rainPct: lastRibbon.length ? Math.max(...lastRibbon.map(x=>x.rainPct)) : 0
+  };
+  State.rides.unshift(rideRec); lsSet(K.rides, State.rides);
+  lsSet(K.lastRide, rideRec);
+  State.liveRide = null;
+
+  $('#rideCTA').textContent = 'START RIDE';
+  $('#rideCTA').classList.remove('end');
+  $('#rideCTA').setAttribute('aria-label', 'Start ride — begin GPS tracking');
+  $('#livePill').classList.add('hide');
+  $('#hudSpeed').textContent = '—'; $('#hudLean').textContent = '—'; $('#hudDist').textContent = '0.0'; $('#hudDistL').textContent = distLabel().toUpperCase();
+
+  renderRides(); renderMaint(); renderBikeSwitcher(); checkBadges(); drawDNA(); renderPhotoStrip();
+  if (State.settings.voiceRide) speak('Ride ended');
+  toast(`Logged ${rideRec.miles} ${distLabel()} · top ${Math.round(speedConv(rideRec.topMph))} ${speedLabel()} · lean ${Math.round(rideRec.maxLean)}° · twisty idx ${twistiesIdx}`, 4500);
+}
+
+/* V3: Light-touch Douglas-Peucker; keeps visible shape, drops redundant points */
+function decimateBreadcrumb(pts, maxPts = 500) {
+  if (!pts || pts.length <= maxPts) return pts || [];
+  const sqTolDeg = 0.00002; // ~2m
+  const squaredSegDist = (p, a, b) => {
+    let x = a[1], y = a[0], dx = b[1]-x, dy = b[0]-y;
+    if (dx !== 0 || dy !== 0) {
+      const t = ((p[1]-x)*dx + (p[0]-y)*dy) / (dx*dx + dy*dy);
+      if (t > 1) { x = b[1]; y = b[0]; } else if (t > 0) { x += dx*t; y += dy*t; }
+    }
+    dx = p[1]-x; dy = p[0]-y;
+    return dx*dx + dy*dy;
+  };
+  const simplify = (arr, tol) => {
+    if (arr.length <= 2) return arr;
+    const keep = new Uint8Array(arr.length);
+    keep[0] = keep[arr.length-1] = 1;
+    const stack = [[0, arr.length-1]];
+    while (stack.length) {
+      const [lo, hi] = stack.pop();
+      let maxD = 0, idx = 0;
+      for (let i = lo+1; i < hi; i++) {
+        const d = squaredSegDist(arr[i], arr[lo], arr[hi]);
+        if (d > maxD) { maxD = d; idx = i; }
+      }
+      if (maxD > tol) { keep[idx] = 1; stack.push([lo, idx], [idx, hi]); }
+    }
+    return arr.filter((_, i) => keep[i]);
+  };
+  // Ratchet tolerance upward until we fit the cap
+  let tol = sqTolDeg, out = simplify(pts, tol);
+  while (out.length > maxPts && tol < 1) { tol *= 4; out = simplify(pts, tol); }
+  return out;
+}
+
+$('#rideCTA').addEventListener('click', () => { State.liveRide ? endRide() : startRide(); });
+$('#recenterBtn').addEventListener('click', () => {
+  if (State.liveRide && liveMarker) map.setView(liveMarker.getLatLng(), 14);
+  else if (routeLine) map.fitBounds(routeLine.getBounds(), { padding:[40,40] });
+  else navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 13));
+});
+
+function updateHudChips() {
+  const r = State.currentRoute;
+  if (r.waypoints.length >= 2) {
+    $('#hudRouteChip').classList.remove('hide');
+    $('#hudRouteName').textContent = r.name || `${r.waypoints.length} stops · ${round(distConv(r.distMi),1)} ${distLabel()}`;
+    $('#hudTwistyChip').classList.remove('hide');
+    $('#hudTwistyText').textContent = `${r.twisty}/5 twisty`;
+  } else {
+    $('#hudRouteChip').classList.add('hide');
+    $('#hudTwistyChip').classList.add('hide');
+  }
+}
+
+/* ======================== RIDES LIST & STATS ======================== */
+function renderRides() {
+  const box = $('#ridesList');
+  if (!box) return;
+  box.innerHTML = State.rides.length ? State.rides.map(r => `
+    <div class="pref">
+      <div>
+        <div class="k">${esc(r.name)}</div>
+        <div class="d">${esc(r.date || '')} · ${r.miles} ${distLabel()} · ${r.hours}h${r.topMph?' · top '+Math.round(speedConv(r.topMph))+' '+speedLabel():''}${r.maxLean?' · lean '+Math.round(r.maxLean)+'°':''}</div>
+      </div>
+      <button class="icon-btn" data-delride="${r.id}" aria-label="Delete ride">✕</button>
+    </div>
+  `).join('') : '<span class="tiny muted">No rides logged yet.</span>';
+  box.querySelectorAll('[data-delride]').forEach(b => b.addEventListener('click', () => {
+    State.rides = State.rides.filter(r => r.id !== b.dataset.delride); lsSet(K.rides, State.rides); renderRides(); renderStats(); renderMaint(); checkBadges();
+  }));
+  renderStats();
+}
+function renderStats() {
+  const n = State.rides.length, mi = totalRideMi(), hr = State.rides.reduce((s,r) => s + (r.hours||0), 0);
+  $('#statRides').textContent = n;
+  $('#statMiles').textContent = Math.round(distConv(mi));
+  $('#statHours').textContent = hr.toFixed(1);
+  $('#statAvg').textContent = n ? Math.round(distConv(mi/n)) : 0;
+}
+$('#saveRideBtn').addEventListener('click', () => {
+  const name = $('#rideName').value.trim() || 'Ride';
+  const miles = parseFloat($('#rideMiles').value) || 0;
+  const hours = parseFloat($('#rideHours').value) || 0;
+  const date = $('#rideDate').value || new Date().toISOString().slice(0,10);
+  if (!miles) { toast('Add a distance.'); return; }
+  State.rides.unshift({ id:'r_'+Date.now(), ts:Date.now(), name, miles, hours, date });
+  lsSet(K.rides, State.rides); renderRides(); renderMaint(); checkBadges();
+  $('#rideName').value = ''; $('#rideMiles').value = ''; $('#rideHours').value = '';
+  toast('Ride saved.');
+});
+$('#fillFromRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (!r.distMi) { toast('No route.'); return; }
+  $('#rideMiles').value = round(r.distMi, 1);
+  $('#rideHours').value = round(r.durationMin/60, 1);
+  $('#rideName').value = r.name || 'Route Ride';
+  $('#rideDate').value = new Date().toISOString().slice(0,10);
+});
+
+/* ======================== ROUTES: save/share/load/pre-cache ======================== */
+$('#saveRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (r.waypoints.length < 2) { toast('Add waypoints first.'); return; }
+  const name = prompt('Route name?', r.name || 'My Route') || 'My Route';
+  const rec = { id:'rt_'+Date.now(), name, waypoints:r.waypoints, geometry:r.geometry, distMi:r.distMi, durationMin:r.durationMin, twisty:r.twisty, ts:Date.now() };
+  State.routes.unshift(rec); lsSet(K.routes, State.routes);
+  State.currentRoute.name = name;
+  renderSavedRoutes(); checkBadges();
+  toast('Route saved.');
+});
+function renderSavedRoutes() {
+  const box = $('#savedRoutesList'); if (!box) return;
+  box.innerHTML = State.routes.length ? State.routes.map(r => `
+    <div class="pref">
+      <div>
+        <div class="k">${esc(r.name)}</div>
+        <div class="d">${round(distConv(r.distMi),1)} ${distLabel()} · ${r.twisty}/5 twisty</div>
+      </div>
+      <div class="row">
+        <button class="icon-btn" data-load="${r.id}" aria-label="Load">↑</button>
+        <button class="icon-btn" data-share="${r.id}" aria-label="Share">↗</button>
+        <button class="icon-btn" data-delrt="${r.id}" aria-label="Delete">✕</button>
+      </div>
+    </div>
+  `).join('') : '<span class="tiny muted">No saved routes.</span>';
+  box.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => {
+    const r = State.routes.find(x => x.id === b.dataset.load); if (!r) return;
+    State.currentRoute = JSON.parse(JSON.stringify({ ...r, name:r.name }));
+    waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+    State.currentRoute.waypoints = [];
+    r.waypoints.forEach(addWaypoint);
+    recalcRoute(); switchTo('ride'); toast('Loaded: ' + r.name);
+  }));
+  box.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', () => {
+    const r = State.routes.find(x => x.id === b.dataset.share); if (!r) return;
+    shareRoute(r);
+  }));
+  box.querySelectorAll('[data-delrt]').forEach(b => b.addEventListener('click', () => {
+    State.routes = State.routes.filter(x => x.id !== b.dataset.delrt); lsSet(K.routes, State.routes); renderSavedRoutes();
+  }));
+}
+function shareRoute(r) {
+  const payload = btoa(JSON.stringify({ n:r.name, w:r.waypoints.map(w => [w.lat.toFixed(5), w.lng.toFixed(5)]) }));
+  const url = location.origin + location.pathname + '#r=' + encodeURIComponent(payload);
+  if (navigator.share) navigator.share({ title:r.name, text:'Bad Decision Sidekick route', url }).catch(()=>{});
+  else { navigator.clipboard.writeText(url).then(() => toast('Link copied.')); }
+}
+$('#shareRouteBtn').addEventListener('click', () => {
+  const r = State.currentRoute; if (r.waypoints.length < 2) { toast('No route.'); return; }
+  shareRoute({ name:r.name || 'Route', waypoints:r.waypoints });
+});
+function loadHashRoute() {
+  const m = location.hash.match(/#r=([^&]+)/);
+  if (!m) return;
+  try {
+    const payload = JSON.parse(atob(decodeURIComponent(m[1])));
+    waypointMarkers.forEach(x => map.removeLayer(x)); waypointMarkers = [];
+    State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:payload.n };
+    payload.w.forEach(([lat,lng]) => addWaypoint({ lat:+lat, lng:+lng }));
+    recalcRoute();
+    toast('Loaded shared route.');
+  } catch(_) {}
+}
+
+/* ---- OFFLINE TILE PRE-CACHE ---- */
+$('#precacheBtn').addEventListener('click', async () => {
+  const geom = State.currentRoute.geometry;
+  if (!geom || geom.length < 2) { toast('Plan a route first.'); return; }
+  const lats = geom.map(p => p[0]), lngs = geom.map(p => p[1]);
+  const bounds = { n: Math.max(...lats), s: Math.min(...lats), e: Math.max(...lngs), w: Math.min(...lngs) };
+  const urls = [];
+  for (let z = 10; z <= 14; z++) {
+    const tn = (lat, z) => Math.floor((1 - Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180)) / Math.PI) / 2 * Math.pow(2, z));
+    const tx = (lng, z) => Math.floor((lng + 180) / 360 * Math.pow(2, z));
+    const xMin = tx(bounds.w, z), xMax = tx(bounds.e, z);
+    const yMin = tn(bounds.n, z), yMax = tn(bounds.s, z);
+    for (let x = xMin; x <= xMax; x++) for (let y = yMin; y <= yMax; y++) urls.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+  }
+  if (urls.length > 1500) { toast('Area too big — zoom in to plan a smaller route, then cache.'); return; }
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type:'PRECACHE_TILES', urls });
+    toast(`Caching ${urls.length} tiles for offline…`);
+  } else { toast('Offline cache needs the service worker. Reload once.'); }
+});
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'PRECACHE_DONE') toast(`Cached ${e.data.ok}/${e.data.total} tiles ✔`);
+  });
+}
+
+/* ======================== GENERATE A RIDE ======================== */
+const ROUTE_NODES = {
+  north: [
+    {lat:30.676, lng:-97.677, name:'Georgetown'}, {lat:30.631, lng:-97.678, name:'Round Rock'},
+    {lat:30.750, lng:-98.239, name:'Burnet'},     {lat:30.574, lng:-98.273, name:'Marble Falls'},
+    {lat:30.759, lng:-97.847, name:'Liberty Hill'},{lat:30.860, lng:-98.430, name:'Llano'}
+  ],
+  south: [
+    {lat:29.884, lng:-97.941, name:'San Marcos'}, {lat:29.703, lng:-98.125, name:'New Braunfels'},
+    {lat:29.565, lng:-98.276, name:'Schertz'},    {lat:29.895, lng:-98.044, name:'Canyon Lake'},
+    {lat:29.708, lng:-97.613, name:'Lockhart'}
+  ],
+  east: [
+    {lat:30.093, lng:-97.314, name:'Bastrop'},    {lat:30.078, lng:-96.996, name:'Smithville'},
+    {lat:30.386, lng:-97.543, name:'Elgin'},      {lat:30.236, lng:-97.030, name:'La Grange'}
+  ],
+  west: [
+    {lat:30.295, lng:-98.871, name:'Fredericksburg'},{lat:30.194, lng:-98.429, name:'Johnson City'},
+    {lat:30.345, lng:-98.411, name:'Stonewall'},  {lat:30.247, lng:-97.971, name:'Dripping Springs'},
+    {lat:29.962, lng:-99.137, name:'Kerrville'}
+  ],
+  twisties: [
+    {lat:30.499, lng:-98.707, name:'Willow City Loop'}, {lat:30.082, lng:-99.256, name:'RR337 / Medina'},
+    {lat:29.790, lng:-99.761, name:'RR337 Leakey'},     {lat:29.912, lng:-99.718, name:'Vanderpool'},
+    {lat:30.050, lng:-99.590, name:'Junction Detour'},  {lat:30.098, lng:-98.103, name:'Wimberley'},
+    {lat:30.0353,lng:-98.0211, name:'Devil\'s Backbone'}
+  ]
+};
+function generateRoute() {
+  let dir = $('#rideDirection').value, dist = $('#rideDistance').value, style = $('#rideStyle').value, loop = $('#rideLoop').value;
+  const ranges = { short:[25,50], medium:[50,100], long:[100,175], epic:[175,300] };
+  const r = ranges[dist] || [50,100];
+  const targetDist = (r[0]+r[1])/2;
+  if (dir === 'any') dir = ['north','south','east','west'][Math.floor(Math.random()*4)];
+
+  // V3: style-specific pool composition
+  let pool;
+  switch (style) {
+    case 'sportbike':
+      // Heavy twisties bias + short hops → lots of cornering density
+      pool = ROUTE_NODES.twisties.concat(ROUTE_NODES.twisties).concat(ROUTE_NODES[dir]);
+      break;
+    case 'twisties':
+      pool = ROUTE_NODES[dir].concat(ROUTE_NODES.twisties);
+      break;
+    case 'mixed':
+      // Mix of directional + some twisties
+      pool = ROUTE_NODES[dir].concat(ROUTE_NODES.twisties.slice(0, 3));
+      break;
+    case 'scenic':
+    case 'fastest':
+    default:
+      pool = ROUTE_NODES[dir].slice();
+  }
+
+  const start = { lat:30.2672, lng:-97.7431, label:'Austin' };
+  const wps = [start];
+  let totalDist = 0; const used = {};
+  // Sportbike mode: more waypoints, shorter hops between them for denser cornering
+  const maxWps = style === 'sportbike'
+    ? (dist==='short'?4:dist==='medium'?7:dist==='long'?9:12)
+    : (dist==='short'?3:dist==='medium'?5:dist==='long'?6:8);
+  const minHop = style === 'sportbike' ? 5 : 3;
+
+  for (let i=0;i<maxWps && totalDist<targetDist*0.85;i++) {
+    let best=null, bestScore=Infinity;
+    for (let j=0;j<pool.length;j++) {
+      if (used[j]) continue;
+      const d = haversineMi(wps[wps.length-1], pool[j]);
+      if (d < minHop) continue;
+      const newTotal = totalDist + d;
+      if (newTotal > r[1]*1.1) continue;
+      const score = Math.abs(d - (targetDist - totalDist)/(maxWps - i));
+      if (score < bestScore) { bestScore = score; best = j; }
+    }
+    if (best === null) break;
+    used[best] = true;
+    wps.push({ lat:pool[best].lat, lng:pool[best].lng, label:pool[best].name });
+    totalDist += haversineMi(wps[wps.length-2], wps[wps.length-1]);
+  }
+  if (loop === 'loop' && wps.length > 2) { wps.push(start); totalDist += haversineMi(wps[wps.length-2], start); }
+  if (wps.length < 2) { toast('Could not generate. Try different options.'); return; }
+
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:'' };
+  wps.forEach(addWaypoint);
+
+  const styleName = { sportbike:'Max Lean', twisties:'Max Twisties', mixed:'Mixed', scenic:'Scenic', fastest:'Fastest' }[style] || style;
+  const routeName = dir[0].toUpperCase() + dir.slice(1) + ' ' + dist[0].toUpperCase() + dist.slice(1) + ' · ' + styleName;
+  State.currentRoute.name = routeName;
+  $('#generatedRideInfo').innerHTML = `<div class="card" style="margin-top:10px;border-color:var(--accent)"><div style="font-weight:800;color:var(--accent);margin-bottom:4px">${esc(routeName)}</div><div class="tiny muted">~${Math.round(totalDist)} mi · ${wps.length} waypoints${loop==='loop'?' (loop)':''}</div><div class="tiny mt-12">Via: ${wps.filter(w=>w.label).map(w=>esc(w.label)).join(' → ')}</div></div>`;
+  recalcRoute();
+  switchTo('ride');
+  toast('Route generated: ' + routeName);
+}
+$('#generateRideBtn').addEventListener('click', generateRoute);
+
+// V3: Regenerate Twistier — inject extra twisty nodes into the existing route
+$('#regenTwistierBtn').addEventListener('click', async () => {
+  const cur = State.currentRoute.waypoints;
+  if (cur.length < 2) { toast('Generate or plan a route first.'); return; }
+  // Pick 1-2 twisty nodes closest to the route midpoint
+  const mid = cur[Math.floor(cur.length/2)];
+  const candidates = ROUTE_NODES.twisties
+    .map(t => ({ ...t, d: haversineMi(mid, t) }))
+    .filter(t => t.d < 60) // within 60mi of mid
+    .sort((a,b) => a.d - b.d)
+    .slice(0, 2);
+  if (!candidates.length) { toast('No twisty nodes nearby — try Generate Ride instead.'); return; }
+  // Insert them before the midpoint
+  const injectIdx = Math.floor(cur.length/2);
+  const newWps = cur.slice();
+  candidates.forEach((c, i) => newWps.splice(injectIdx + i, 0, { lat:c.lat, lng:c.lng, label:c.name }));
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  State.currentRoute.waypoints = [];
+  newWps.forEach(addWaypoint);
+  await recalcRoute();
+  toast(`Injected ${candidates.length} twisty via ${candidates.map(c=>c.name).join(' + ')}. Recheck twisty score.`, 4500);
+});
+
+/* ======================== V3: GPX IMPORT / EXPORT ======================== */
+function bumpGpxUse() { try { localStorage.setItem('bds_gpx_uses', String((+localStorage.getItem('bds_gpx_uses') || 0) + 1)); } catch(_) {} checkBadges(); }
+
+$('#exportGpxBtn').addEventListener('click', () => {
+  const r = State.currentRoute;
+  if (!r.waypoints || r.waypoints.length < 2) { toast('Plan a route first.'); return; }
+  // Prefer the routed geometry (track); fall back to waypoints (route)
+  const xml = gpxBuild({
+    name: r.name || 'Bad Decision Route',
+    waypoints: r.waypoints,
+    geometry: r.geometry,
+    kind: (r.geometry && r.geometry.length > 10) ? 'trk' : 'rte'
+  });
+  gpxDownload((r.name || 'route').replace(/[^\w-]+/g,'_'), xml);
+  bumpGpxUse();
+  toast('GPX exported.');
+});
+
+$('#importGpxBtn').addEventListener('click', () => $('#importGpxFile').click());
+$('#importGpxFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const text = await f.text();
+    const parsed = gpxParse(text);
+    if (!parsed.waypoints.length) throw new Error('No points');
+    waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+    State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name: parsed.name };
+    parsed.waypoints.forEach(w => addWaypoint(w));
+    await recalcRoute();
+    switchTo('ride');
+    bumpGpxUse();
+    toast(`Imported "${parsed.name}" · ${parsed.waypoints.length} waypoints.`, 4500);
+  } catch(err) { toast('GPX import failed: ' + (err.message || 'bad file')); }
+  finally { e.target.value = ''; }
+});
+
+/* ======================== GROUP ROOMS ======================== */
+$('#createRoomBtn').addEventListener('click', () => {
+  const code = Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+  State.room = { code, host:true, createdAt:Date.now() };
+  lsSet(K.room, State.room);
+  renderRoom();
+  checkBadges();
+  toast('Room ' + code + ' created.');
+});
+$('#joinRoomBtn').addEventListener('click', () => {
+  const code = ($('#joinRoomInput').value || '').trim().toUpperCase();
+  if (code.length !== 6) { toast('6-char code required.'); return; }
+  State.room = { code, host:false, createdAt:Date.now() }; lsSet(K.room, State.room);
+  renderRoom(); toast('Joined ' + code + '.');
+});
+function renderRoom() {
+  const box = $('#roomInfo');
+  if (!State.room) { box.innerHTML = ''; return; }
+  const url = location.origin + location.pathname + '?room=' + State.room.code;
+  box.innerHTML = `
+    <div class="card" style="border-color:var(--accent-2)">
+      <div class="tiny muted" style="text-align:center">Your code — hold to copy</div>
+      <div class="room-code-big" id="roomCodeBig">${esc(State.room.code)}</div>
+      <div class="row">
+        <button class="btn warn" id="shareRoomBtn" style="flex:1">↗ Invite Crew</button>
+        <button class="btn ghost" id="leaveRoomBtn">Leave</button>
+      </div>
+      <p class="tiny muted mt-12">Live pin sharing drops in the next update. For now: tell your crew the code — we'll flip the switch on and you'll all show up on each other's maps without re-joining.</p>
+    </div>`;
+  $('#leaveRoomBtn').addEventListener('click', () => {
+    State.room = null; lsSet(K.room, null); renderRoom();
+  });
+  $('#shareRoomBtn').addEventListener('click', async () => {
+    const text = `Join my Bad Decision Sidekick ride — code ${State.room.code}\n${url}`;
+    if (navigator.share) { try { await navigator.share({ title:'Ride room', text, url }); return; } catch(_) {} }
+    try { await navigator.clipboard.writeText(text); toast('Invite copied.'); }
+    catch(_) { toast('Share link: ' + url, 6000); }
+  });
+}
+renderRoom();
+
+/* ======================== RIDE DNA SHARE CARD ======================== */
+function drawDNA() {
+  const canvas = $('#dnaPreview');
+  if (!canvas) return;
+  const fmt = $('#dnaFormat').value;
+  const w = fmt === 'tw' ? 1200 : 1080;
+  const h = fmt === 'tw' ? 630 : 1350;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const last = State.rides[0] || lsGet(K.lastRide, null);
+
+  // V3: theme-aware palette
+  const theme = State.settings.theme || 'classic';
+  const palette = {
+    classic: { accent:'#ff3b00', accent2:'#ffb400', bgEnd:'#1a0800' },
+    ghost:   { accent:'#00ff88', accent2:'#a6ff00', bgEnd:'#001a10' },
+    ion:     { accent:'#00b8ff', accent2:'#00ffe1', bgEnd:'#001a26' }
+  }[theme];
+
+  // BG gradient
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, palette.bgEnd);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
+  // Glow
+  const rad = ctx.createRadialGradient(w*0.3, h*0.25, 0, w*0.3, h*0.25, w*0.7);
+  rad.addColorStop(0, palette.accent + '55'); rad.addColorStop(1, palette.accent + '00');
+  ctx.fillStyle = rad; ctx.fillRect(0, 0, w, h);
+
+  // Brand mark
+  ctx.fillStyle = palette.accent;
+  ctx.beginPath(); ctx.arc(90, 90, 36, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = palette.accent2;
+  ctx.beginPath(); ctx.arc(78, 78, 14, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#f5f5f5';
+  ctx.font = '800 36px -apple-system, system-ui, sans-serif';
+  ctx.fillText('BAD DECISION SIDEKICK', 150, 98);
+  ctx.fillStyle = '#9a9a9a';
+  ctx.font = '600 20px -apple-system, system-ui, sans-serif';
+  ctx.fillText('PLAN · RIDE · SURVIVE · SHARE', 150, 128);
+
+  if (!last) {
+    ctx.fillStyle = '#9a9a9a';
+    ctx.font = '700 42px -apple-system, system-ui, sans-serif';
+    ctx.fillText('Log a ride to unlock your DNA.', 60, h/2);
+    return;
+  }
+
+  // Route polyline
+  if (last.breadcrumb && last.breadcrumb.length > 5) {
+    const pts = last.breadcrumb;
+    const lats = pts.map(p=>p[0]), lngs = pts.map(p=>p[1]);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const padX = 60, padY = fmt === 'tw' ? 180 : 280;
+    const boxW = w - padX*2, boxH = fmt === 'tw' ? h*0.55 : h*0.40;
+    const boxY = fmt === 'tw' ? 180 : 220;
+    const sx = boxW / Math.max(1e-6, maxLng-minLng);
+    const sy = boxH / Math.max(1e-6, maxLat-minLat);
+    const s = Math.min(sx, sy);
+    ctx.strokeStyle = palette.accent; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.shadowColor = palette.accent + '99'; ctx.shadowBlur = 20;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const x = padX + (p[1]-minLng) * s + (boxW - (maxLng-minLng)*s)/2;
+      const y = boxY + boxH - ((p[0]-minLat) * s + (boxH - (maxLat-minLat)*s)/2);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // V3: Twisties Index badge (top-right)
+  if (last.twistiesIdx != null) {
+    const bx = w - 200, by = 60;
+    ctx.fillStyle = palette.accent2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, 160, 80, 14); else ctx.rect(bx, by, 160, 80);
+    ctx.fill();
+    ctx.fillStyle = '#0a0a0a';
+    ctx.font = '900 44px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(String(last.twistiesIdx), bx + 80, by + 46);
+    ctx.font = '800 14px -apple-system, system-ui, sans-serif';
+    ctx.fillText('TWISTY IDX', bx + 80, by + 66);
+    ctx.textAlign = 'start';
+  }
+
+  // Stats
+  const statY = fmt === 'tw' ? h - 220 : h - 460;
+  ctx.fillStyle = '#f5f5f5';
+  ctx.font = '800 64px -apple-system, system-ui, sans-serif';
+  ctx.fillText(`${Math.round(distConv(last.miles))} ${distLabel().toUpperCase()}`, 60, statY);
+  ctx.font = '600 22px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = '#9a9a9a';
+  ctx.fillText(String(last.name || 'Ride'), 60, statY + 36);
+
+  // Sub-stats row
+  const subs = [
+    { v: (last.topMph ? Math.round(speedConv(last.topMph)) : '—'), l: 'TOP ' + speedLabel().toUpperCase() },
+    { v: (last.maxLean ? Math.round(last.maxLean) + '°' : '—'), l: 'MAX LEAN' },
+    { v: (last.hours || 0).toFixed(1) + 'H', l: 'DURATION' }
+  ];
+  const subY = statY + 90;
+  subs.forEach((s, i) => {
+    const x = 60 + i * (w/3.2 - 20);
+    ctx.fillStyle = palette.accent;
+    ctx.font = '800 44px -apple-system, system-ui, sans-serif';
+    ctx.fillText(String(s.v), x, subY);
+    ctx.fillStyle = '#9a9a9a';
+    ctx.font = '700 16px -apple-system, system-ui, sans-serif';
+    ctx.fillText(s.l, x, subY + 26);
+  });
+
+  // V3: Lean profile mini-bar (bucketed histogram of lean angles)
+  if (last.leans && last.leans.length > 5) {
+    const buckets = new Array(10).fill(0);
+    last.leans.forEach(l => {
+      const b = Math.min(9, Math.floor(l / 5)); // 0-5°, 5-10°, ... 45+°
+      buckets[b]++;
+    });
+    const maxB = Math.max(...buckets, 1);
+    const barW = 18, gap = 6, totalW = 10 * (barW + gap) - gap;
+    const barX = 60, barY = subY + 80, barH = 56;
+    ctx.fillStyle = '#6a6a6a';
+    ctx.font = '700 12px -apple-system, system-ui, sans-serif';
+    ctx.fillText('LEAN PROFILE (0° → 45°+)', barX, barY - 6);
+    buckets.forEach((cnt, i) => {
+      const hh = Math.round((cnt / maxB) * barH);
+      const color = i < 4 ? palette.accent2 : i < 7 ? palette.accent : '#ff4d4d';
+      ctx.fillStyle = color;
+      ctx.fillRect(barX + i * (barW + gap), barY + (barH - hh), barW, Math.max(2, hh));
+    });
+  }
+
+  // V3: Weather highlight tag
+  if (last.rainPct && last.rainPct >= 70) {
+    ctx.fillStyle = '#ff4d4d';
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('☔ SENT IT IN THE RAIN', 60, h - 120);
+  } else if (last.rainPct && last.rainPct >= 40) {
+    ctx.fillStyle = palette.accent2;
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('🌦 DAMP DECISIONS', 60, h - 120);
+  }
+  if (last.crashFlagged) {
+    ctx.fillStyle = '#ff4d4d';
+    ctx.font = '900 22px -apple-system, system-ui, sans-serif';
+    ctx.fillText('🛡 SURVIVOR RIDE', 60, h - 150);
+  }
+
+  // Tagline
+  ctx.fillStyle = palette.accent2;
+  ctx.font = '900 34px -apple-system, system-ui, sans-serif';
+  ctx.fillText('MADE A BAD DECISION.', 60, h - 80);
+  ctx.fillStyle = '#f5f5f5';
+  ctx.fillText('WORTH IT.', 60, h - 40);
+}
+$('#dnaFormat').addEventListener('change', drawDNA);
+$('#dnaDownloadBtn').addEventListener('click', () => {
+  const canvas = $('#dnaPreview');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png'); a.download = 'ride-dna.png'; a.click();
+  const last = State.rides[0]; if (last) { last.shared = true; lsSet(K.rides, State.rides); checkBadges(); }
+  toast('DNA card saved.');
+});
+$('#dnaShareBtn').addEventListener('click', async () => {
+  const canvas = $('#dnaPreview');
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file = new File([blob], 'ride-dna.png', { type:'image/png' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })) {
+      await navigator.share({ files:[file], title:'My Ride DNA', text:'Bad Decision Sidekick — made a bad decision. Worth it.' });
+      const last = State.rides[0]; if (last) { last.shared = true; lsSet(K.rides, State.rides); checkBadges(); }
+      return;
+    }
+  } catch(_) {}
+  $('#dnaDownloadBtn').click();
+});
+
+/* ======================== SETTINGS & DATA ======================== */
+function applyTheme(t) {
+  document.body.setAttribute('data-theme', t || 'classic');
+}
+function applyBatterySaver(on) {
+  document.body.setAttribute('data-battery-saver', on ? '1' : '0');
+}
+
+function renderSettings() {
+  $('#unitsSelect').value = State.settings.units;
+  $('#themeSelect').value = State.settings.theme || 'classic';
+  $('#voiceEnabled').checked = !!State.settings.voice;
+  $('#voiceRide').checked   = State.settings.voiceRide !== false;
+  $('#voiceBadges').checked = State.settings.voiceBadges !== false;
+  $('#voiceLean').checked   = !!State.settings.voiceLean;
+  $('#wakeLockEnabled').checked = State.settings.wakeLock !== false;
+  $('#batterySaver').checked = !!State.settings.batterySaver;
+  $('#crashDetect').checked = !!State.settings.crashDetect;
+  applyTheme(State.settings.theme);
+  applyBatterySaver(State.settings.batterySaver);
+}
+
+function bindSetting(id, key, cast = v => v) {
+  $('#' + id).addEventListener('change', e => {
+    const el = e.target;
+    const val = el.type === 'checkbox' ? el.checked : cast(el.value);
+    State.settings[key] = val;
+    lsSet(K.settings, State.settings);
+  });
+}
+bindSetting('unitsSelect', 'units');
+bindSetting('themeSelect', 'theme');
+bindSetting('voiceEnabled', 'voice');
+bindSetting('voiceRide', 'voiceRide');
+bindSetting('voiceBadges', 'voiceBadges');
+bindSetting('voiceLean', 'voiceLean');
+bindSetting('wakeLockEnabled', 'wakeLock');
+bindSetting('batterySaver', 'batterySaver');
+bindSetting('crashDetect', 'crashDetect');
+
+$('#unitsSelect').addEventListener('change', () => { renderFuel(); renderRides(); renderRouteStats(); });
+$('#themeSelect').addEventListener('change', () => { applyTheme(State.settings.theme); drawDNA(); });
+$('#batterySaver').addEventListener('change', () => applyBatterySaver(State.settings.batterySaver));
+$('#wakeLockEnabled').addEventListener('change', () => {
+  if (!State.settings.wakeLock) releaseWakeLock();
+  else if (State.liveRide) acquireWakeLock();
+});
+$('#voiceEnabled').addEventListener('change', () => { if (State.settings.voice) speak('Voice cues on'); });
+
+$('#exportBtn').addEventListener('click', () => {
+  const data = {
+    schemaVersion: 3,
+    bikes: State.bikes, activeBikeId: State.activeBikeId,
+    rides: State.rides, routes: State.routes, settings: State.settings,
+    badges: State.badges, maint: State.maint, room: State.room, exportedAt: Date.now()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bds-sidekick-backup.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const txt = await f.text();
+    const d = JSON.parse(txt);
+    if (!confirm('Import will overwrite your current data on this device. Continue?')) { e.target.value = ''; return; }
+
+    // V3: new-schema fields
+    if (Array.isArray(d.bikes) && d.bikes.length) {
+      State.bikes = d.bikes;
+      State.activeBikeId = d.activeBikeId || d.bikes[0].id;
+      lsSet(K.bikes, State.bikes); lsSet(K.activeBike, State.activeBikeId);
+    } else if (d.bike) {
+      // Legacy v1/v2 export: single-bike object → migrate to array
+      const id = 'b_' + Date.now();
+      State.bikes = [{ id, ...d.bike }];
+      State.activeBikeId = id;
+      lsSet(K.bikes, State.bikes); lsSet(K.activeBike, id);
+    }
+    ['rides','routes','settings','badges','maint','room'].forEach(k => {
+      if (d[k] != null) { State[k] = d[k]; lsSet(K[k], d[k]); }
+    });
+    // Merge imported settings onto defaults so new V3 keys get sane values
+    State.settings = Object.assign({}, DEFAULT_SETTINGS, State.settings);
+    lsSet(K.settings, State.settings);
+
+    renderBike(); renderBikeSwitcher();
+    renderRides(); renderSavedRoutes(); renderFuel(); renderMaint(); renderBadges(); renderRoom(); renderSettings();
+    toast('Data imported.');
+  } catch(err) { toast('Import failed: ' + (err.message || 'bad file')); }
+  finally { e.target.value = ''; }
+});
+$('#wipeBtn').addEventListener('click', () => {
+  if (!confirm('Wipe everything on this device? This cannot be undone.')) return;
+  Object.values(K).forEach(k => localStorage.removeItem(k));
+  location.reload();
+});
+
+/* ======================== SEARCH & LOCATION ======================== */
+$('#searchBtn').addEventListener('click', searchPlace);
+$('#searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchPlace(); });
+$('#locBtn').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    map.setView([p.coords.latitude, p.coords.longitude], 13); toast('Centered.');
+  }, () => toast('Location denied.'));
+});
+$('#clearBtn').addEventListener('click', () => {
+  waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  State.currentRoute = { waypoints:[], geometry:null, distMi:0, durationMin:0, twisty:0, elevFt:0, name:'' };
+  renderRouteStats(); renderWxRibbon(); renderFuel(); updateHudChips();
+  toast('Route cleared.');
+});
+
+/* ======================== ONLINE / OFFLINE ======================== */
+function updateOnline() {
+  const p = $('#onlinePill');
+  if (navigator.onLine) { p.textContent = 'Online'; p.classList.remove('offline'); }
+  else { p.textContent = 'Offline'; p.classList.add('offline'); }
+}
+addEventListener('online', updateOnline); addEventListener('offline', updateOnline);
+
+/* ======================== BOOT ======================== */
+async function boot() {
+  // Apply visual settings first so the user doesn't see a flash-of-classic-theme
+  applyTheme(State.settings.theme);
+  applyBatterySaver(State.settings.batterySaver);
+
+  // Restore current date field default
+  if (!$('#rideDate').value) $('#rideDate').value = new Date().toISOString().slice(0,10);
+
+  renderBike(); renderBikeSwitcher();
+  renderFuel(); renderRides(); renderSavedRoutes(); renderMaint(); renderBadges();
+  renderSettings(); updateOnline();
+  loadHashRoute();
+
+  // Query-string shortcuts
+  const q = new URLSearchParams(location.search);
+  if (q.get('tab'))           switchTo(q.get('tab'));
+  if (q.get('gen') === '1')   setTimeout(generateRoute, 400);
+  if (q.get('start') === '1') setTimeout(startRide, 400);
+  // V3: ?room=ABC123 auto-joins
+  if (q.get('room')) {
+    const code = q.get('room').toUpperCase();
+    if (code.length === 6 && !State.room) {
+      State.room = { code, host:false, createdAt: Date.now() };
+      lsSet(K.room, State.room);
+      renderRoom();
+      switchTo('group');
+      toast('Joined room ' + code);
+    }
+  }
+
+  drawDNA();
+
+  // V3: Resume a live ride that was background-killed mid-ride
+  try {
+    const raw = localStorage.getItem(K.liveSnapshot);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const ageHr = (Date.now() - (parsed.startTs || 0)) / 3600000;
+      if (ageHr > 8) {
+        // Stale — discard
+        localStorage.removeItem(K.liveSnapshot);
+      } else {
+        // Ask user: resume or finalize?
+        const resume = confirm(`Found an in-progress ride from ${Math.round(ageHr * 60)}m ago.\n\nOK = Resume tracking\nCancel = Save what we have and stop`);
+        if (resume) {
+          State.liveRide = parsed;
+          await resumeLiveRideWatchers();
+        } else {
+          State.liveRide = parsed;
+          await endRide();
         }
+      }
+    }
+  } catch(_) {}
 
-        // ==================== FEATURE 1: 1-TAP START + AUTO END ====================
-        function startRide() {
-            if (currentRide) return;
+  // Register SW
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  checkBadges();
+  setTimeout(() => { try { map.invalidateSize(); } catch(_) {} }, 60);
+}
+boot();
 
-            currentRide = {
-                startTime: Date.now(),
-                breadcrumbs: [],
-                distance: 0,
-                maxSpeed: 0
-            };
+// Expose for debugging
+window.BDS = { State, map, checkBadges, drawDNA };
 
-            document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('live-stats').style.display = 'block';
-
-            startGPS();
-            rideInterval = setInterval(checkAutoEnd, 30000);
-        }
-
-        function checkAutoEnd() {
-            if (!currentRide) return;
-            const idleMinutes = (Date.now() - (currentRide.lastMove || Date.now())) / 60000;
-            if (idleMinutes > 6) {
-                clearInterval(rideInterval);
-                endRide();
-            }
-        }
-
-        function endRide() {
-            if (!currentRide) return;
-            clearInterval(rideInterval);
-
-            const duration = Math.round((Date.now() - currentRide.startTime) / 60000);
-            const score = calculateBadDecisionScore(currentRide);
-            const highlight = generateHighlight(currentRide, duration, score);
-            const bestMoments = detectBestMoments(currentRide.breadcrumbs);
-
-            showSummary(currentRide, duration, score, highlight, bestMoments);
-            currentRide = null;
-            document.getElementById('start-btn').style.display = 'block';
-            document.getElementById('live-stats').style.display = 'none';
-        }
-
-        // ==================== FEATURE 3: BAD DECISION SCORE ====================
-        function calculateBadDecisionScore(ride) {
-            let score = 0;
-            if (ride.maxSpeed > 85) score += 30;
-            else if (ride.maxSpeed > 70) score += 18;
-
-            const accel = ride.breadcrumbs.filter((b, i) => i > 0 && (b.speed - ride.breadcrumbs[i-1].speed) > 7).length;
-            score += Math.min(accel * 3, 20);
-
-            const elev = Math.abs(ride.breadcrumbs[ride.breadcrumbs.length-1]?.elev || 0 - ride.breadcrumbs[0]?.elev || 0);
-            if (elev > 800) score += 20;
-
-            const hour = new Date(ride.startTime).getHours();
-            if (hour >= 22 || hour <= 5) score += 25;
-
-            return Math.min(Math.max(score, 15), 100);
-        }
-
-        function generateHighlight(ride, duration, score) {
-            const hour = new Date(ride.startTime).getHours();
-            const time = (hour >= 20 || hour <= 5) ? "Late night" : "Afternoon";
-            const vibe = score > 70 ? "Questionable decisions." : score > 45 ? "Pushed it." : "Clean ride.";
-            return `${time} run. ${Math.round(ride.distance)} miles. ${duration} min. ${vibe}`;
-        }
-
-        function getScoreLabel(score) {
-            if (score >= 75) return "🔥 BAD DECISION";
-            if (score >= 50) return "⚠️ Borderline";
-            return "✅ Responsible Adult";
-        }
-
-        // ==================== FEATURE 5: BEST MOMENTS ====================
-        function detectBestMoments(breadcrumbs) {
-            if (!breadcrumbs || breadcrumbs.length < 10) return [];
-            return [
-                { lat: breadcrumbs[5].lat, lng: breadcrumbs[5].lng, label: "Fastest Stretch" },
-                { lat: breadcrumbs[12].lat, lng: breadcrumbs[12].lng, label: "Best Flow" }
-            ];
-        }
-
-        // ==================== FEATURE 2 & 4: POST-RIDE SUMMARY + REPLAY ====================
-        function showSummary(ride, duration, score, highlight, bestMoments) {
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999';
-            
-            modal.innerHTML = `
-                <div style="background:#111;color:white;width:92%;max-width:420px;border-radius:20px;padding:24px;text-align:center;">
-                    <h2>Ride Complete</h2>
-                    <div style="font-size:52px;font-weight:900;color:#ff3b30;margin:12px 0;">${score}</div>
-                    <div style="font-size:18px;margin-bottom:16px;">${getScoreLabel(score)}</div>
-                    
-                    <div style="background:#222;padding:16px;border-radius:12px;margin:16px 0;text-align:left;">
-                        ${highlight}
-                    </div>
-
-                    <div style="display:flex;gap:12px;">
-                        <button onclick="replayRide()" style="flex:1;padding:14px;background:#333;color:white;border:none;border-radius:12px;">▶️ Replay</button>
-                        <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="flex:1;padding:14px;background:#ff3b30;color:white;border:none;border-radius:12px;">Done</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // Add best moments pins
-            bestMoments.forEach(m => {
-                L.marker([m.lat, m.lng]).addTo(map).bindPopup(m.label);
-            });
-        }
-
-        function replayRide() {
-            document.querySelectorAll('div[style*="position:fixed"]').forEach(el => el.remove());
-            if (!currentRide || !currentRide.breadcrumbs) return;
-
-            const line = L.polyline([], {color: '#ff3b30', weight: 6}).addTo(map);
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i >= currentRide.breadcrumbs.length) { clearInterval(interval); return; }
-                const p = currentRide.breadcrumbs[i];
-                line.addLatLng([p.lat, p.lng]);
-                i++;
-            }, 60);
-        }
-
-        // ==================== GPS TRACKING ====================
-        function startGPS() {
-            if (!navigator.geolocation) return alert("GPS not supported");
-
-            navigator.geolocation.watchPosition(pos => {
-                if (!currentRide) return;
-                const { latitude, longitude, speed = 0 } = pos.coords;
-
-                const point = {
-                    lat: latitude,
-                    lng: longitude,
-                    speed: Math.round(speed * 2.237),
-                    time: Date.now()
-                };
-
-                currentRide.breadcrumbs.push(point);
-                if (point.speed > currentRide.maxSpeed) currentRide.maxSpeed = point.speed;
-                currentRide.lastMove = Date.now();
-
-                // Update live UI
-                document.getElementById('speed').innerText = point.speed;
-                document.getElementById('lean').innerText = Math.floor(Math.random()*35)+12;
-                document.getElementById('dist').innerText = (currentRide.distance / 1609).toFixed(1);
-
-                // Draw path
-                if (!pathLayer) pathLayer = L.polyline([], {color: '#ff3b30', weight: 5}).addTo(map);
-                pathLayer.addLatLng([latitude, longitude]);
-                map.panTo([latitude, longitude]);
-            });
-        }
-
-        // INIT
-        function init() {
-            initMap();
-            console.log('%c[v4] All 5 features loaded successfully', 'color:#ff3b30');
-        }
-
-        window.onload = init;
-    </script>
+})();
+</script>
 </body>
 </html>
