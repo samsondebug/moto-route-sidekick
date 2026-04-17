@@ -86,8 +86,10 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   nav.tabs button[data-view="weather"],
   nav.tabs button[data-view="fuel"],
   nav.tabs button[data-view="group"],
+  nav.tabs button[data-view="friends"],
   nav.tabs button[data-view="music"],
   nav.tabs button[data-view="challenges"],
+  nav.tabs button[data-view="account"],
   nav.tabs button[data-view="settings"]{display:none}
   nav.tabs button[data-view="more"]{display:flex}
   main{padding-bottom:calc(60px + var(--safe-bottom))}
@@ -429,6 +431,65 @@ a:hover{text-decoration:underline}
 /* DNA card preview */
 #dnaPreviewWrap{display:flex;justify-content:center;margin:10px 0}
 #dnaPreview{max-width:100%;border-radius:var(--radius);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+
+/* ============ V5.0: AUTH / FRIENDS / EVENTS / CHAT ============ */
+.auth-hero{text-align:center;padding:8px 0 16px}
+.auth-hero h3{margin:0 0 4px;font-size:20px}
+.auth-hero p{margin:0;color:var(--muted);font-size:13px}
+.auth-tabs{display:flex;gap:6px;margin:10px 0;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:4px}
+.auth-tabs button{flex:1;background:transparent;border:0;color:var(--muted);font-weight:700;font-size:13px;padding:8px;border-radius:8px;cursor:pointer}
+.auth-tabs button.active{background:var(--accent);color:#fff}
+.auth-form .field{margin-bottom:10px}
+.auth-note{font-size:11px;color:var(--muted);margin-top:8px;text-align:center}
+.profile-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;margin-bottom:10px}
+.profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent-2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;flex-shrink:0}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-handle{font-size:12px;color:var(--muted)}
+.profile-bike{font-size:11px;color:var(--accent-2);margin-top:2px}
+
+/* Friend / request row */
+.friend-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.friend-row .friend-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent-2),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;flex-shrink:0;font-size:14px}
+.friend-row .friend-body{flex:1;min-width:0}
+.friend-row .friend-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.friend-row .friend-sub{font-size:11px;color:var(--muted)}
+.friend-row button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0}
+.friend-row button.ghost{background:transparent;border:1px solid var(--border-strong);color:var(--muted)}
+.friend-row button.danger{background:var(--danger);color:#fff}
+.friend-row button + button{margin-left:4px}
+
+/* Visibility picker (per ride/route) */
+.vis-picker{display:inline-flex;gap:4px;background:var(--surface-3);border:1px solid var(--border);border-radius:999px;padding:3px}
+.vis-picker button{background:transparent;border:0;color:var(--muted);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer}
+.vis-picker button.active[data-v="private"]{background:var(--surface-2);color:var(--text)}
+.vis-picker button.active[data-v="friends"]{background:var(--accent-2);color:#0a0a0a}
+.vis-picker button.active[data-v="public"]{background:var(--accent);color:#fff}
+
+/* Event card */
+.event-card{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.event-card .evt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.event-card .evt-name{font-weight:800;font-size:15px;line-height:1.2}
+.event-card .evt-when{font-size:12px;color:var(--accent-2);font-weight:700;margin-top:2px}
+.event-card .evt-host{font-size:11px;color:var(--muted);margin-top:2px}
+.event-card .evt-meta{display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.event-card .evt-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.event-card .evt-actions button{background:var(--surface-3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.event-card .evt-actions button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.event-card .evt-actions button.going{background:var(--ok);color:#0a0a0a;border-color:var(--ok)}
+.event-card .evt-chat{margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.chat-log{max-height:240px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}
+.chat-msg{background:var(--surface-2);border-radius:8px;padding:6px 10px;max-width:85%;align-self:flex-start}
+.chat-msg.me{background:var(--accent);color:#fff;align-self:flex-end}
+.chat-msg .c-who{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;opacity:.8;margin-bottom:2px}
+.chat-msg .c-body{font-size:13px;line-height:1.3;word-wrap:break-word}
+.chat-msg .c-time{font-size:9px;opacity:.6;margin-top:2px}
+.chat-input-row{display:flex;gap:6px}
+.chat-input-row input{flex:1}
+.badge-pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:var(--surface-3);color:var(--muted);border:1px solid var(--border)}
+.badge-pill.priv{background:var(--surface-3);color:var(--muted)}
+.badge-pill.fri{background:var(--accent-2);color:#0a0a0a}
+.badge-pill.pub{background:var(--accent);color:#fff;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -455,8 +516,10 @@ a:hover{text-decoration:underline}
   <button data-view="garage" role="tab">Garage</button>
   <button data-view="rides" role="tab">Rides</button>
   <button data-view="group" role="tab">Group</button>
+  <button data-view="friends" role="tab">Friends</button>
   <button data-view="music" role="tab">Music</button>
   <button data-view="challenges" role="tab">Challenges</button>
+  <button data-view="account" role="tab">Account</button>
   <button data-view="settings" role="tab">Settings</button>
   <button data-view="more" role="tab" id="moreTabBtn" style="display:none">More</button>
 </nav>
@@ -469,8 +532,10 @@ a:hover{text-decoration:underline}
       <button data-more-view="weather">☀️ Weather</button>
       <button data-more-view="fuel">⛽ Fuel</button>
       <button data-more-view="group">👥 Group</button>
+      <button data-more-view="friends">🤝 Friends</button>
       <button data-more-view="music">🎵 Music</button>
       <button data-more-view="challenges">🏆 Challenges</button>
+      <button data-more-view="account">👤 Account</button>
       <button data-more-view="settings">⚙️ Settings</button>
       <button class="close" id="moreCloseBtn">Cancel</button>
     </div>
@@ -761,7 +826,75 @@ a:hover{text-decoration:underline}
     <div class="row mt-12">
       <label class="field" style="flex:1"><span class="lbl">Your handle</span><input type="text" id="groupHandle" placeholder="Kooky" maxlength="16"></label>
     </div>
-    <p class="tiny muted mt-12"><strong>Live sync:</strong> paste your Supabase URL + anon key in <b>Settings → Live Sync</b> to enable real-time pins. Everyone in the room sees each other move in under 2 seconds.</p>
+    <p class="tiny muted mt-12"><strong>Live sync:</strong> real-time pins work out of the box. Advanced: override with your own Supabase in <b>Settings → Live Sync</b>.</p>
+  </div>
+
+  <!-- V5.0: Group Events -->
+  <div class="card accent">
+    <h3>📅 Group Events</h3>
+    <p class="tiny muted">Plan a meetup. Friends RSVP and chat in real time. Sign in first to host or RSVP.</p>
+    <div id="eventsAuthGate" class="tiny muted mt-12" style="display:none">Sign in from the <b>Account</b> tab to see, host, or RSVP to events.</div>
+    <div id="eventsControls" class="row mt-12" style="display:none">
+      <button class="btn" id="createEventBtn">+ Create Event</button>
+      <button class="btn ghost" id="refreshEventsBtn">↻ Refresh</button>
+    </div>
+    <div id="eventsList" class="mt-12"></div>
+  </div>
+
+  <!-- Hidden event create form -->
+  <div id="eventCreateModal" class="card" style="display:none">
+    <h3>New Group Event</h3>
+    <div class="row">
+      <label class="field" style="flex:2"><span class="lbl">Name</span><input type="text" id="evtName" placeholder="Sunday Hill Country Run" maxlength="80"></label>
+      <label class="field"><span class="lbl">Max riders</span><input type="number" id="evtMax" min="2" max="500" value="20"></label>
+    </div>
+    <div class="row">
+      <label class="field" style="flex:1"><span class="lbl">Date &amp; time</span><input type="datetime-local" id="evtWhen"></label>
+      <label class="field"><span class="lbl">Visibility</span>
+        <select id="evtVis"><option value="friends" selected>Friends only</option><option value="public">Public</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <label class="field" style="flex:1"><span class="lbl">Meet point</span><input type="text" id="evtMeet" placeholder="Cafe name or address" maxlength="120"></label>
+      <button class="btn ghost" id="evtUseCurLocBtn" style="margin-top:20px">📍 Here</button>
+    </div>
+    <label class="field"><span class="lbl">Notes</span><textarea id="evtNotes" rows="2" maxlength="500" placeholder="Kickstands up at 9. Full tank. Rain or shine."></textarea></label>
+    <div class="row mt-12">
+      <button class="btn warn" id="evtSaveBtn" style="flex:1">Create Event</button>
+      <button class="btn ghost" id="evtCancelBtn">Cancel</button>
+    </div>
+    <p class="tiny muted mt-12" id="evtLocHint">Meet point location captured from your current position, or enter an address and we'll geocode it.</p>
+  </div>
+</section>
+
+<!-- ============ V5.0: FRIENDS ============ -->
+<section id="view-friends" class="view" role="tabpanel" aria-label="Friends">
+  <h2>Friends</h2>
+  <div id="friendsAuthGate" class="card" style="display:none">
+    <p>Sign in from the <b>Account</b> tab to find riders, send friend requests, and share routes.</p>
+    <button class="btn warn mt-12" id="friendsGoSignInBtn">Go to Account</button>
+  </div>
+
+  <div id="friendsAuthed" style="display:none">
+    <div class="card accent">
+      <h3>🔍 Find Riders</h3>
+      <p class="tiny muted">Search by username (3–20 letters/numbers). Profiles are public by default — friendship unlocks ride + route sharing.</p>
+      <div class="row mt-12">
+        <input type="text" id="friendSearchInput" placeholder="username" maxlength="20" style="flex:1;text-transform:lowercase">
+        <button class="btn" id="friendSearchBtn">Search</button>
+      </div>
+      <div id="friendSearchResults" class="mt-12"></div>
+    </div>
+
+    <div class="card">
+      <h3>📩 Pending Requests</h3>
+      <div id="friendRequestsList"><span class="tiny muted">No pending requests.</span></div>
+    </div>
+
+    <div class="card">
+      <h3>👥 Your Crew</h3>
+      <div id="friendsList"><span class="tiny muted">No friends yet — search a handle above.</span></div>
+    </div>
   </div>
 </section>
 
@@ -861,6 +994,76 @@ a:hover{text-decoration:underline}
     <h3>📊 Weekly Leaderboard</h3>
     <p class="tiny muted">Your last 10 weeks ranked by total distance.</p>
     <div id="chalWeeklyBoard" class="mt-12"></div>
+  </div>
+
+  <!-- V5.0: Friends leaderboard -->
+  <div class="card accent">
+    <h3>🤝 Friends Leaderboard — This Week</h3>
+    <p class="tiny muted">Miles logged by you and your friends, Monday through Sunday. Sign in + add friends to climb.</p>
+    <div id="chalFriendsBoard" class="mt-12"><span class="tiny muted">Sign in on the Account tab to see the friends leaderboard.</span></div>
+  </div>
+</section>
+
+<!-- ============ V5.0: ACCOUNT / AUTH ============ -->
+<section id="view-account" class="view" role="tabpanel" aria-label="Account">
+  <h2>Account</h2>
+
+  <!-- Logged OUT -->
+  <div id="authLoggedOut" class="card">
+    <div class="auth-hero">
+      <h3>Ride Together</h3>
+      <p>Sign in to unlock friends, shared routes, group events and the social leaderboard. Private by default — you choose what to share.</p>
+    </div>
+    <div class="auth-tabs" role="tablist">
+      <button id="authTabLogin" class="active" role="tab">Log In</button>
+      <button id="authTabSignup" role="tab">Sign Up</button>
+    </div>
+    <form class="auth-form" id="authForm" autocomplete="on" onsubmit="return false">
+      <label class="field" id="authUsernameField" style="display:none"><span class="lbl">Username (3–20 letters/numbers)</span><input type="text" id="authUsername" autocomplete="username" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}"></label>
+      <label class="field"><span class="lbl">Email</span><input type="email" id="authEmail" autocomplete="email" required></label>
+      <label class="field"><span class="lbl">Password (min 8 chars)</span><input type="password" id="authPassword" autocomplete="current-password" minlength="8" required></label>
+      <button class="btn warn" id="authSubmitBtn" type="submit" style="width:100%">Log In</button>
+      <div id="authError" class="tiny" style="color:var(--danger);margin-top:8px;display:none"></div>
+    </form>
+    <p class="auth-note">By signing up you agree to play nice. We store email + username. Rides stay private unless you choose to share.</p>
+  </div>
+
+  <!-- Logged IN -->
+  <div id="authLoggedIn" style="display:none">
+    <div class="card">
+      <div class="profile-card">
+        <div class="profile-avatar" id="meAvatar">?</div>
+        <div class="profile-info">
+          <div class="profile-name" id="meDisplayName">—</div>
+          <div class="profile-handle" id="meHandle">@—</div>
+          <div class="profile-bike" id="meBike"></div>
+        </div>
+      </div>
+      <div id="meSyncStatus" class="tiny muted mt-12"></div>
+    </div>
+
+    <div class="card">
+      <h3>Edit Profile</h3>
+      <label class="field"><span class="lbl">Display name</span><input type="text" id="profDisplayName" maxlength="40" placeholder="Dave K"></label>
+      <label class="field"><span class="lbl">Username (3–20 letters/numbers)</span><input type="text" id="profUsername" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}"></label>
+      <label class="field"><span class="lbl">Bike</span><input type="text" id="profBike" maxlength="60" placeholder="2026 Ninja ZX-6R"></label>
+      <label class="field"><span class="lbl">Bio</span><textarea id="profBio" rows="2" maxlength="200" placeholder="Austin TX. Twisties &gt; traffic."></textarea></label>
+      <label class="field" style="display:flex;align-items:center;gap:10px;flex-direction:row"><span class="lbl" style="flex:1">Searchable by username</span><span class="switch"><input type="checkbox" id="profSearchable" checked><span class="slider"></span></span></label>
+      <div class="row mt-12">
+        <button class="btn" id="profSaveBtn" style="flex:1">Save Profile</button>
+        <button class="btn ghost" id="signOutBtn">Sign Out</button>
+      </div>
+      <div id="profMsg" class="tiny muted mt-12"></div>
+    </div>
+
+    <div class="card">
+      <h3>Cloud Sync</h3>
+      <div id="cloudSyncInfo" class="tiny muted">—</div>
+      <div class="row mt-12">
+        <button class="btn ghost" id="resyncBtn">🔄 Re-sync Local Rides &amp; Routes</button>
+      </div>
+      <p class="tiny muted mt-12">All rides and routes are private until you pick <b>Friends</b> or <b>Public</b> on each one. Public rides have 500m trimmed from each end of the breadcrumb.</p>
+    </div>
   </div>
 </section>
 
@@ -971,7 +1174,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v4.2 · <span id="buildId">2026.04.17g</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v5.0 · <span id="buildId">2026.04.17h</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -1013,7 +1216,13 @@ const K = {
   poiPrefs: 'bds_poi_prefs',      // { types: { fuel:true, cafe:true, view:true, rest:false } }
   poiCache: 'bds_poi_cache',      // { [routeHash]: { ts, pois: [] } }
   chalPbs: 'bds_chal_pbs',        // { weekMi, monthMi, longestRide, longestStreak, poiTypes:[], roadHashes:[] }
-  exploredRoads: 'bds_explored_roads' // { [hash]: firstSeenTs }
+  exploredRoads: 'bds_explored_roads', // { [hash]: firstSeenTs }
+  // V5.0: Cloud auth + social
+  authSession: 'bds_auth_session',     // { access_token, refresh_token, user_id, expires_at }
+  profile:     'bds_profile',          // { id, username, display_name, bike, bio }
+  cloudMigrated: 'bds_cloud_migrated', // '1' once initial rides+routes synced
+  rideShareMap:  'bds_ride_share',     // { [local_ride_id]: 'private'|'friends'|'public' }
+  routeShareMap: 'bds_route_share'     // { [local_route_id]: 'private'|'friends'|'public' }
 };
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_) { return d; } };
 const lsSet = (k, v) => {
@@ -1154,10 +1363,18 @@ const RouteCache = {
   }
 };
 
-// V4: Supabase Realtime config (optional — user sets in Settings → Live Sync)
+// V5.0: Hardcoded BDS social backend (shared by all users — RLS enforces all security)
+const BDS_BACKEND = {
+  url:     'https://fjwbrjpkcfeopenpsmyv.supabase.co',
+  anonKey: 'sb_publishable_awKze0zr4EIh1Am0GUh5Ig_Hqkos73y'
+};
+
+// V4: Legacy BYO-Supabase config — kept as fallback for users running their own live-pin infra.
+// If the user has pasted their own URL+key, live group pins use that. Otherwise they fall back to BDS_BACKEND.
 const SupaCfg = {
-  get url()      { return localStorage.getItem('bds_supa_url') || ''; },
-  get anonKey()  { return localStorage.getItem('bds_supa_key') || ''; },
+  get url()      { return localStorage.getItem('bds_supa_url') || BDS_BACKEND.url; },
+  get anonKey()  { return localStorage.getItem('bds_supa_key') || BDS_BACKEND.anonKey; },
+  get isCustom() { return !!(localStorage.getItem('bds_supa_url') && localStorage.getItem('bds_supa_key')); },
   set(url, key)  { localStorage.setItem('bds_supa_url', url || ''); localStorage.setItem('bds_supa_key', key || ''); },
   get enabled()  { return !!(this.url && this.anonKey); }
 };
@@ -2170,17 +2387,46 @@ function updateHudChips() {
 function renderRides() {
   const box = $('#ridesList');
   if (!box) return;
-  box.innerHTML = State.rides.length ? State.rides.map(r => `
+  const shareMap = lsGet(K.rideShareMap, {});
+  const authed = (typeof Social !== 'undefined') && Social.isAuthed();
+  box.innerHTML = State.rides.length ? State.rides.map(r => {
+    const v = shareMap[r.id] || 'private';
+    const visHtml = authed ? `
+      <div class="vis-picker" data-ride="${r.id}" style="margin-top:6px">
+        <button class="${v==='private'?'active':''}" data-v="private">🔒 Private</button>
+        <button class="${v==='friends'?'active':''}" data-v="friends">👥 Friends</button>
+        <button class="${v==='public'?'active':''}" data-v="public">🌐 Public</button>
+      </div>` : '';
+    return `
     <div class="pref">
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="k">${esc(r.name)}</div>
         <div class="d">${esc(r.date || '')} · ${round(distConv(r.miles),1)} ${distLabel()} · ${r.hours}h${r.topMph?' · top '+Math.round(speedConv(r.topMph))+' '+speedLabel():''}${r.maxLean?' · lean '+Math.round(r.maxLean)+'°':''}</div>
+        ${visHtml}
       </div>
       <button class="icon-btn" data-delride="${r.id}" aria-label="Delete ride">✕</button>
-    </div>
-  `).join('') : '<span class="tiny muted">No rides logged yet.</span>';
+    </div>`;
+  }).join('') : '<span class="tiny muted">No rides logged yet.</span>';
   box.querySelectorAll('[data-delride]').forEach(b => b.addEventListener('click', () => {
-    State.rides = State.rides.filter(r => r.id !== b.dataset.delride); lsSet(K.rides, State.rides); renderRides(); renderStats(); renderMaint(); checkBadges();
+    State.rides = State.rides.filter(r => r.id !== b.dataset.delride); lsSet(K.rides, State.rides);
+    // Also remove cloud copy if present (fire-and-forget)
+    if ((typeof Social !== 'undefined') && Social.isAuthed()) {
+      Social.getClient().then(c => c.from('shared_rides').delete().eq('owner', Social.myId()).eq('local_id', b.dataset.delride)).catch(()=>{});
+    }
+    renderRides(); renderStats(); renderMaint(); checkBadges();
+  }));
+  box.querySelectorAll('.vis-picker[data-ride] button').forEach(btn => btn.addEventListener('click', async () => {
+    const picker = btn.closest('.vis-picker');
+    const rideId = picker.dataset.ride;
+    const vis = btn.dataset.v;
+    try {
+      btn.disabled = true;
+      await Social.shareRide(rideId, vis);
+      picker.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      toast(vis === 'private' ? 'Ride set to private.' : (vis === 'friends' ? 'Shared with friends.' : 'Shared publicly (start/end trimmed 500m).'), 3500);
+    } catch (e) { toast('Share failed: ' + (e.message || e)); }
+    finally { btn.disabled = false; }
   }));
   renderStats();
 }
@@ -2230,19 +2476,43 @@ $('#saveRouteBtn').addEventListener('click', () => {
 });
 function renderSavedRoutes() {
   const box = $('#savedRoutesList'); if (!box) return;
-  box.innerHTML = State.routes.length ? State.routes.map(r => `
+  const shareMap = lsGet(K.routeShareMap, {});
+  const authed = (typeof Social !== 'undefined') && Social.isAuthed();
+  box.innerHTML = State.routes.length ? State.routes.map(r => {
+    const v = shareMap[r.id] || 'private';
+    const visHtml = authed ? `
+      <div class="vis-picker" data-route="${r.id}" style="margin-top:6px">
+        <button class="${v==='private'?'active':''}" data-v="private">🔒 Private</button>
+        <button class="${v==='friends'?'active':''}" data-v="friends">👥 Friends</button>
+        <button class="${v==='public'?'active':''}" data-v="public">🌐 Public</button>
+      </div>` : '';
+    return `
     <div class="pref">
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="k">${esc(r.name)}</div>
         <div class="d">${round(distConv(r.distMi),1)} ${distLabel()} · ${r.twisty}/5 twisty</div>
+        ${visHtml}
       </div>
       <div class="row">
         <button class="icon-btn" data-load="${r.id}" aria-label="Load">↑</button>
         <button class="icon-btn" data-share="${r.id}" aria-label="Share">↗</button>
         <button class="icon-btn" data-delrt="${r.id}" aria-label="Delete">✕</button>
       </div>
-    </div>
-  `).join('') : '<span class="tiny muted">No saved routes.</span>';
+    </div>`;
+  }).join('') : '<span class="tiny muted">No saved routes.</span>';
+  box.querySelectorAll('.vis-picker[data-route] button').forEach(btn => btn.addEventListener('click', async () => {
+    const picker = btn.closest('.vis-picker');
+    const routeId = picker.dataset.route;
+    const vis = btn.dataset.v;
+    try {
+      btn.disabled = true;
+      await Social.shareRoute(routeId, vis);
+      picker.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      toast(vis === 'private' ? 'Route set to private.' : (vis === 'friends' ? 'Route shared with friends.' : 'Route shared publicly.'));
+    } catch (e) { toast('Share failed: ' + (e.message || e)); }
+    finally { btn.disabled = false; }
+  }));
   box.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => {
     const r = State.routes.find(x => x.id === b.dataset.load); if (!r) return;
     State.currentRoute = JSON.parse(JSON.stringify({ ...r, name:r.name }));
@@ -4183,8 +4453,919 @@ document.querySelectorAll('nav.tabs button, .more-sheet [data-more-view]').forEa
   try { renderSpotifyStatus(); renderMusicPrefs(); } catch(_) {}
 })();
 
+/* ======================== V5.0: SOCIAL LAYER ========================
+   Auth (email+password) → profile → friends → shared rides/routes →
+   group events with realtime chat → friends leaderboard.
+   All security is enforced by Supabase RLS. Anon key is safe to ship.
+======================================================================= */
+
+const Social = (() => {
+  let client = null;           // Supabase client (singleton, BDS_BACKEND)
+  let session = null;          // { user: {id, email}, access_token, ... }
+  let profile = lsGet(K.profile, null);
+  let friendsCache = [];       // [{id, username, display_name, bike}]
+  let pendingIn = [];          // incoming friend requests (where to_user = me, status=pending)
+  let pendingOut = [];         // outgoing requests
+  let eventsCache = [];
+  let activeChatChannel = null;
+  let activeChatEventId = null;
+
+  async function getClient() {
+    if (client) return client;
+    const sdk = await loadSupabase();
+    // V5.0: Always use BDS shared backend for social features.
+    client = sdk.createClient(BDS_BACKEND.url, BDS_BACKEND.anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bds_auth_session' }
+    });
+    // Hydrate session on first load
+    try {
+      const { data } = await client.auth.getSession();
+      if (data && data.session) session = data.session;
+    } catch (e) { console.warn('Social getSession failed', e); }
+    client.auth.onAuthStateChange((event, sess) => {
+      session = sess || null;
+      if (event === 'SIGNED_OUT') {
+        profile = null;
+        lsSet(K.profile, null);
+        localStorage.removeItem(K.cloudMigrated);
+        friendsCache = []; pendingIn = []; pendingOut = []; eventsCache = [];
+      }
+      renderAuthUI();
+      if (sess) onSignedIn();
+    });
+    return client;
+  }
+
+  function isAuthed() { return !!(session && session.user); }
+  function myId() { return session && session.user ? session.user.id : null; }
+
+  async function signUp(email, password, username) {
+    const c = await getClient();
+    // Pre-check username availability via public profiles table
+    const clean = (username || '').trim().toLowerCase();
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(clean)) throw new Error('Username must be 3–20 letters, numbers, or underscore.');
+    const { data: dup } = await c.from('profiles').select('id').eq('username', clean).maybeSingle();
+    if (dup) throw new Error('That username is taken.');
+    // 1. Sign up
+    const { data, error } = await c.auth.signUp({ email, password, options: { data: { username: clean } } });
+    if (error) throw error;
+    if (!data.user) throw new Error('Sign-up returned no user — check your email to confirm.');
+    // 2. Create profile row
+    const bike = (State.bike && (State.bike.name || State.bike.year + ' ' + State.bike.make + ' ' + State.bike.model)) || null;
+    const { error: pErr } = await c.from('profiles').insert({
+      id: data.user.id,
+      username: clean,
+      display_name: clean,
+      bike: bike,
+      searchable: true
+    });
+    if (pErr) console.warn('profile insert failed (may exist via trigger)', pErr);
+    await loadProfile();
+    return data;
+  }
+
+  async function signIn(email, password) {
+    const c = await getClient();
+    const { data, error } = await c.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    session = data.session;
+    await loadProfile();
+    return data;
+  }
+
+  async function signOut() {
+    if (activeChatChannel) { try { await activeChatChannel.unsubscribe(); } catch(_) {} activeChatChannel = null; activeChatEventId = null; }
+    const c = await getClient();
+    await c.auth.signOut();
+    session = null; profile = null;
+    lsSet(K.profile, null);
+    localStorage.removeItem(K.cloudMigrated);
+  }
+
+  async function loadProfile() {
+    if (!isAuthed()) return null;
+    const c = await getClient();
+    const { data, error } = await c.from('profiles').select('*').eq('id', myId()).maybeSingle();
+    if (error) { console.warn('loadProfile error', error); return null; }
+    profile = data;
+    lsSet(K.profile, profile);
+    return profile;
+  }
+
+  async function saveProfile(fields) {
+    if (!isAuthed()) throw new Error('Not signed in.');
+    const c = await getClient();
+    const patch = {};
+    if (fields.username !== undefined) {
+      const u = (fields.username || '').trim().toLowerCase();
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(u)) throw new Error('Invalid username.');
+      patch.username = u;
+    }
+    if (fields.display_name !== undefined) patch.display_name = (fields.display_name || '').slice(0, 40);
+    if (fields.bike !== undefined) patch.bike = (fields.bike || '').slice(0, 60);
+    if (fields.bio !== undefined) patch.bio = (fields.bio || '').slice(0, 200);
+    if (fields.searchable !== undefined) patch.searchable = !!fields.searchable;
+    const { data, error } = await c.from('profiles').update(patch).eq('id', myId()).select().maybeSingle();
+    if (error) throw error;
+    profile = data;
+    lsSet(K.profile, profile);
+    return profile;
+  }
+
+  /* ---------- FRIENDS ---------- */
+  async function searchUsers(q) {
+    if (!isAuthed()) return [];
+    const c = await getClient();
+    const term = (q || '').trim().toLowerCase();
+    if (term.length < 2) return [];
+    // ilike on citext — use eq for exact, ilike with % for prefix
+    const { data, error } = await c.from('profiles')
+      .select('id, username, display_name, bike')
+      .ilike('username', term + '%')
+      .eq('searchable', true)
+      .neq('id', myId())
+      .limit(20);
+    if (error) { console.warn('search error', error); return []; }
+    return data || [];
+  }
+
+  async function loadFriends() {
+    if (!isAuthed()) return;
+    const c = await getClient();
+    const me = myId();
+    // Accepted friendships either direction
+    const { data: acc } = await c.from('friendships')
+      .select('from_user, to_user, created_at')
+      .or(`from_user.eq.${me},to_user.eq.${me}`)
+      .eq('status', 'accepted');
+    const friendIds = (acc || []).map(r => r.from_user === me ? r.to_user : r.from_user);
+    // Incoming pending
+    const { data: pin } = await c.from('friendships')
+      .select('from_user, created_at')
+      .eq('to_user', me).eq('status', 'pending');
+    const inIds = (pin || []).map(r => r.from_user);
+    // Outgoing pending
+    const { data: pout } = await c.from('friendships')
+      .select('to_user, created_at')
+      .eq('from_user', me).eq('status', 'pending');
+    const outIds = (pout || []).map(r => r.to_user);
+
+    const allIds = Array.from(new Set([...friendIds, ...inIds, ...outIds]));
+    let byId = new Map();
+    if (allIds.length) {
+      const { data: profs } = await c.from('profiles').select('id, username, display_name, bike').in('id', allIds);
+      byId = new Map((profs || []).map(p => [p.id, p]));
+    }
+    friendsCache = friendIds.map(id => byId.get(id)).filter(Boolean);
+    pendingIn  = inIds.map(id => byId.get(id)).filter(Boolean);
+    pendingOut = outIds.map(id => byId.get(id)).filter(Boolean);
+  }
+
+  async function sendFriendRequest(toUserId) {
+    if (!isAuthed()) throw new Error('Not signed in.');
+    const c = await getClient();
+    const { error } = await c.from('friendships').insert({ from_user: myId(), to_user: toUserId, status: 'pending' });
+    if (error) throw error;
+    await loadFriends();
+    renderFriendsUI();
+  }
+
+  async function acceptFriendRequest(fromUserId) {
+    if (!isAuthed()) throw new Error('Not signed in.');
+    const c = await getClient();
+    const { error } = await c.from('friendships').update({ status: 'accepted' })
+      .eq('from_user', fromUserId).eq('to_user', myId()).eq('status', 'pending');
+    if (error) throw error;
+    await loadFriends();
+    renderFriendsUI();
+  }
+
+  async function declineFriendRequest(fromUserId) {
+    if (!isAuthed()) throw new Error('Not signed in.');
+    const c = await getClient();
+    const { error } = await c.from('friendships').delete()
+      .eq('from_user', fromUserId).eq('to_user', myId()).eq('status', 'pending');
+    if (error) throw error;
+    await loadFriends();
+    renderFriendsUI();
+  }
+
+  async function removeFriend(userId) {
+    if (!isAuthed()) throw new Error('Not signed in.');
+    const c = await getClient();
+    const me = myId();
+    // Delete either row direction
+    await c.from('friendships').delete().or(`and(from_user.eq.${me},to_user.eq.${userId}),and(from_user.eq.${userId},to_user.eq.${me})`);
+    await loadFriends();
+    renderFriendsUI();
+  }
+
+  /* ---------- RIDE & ROUTE SHARING ---------- */
+  function trimBreadcrumb(points, meters) {
+    // points: [{lat, lng, ts?}...]; drop first/last ~meters from each end
+    if (!Array.isArray(points) || points.length < 3) return points || [];
+    const EARTH = 6371000;
+    const dist = (a, b) => {
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+      const la1 = toRad(a.lat), la2 = toRad(b.lat);
+      const h = Math.sin(dLat/2)**2 + Math.sin(dLng/2)**2 * Math.cos(la1) * Math.cos(la2);
+      return 2 * EARTH * Math.asin(Math.min(1, Math.sqrt(h)));
+    };
+    let acc = 0, startIdx = 0;
+    for (let i = 1; i < points.length && acc < meters; i++) { acc += dist(points[i-1], points[i]); startIdx = i; }
+    acc = 0; let endIdx = points.length - 1;
+    for (let i = points.length - 2; i >= 0 && acc < meters; i--) { acc += dist(points[i+1], points[i]); endIdx = i; }
+    if (endIdx <= startIdx + 2) return []; // too short after trim
+    return points.slice(startIdx, endIdx + 1);
+  }
+
+  async function shareRide(rideId, visibility) {
+    if (!isAuthed()) throw new Error('Sign in first.');
+    const c = await getClient();
+    const ride = State.rides.find(r => r.id === rideId);
+    if (!ride) throw new Error('Ride not found.');
+    // Persist local mapping
+    const map = lsGet(K.rideShareMap, {}); map[rideId] = visibility; lsSet(K.rideShareMap, map);
+
+    if (visibility === 'private') {
+      // Remove any cloud copy
+      await c.from('shared_rides').delete().eq('owner', myId()).eq('local_id', rideId);
+      return;
+    }
+    let breadcrumb = ride.breadcrumb || ride.track || ride.points || null;
+    if (visibility === 'public' && breadcrumb) breadcrumb = trimBreadcrumb(breadcrumb, 500);
+    const row = {
+      owner: myId(),
+      local_id: rideId,
+      name: ride.name || 'Ride',
+      started_at: ride.date || ride.startedAt || new Date().toISOString(),
+      distance_mi: Number(ride.miles || ride.distMi || 0),
+      duration_min: Number(ride.hours ? ride.hours * 60 : ride.durationMin || 0),
+      top_speed: Number(ride.topSpeed || 0),
+      max_lean: Number(ride.maxLean || 0),
+      bad_decision_score: Number(ride.bdScore || ride.score || 0),
+      twistiness: Number(ride.twisty || 0),
+      breadcrumb: breadcrumb || null,
+      visibility
+    };
+    const { error } = await c.from('shared_rides').upsert(row, { onConflict: 'owner,local_id' });
+    if (error) throw error;
+  }
+
+  async function shareRoute(routeId, visibility, ratings) {
+    if (!isAuthed()) throw new Error('Sign in first.');
+    const c = await getClient();
+    const r = State.routes.find(x => x.id === routeId);
+    if (!r) throw new Error('Route not found.');
+    const map = lsGet(K.routeShareMap, {}); map[routeId] = visibility; lsSet(K.routeShareMap, map);
+    if (visibility === 'private') {
+      await c.from('shared_routes').delete().eq('owner', myId()).eq('local_id', routeId);
+      return;
+    }
+    const row = {
+      owner: myId(),
+      local_id: routeId,
+      name: r.name || 'Route',
+      distance_mi: Number(r.distMi || 0),
+      duration_min: Number(r.durationMin || 0),
+      twistiness: Number(r.twisty || 0),
+      elevation_ft: Number(r.elevFt || 0),
+      waypoints: r.waypoints || [],
+      geometry: r.geometry || null,
+      twistiness_rating: ratings && ratings.twistiness ? ratings.twistiness : null,
+      scenery_rating: ratings && ratings.scenery ? ratings.scenery : null,
+      pavement_rating: ratings && ratings.pavement ? ratings.pavement : null,
+      visibility
+    };
+    const { error } = await c.from('shared_routes').upsert(row, { onConflict: 'owner,local_id' });
+    if (error) throw error;
+  }
+
+  /* ---------- AUTO-MIGRATION ---------- */
+  async function autoMigrateLocalData() {
+    if (!isAuthed()) return { rides: 0, routes: 0 };
+    if (localStorage.getItem(K.cloudMigrated) === '1') return { rides: 0, routes: 0, skipped: true };
+    const c = await getClient();
+    let rideCount = 0, routeCount = 0;
+    // Upload rides as private
+    for (const ride of (State.rides || [])) {
+      try {
+        const row = {
+          owner: myId(), local_id: ride.id,
+          name: ride.name || 'Ride',
+          started_at: ride.date || ride.startedAt || new Date().toISOString(),
+          distance_mi: Number(ride.miles || ride.distMi || 0),
+          duration_min: Number(ride.hours ? ride.hours * 60 : ride.durationMin || 0),
+          top_speed: Number(ride.topSpeed || 0),
+          max_lean: Number(ride.maxLean || 0),
+          bad_decision_score: Number(ride.bdScore || ride.score || 0),
+          twistiness: Number(ride.twisty || 0),
+          breadcrumb: ride.breadcrumb || ride.track || null,
+          visibility: 'private'
+        };
+        const { error } = await c.from('shared_rides').upsert(row, { onConflict: 'owner,local_id' });
+        if (!error) rideCount++;
+      } catch (e) { console.warn('migrate ride err', e); }
+    }
+    for (const r of (State.routes || [])) {
+      try {
+        const row = {
+          owner: myId(), local_id: r.id,
+          name: r.name || 'Route',
+          distance_mi: Number(r.distMi || 0),
+          duration_min: Number(r.durationMin || 0),
+          twistiness: Number(r.twisty || 0),
+          elevation_ft: Number(r.elevFt || 0),
+          waypoints: r.waypoints || [],
+          geometry: r.geometry || null,
+          visibility: 'private'
+        };
+        const { error } = await c.from('shared_routes').upsert(row, { onConflict: 'owner,local_id' });
+        if (!error) routeCount++;
+      } catch (e) { console.warn('migrate route err', e); }
+    }
+    localStorage.setItem(K.cloudMigrated, '1');
+    return { rides: rideCount, routes: routeCount };
+  }
+
+  /* ---------- EVENTS ---------- */
+  async function createEvent(params) {
+    if (!isAuthed()) throw new Error('Sign in first.');
+    const c = await getClient();
+    const row = {
+      host: myId(),
+      name: params.name,
+      notes: params.notes || null,
+      starts_at: params.starts_at,
+      meet_lat: params.meet_lat,
+      meet_lng: params.meet_lng,
+      meet_label: params.meet_label || null,
+      max_riders: params.max_riders || 20,
+      visibility: params.visibility || 'friends'
+    };
+    const { data, error } = await c.from('group_events').insert(row).select().maybeSingle();
+    if (error) throw error;
+    // Host auto-RSVPs going
+    await c.from('event_rsvps').insert({ event_id: data.id, user_id: myId(), status: 'going' });
+    return data;
+  }
+
+  async function loadEvents() {
+    if (!isAuthed()) { eventsCache = []; return []; }
+    const c = await getClient();
+    const now = new Date();
+    const horizon = new Date(now.getTime() - 24 * 3600 * 1000).toISOString(); // include events from last 24h
+    // RLS will filter to visible (friends OR public OR hosted OR RSVPed)
+    const { data: evts, error } = await c.from('group_events')
+      .select('*')
+      .gte('starts_at', horizon).order('starts_at', { ascending: true }).limit(50);
+    if (error) { console.warn('loadEvents', error); eventsCache = []; return []; }
+    const ids = (evts || []).map(e => e.id);
+    let rsvps = [];
+    if (ids.length) {
+      const { data } = await c.from('event_rsvps').select('event_id, user_id, status').in('event_id', ids);
+      rsvps = data || [];
+    }
+    // Fetch host profiles in bulk
+    const hostIds = Array.from(new Set((evts || []).map(e => e.host)));
+    let hostMap = new Map();
+    if (hostIds.length) {
+      const { data: hosts } = await c.from('profiles').select('id, username, display_name').in('id', hostIds);
+      hostMap = new Map((hosts || []).map(p => [p.id, p]));
+    }
+    eventsCache = (evts || []).map(e => {
+      const mine = rsvps.find(r => r.event_id === e.id && r.user_id === myId());
+      const going = rsvps.filter(r => r.event_id === e.id && r.status === 'going').length;
+      return { ...e, host_profile: hostMap.get(e.host) || {}, my_rsvp: mine ? mine.status : null, going_count: going };
+    });
+    return eventsCache;
+  }
+
+  async function rsvp(eventId, status) {
+    if (!isAuthed()) throw new Error('Sign in first.');
+    const c = await getClient();
+    const { error } = await c.from('event_rsvps').upsert({ event_id: eventId, user_id: myId(), status }, { onConflict: 'event_id,user_id' });
+    if (error) throw error;
+    await loadEvents();
+    renderEventsUI();
+  }
+
+  async function loadEventMessages(eventId) {
+    const c = await getClient();
+    const { data, error } = await c.from('event_messages')
+      .select('id, user_id, body, created_at')
+      .eq('event_id', eventId).order('created_at', { ascending: true }).limit(200);
+    if (error) { console.warn('loadEventMessages', error); return []; }
+    const rows = data || [];
+    const ids = Array.from(new Set(rows.map(r => r.user_id)));
+    let byId = new Map();
+    if (ids.length) {
+      const { data: profs } = await c.from('profiles').select('id, username, display_name').in('id', ids);
+      byId = new Map((profs || []).map(p => [p.id, p]));
+    }
+    return rows.map(r => ({ ...r, profiles: byId.get(r.user_id) || null }));
+  }
+
+  async function sendChat(eventId, body) {
+    const c = await getClient();
+    const trimmed = (body || '').trim();
+    if (!trimmed) return;
+    if (trimmed.length > 1000) throw new Error('Message too long (1000 char max).');
+    const { error } = await c.from('event_messages').insert({ event_id: eventId, user_id: myId(), body: trimmed });
+    if (error) throw error;
+  }
+
+  async function subscribeChat(eventId, onMsg) {
+    const c = await getClient();
+    if (activeChatChannel) { try { await activeChatChannel.unsubscribe(); } catch(_) {} activeChatChannel = null; }
+    activeChatEventId = eventId;
+    activeChatChannel = c.channel('evt-chat-' + eventId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_messages', filter: `event_id=eq.${eventId}` }, async (payload) => {
+        // Enrich with profile
+        const row = payload.new;
+        try {
+          const { data: p } = await c.from('profiles').select('username,display_name').eq('id', row.user_id).maybeSingle();
+          onMsg({ ...row, profiles: p });
+        } catch(_) { onMsg(row); }
+      })
+      .subscribe();
+    return activeChatChannel;
+  }
+
+  async function unsubscribeChat() {
+    if (activeChatChannel) { try { await activeChatChannel.unsubscribe(); } catch(_) {} }
+    activeChatChannel = null; activeChatEventId = null;
+  }
+
+  /* ---------- FRIENDS LEADERBOARD ---------- */
+  async function friendsLeaderboardThisWeek() {
+    if (!isAuthed()) return [];
+    const c = await getClient();
+    const now = new Date();
+    const day = now.getDay(); // Sun=0
+    const daysSinceMon = (day + 6) % 7;
+    const monday = new Date(now); monday.setHours(0,0,0,0); monday.setDate(monday.getDate() - daysSinceMon);
+    const { data, error } = await c.from('shared_rides')
+      .select('owner, distance_mi')
+      .gte('started_at', monday.toISOString());
+    if (error) { console.warn('leaderboard rides', error); return []; }
+    const totals = new Map();
+    (data || []).forEach(r => {
+      const key = r.owner;
+      const rec = totals.get(key) || { owner: key, miles: 0 };
+      rec.miles += Number(r.distance_mi || 0);
+      totals.set(key, rec);
+    });
+    const ids = Array.from(totals.keys());
+    if (!ids.length) return [];
+    // Fetch profiles for names (RLS on profiles allows read when searchable or friends/self)
+    const { data: profs } = await c.from('profiles').select('id, username, display_name').in('id', ids);
+    const byId = new Map((profs || []).map(p => [p.id, p]));
+    ids.forEach(id => {
+      const p = byId.get(id) || {};
+      const rec = totals.get(id);
+      rec.username = p.username || '';
+      rec.display_name = p.display_name || '';
+    });
+    return Array.from(totals.values()).sort((a, b) => b.miles - a.miles).slice(0, 20);
+  }
+
+  /* ---------- POST-SIGN-IN HOOK ---------- */
+  async function onSignedIn() {
+    try {
+      await loadProfile();
+      const res = await autoMigrateLocalData();
+      if (res && !res.skipped && (res.rides + res.routes) > 0) {
+        toast(`Synced ↑ ${res.rides} ride${res.rides===1?'':'s'} + ${res.routes} route${res.routes===1?'':'s'} to cloud.`, 4500);
+      }
+      await loadFriends();
+      renderFriendsUI();
+      renderAuthUI();
+      await loadEvents(); renderEventsUI();
+      renderFriendsLeaderboard();
+      try { renderRides(); } catch(_) {}
+      try { renderSavedRoutes(); } catch(_) {}
+    } catch (e) { console.warn('onSignedIn', e); }
+  }
+
+  return {
+    getClient, isAuthed, myId, get session() { return session; }, get profile() { return profile; },
+    signUp, signIn, signOut,
+    loadProfile, saveProfile,
+    searchUsers, loadFriends, sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend,
+    get friends() { return friendsCache; }, get pendingIn() { return pendingIn; }, get pendingOut() { return pendingOut; },
+    shareRide, shareRoute, trimBreadcrumb, autoMigrateLocalData,
+    createEvent, loadEvents, rsvp, get events() { return eventsCache; },
+    loadEventMessages, sendChat, subscribeChat, unsubscribeChat, get activeChatEventId() { return activeChatEventId; },
+    friendsLeaderboardThisWeek, onSignedIn
+  };
+})();
+
+/* -------------- V5.0: UI RENDERING -------------- */
+function initialsFor(p) {
+  const n = (p && (p.display_name || p.username)) || '?';
+  return n.replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase() || '?';
+}
+function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+function renderAuthUI() {
+  const out = $('#authLoggedOut');
+  const inV = $('#authLoggedIn');
+  if (!out || !inV) return;
+  if (Social.isAuthed()) {
+    out.style.display = 'none';
+    inV.style.display = '';
+    const p = Social.profile || {};
+    $('#meAvatar').textContent = initialsFor(p);
+    $('#meDisplayName').textContent = p.display_name || p.username || '—';
+    $('#meHandle').textContent = '@' + (p.username || '—');
+    $('#meBike').textContent = p.bike ? ('🏍 ' + p.bike) : '';
+    if ($('#profDisplayName')) $('#profDisplayName').value = p.display_name || '';
+    if ($('#profUsername')) $('#profUsername').value = p.username || '';
+    if ($('#profBike')) $('#profBike').value = p.bike || '';
+    if ($('#profBio')) $('#profBio').value = p.bio || '';
+    if ($('#profSearchable')) $('#profSearchable').checked = p.searchable !== false;
+    const syncEl = $('#cloudSyncInfo');
+    if (syncEl) {
+      const migrated = localStorage.getItem(K.cloudMigrated) === '1';
+      syncEl.textContent = migrated ? `✅ Synced: ${State.rides.length} rides, ${State.routes.length} routes. All private unless you share.` : 'Not synced yet. First sign-in will auto-sync.';
+    }
+    // Gate event/friends UIs
+    if ($('#eventsAuthGate')) $('#eventsAuthGate').style.display = 'none';
+    if ($('#eventsControls')) $('#eventsControls').style.display = '';
+    if ($('#friendsAuthGate')) $('#friendsAuthGate').style.display = 'none';
+    if ($('#friendsAuthed')) $('#friendsAuthed').style.display = '';
+  } else {
+    out.style.display = '';
+    inV.style.display = 'none';
+    if ($('#eventsAuthGate')) $('#eventsAuthGate').style.display = '';
+    if ($('#eventsControls')) $('#eventsControls').style.display = 'none';
+    if ($('#eventsList')) $('#eventsList').innerHTML = '<span class="tiny muted">Sign in to see group events.</span>';
+    if ($('#friendsAuthGate')) $('#friendsAuthGate').style.display = '';
+    if ($('#friendsAuthed')) $('#friendsAuthed').style.display = 'none';
+    if ($('#chalFriendsBoard')) $('#chalFriendsBoard').innerHTML = '<span class="tiny muted">Sign in on the Account tab to see the friends leaderboard.</span>';
+  }
+}
+
+/* ---- Auth form wiring ---- */
+(function wireAuthForm(){
+  let mode = 'login';
+  const tabLogin = $('#authTabLogin'), tabSignup = $('#authTabSignup');
+  const userField = $('#authUsernameField');
+  const submit = $('#authSubmitBtn');
+  const errEl = $('#authError');
+  if (!tabLogin || !tabSignup || !submit) return;
+  const setMode = (m) => {
+    mode = m;
+    tabLogin.classList.toggle('active', m === 'login');
+    tabSignup.classList.toggle('active', m === 'signup');
+    userField.style.display = m === 'signup' ? '' : 'none';
+    submit.textContent = m === 'signup' ? 'Create Account' : 'Log In';
+    errEl.style.display = 'none';
+  };
+  tabLogin.addEventListener('click', () => setMode('login'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
+  submit.addEventListener('click', async () => {
+    errEl.style.display = 'none';
+    const email = ($('#authEmail').value || '').trim();
+    const pw = $('#authPassword').value || '';
+    const username = ($('#authUsername').value || '').trim();
+    submit.disabled = true; submit.textContent = (mode === 'signup' ? 'Creating…' : 'Signing in…');
+    try {
+      if (mode === 'signup') {
+        await Social.signUp(email, pw, username);
+        toast('Welcome aboard. Check your email if confirmation is required.', 5000);
+      } else {
+        await Social.signIn(email, pw);
+        toast('Signed in.');
+      }
+      await Social.onSignedIn();
+      renderAuthUI();
+    } catch (e) {
+      errEl.style.display = '';
+      errEl.textContent = (e && e.message) || String(e);
+    } finally {
+      submit.disabled = false;
+      submit.textContent = mode === 'signup' ? 'Create Account' : 'Log In';
+    }
+  });
+  setMode('login');
+})();
+
+/* ---- Profile save + sign out ---- */
+document.addEventListener('click', async (e) => {
+  const t = e.target;
+  if (t.id === 'profSaveBtn') {
+    const msg = $('#profMsg');
+    try {
+      await Social.saveProfile({
+        display_name: $('#profDisplayName').value,
+        username: $('#profUsername').value,
+        bike: $('#profBike').value,
+        bio: $('#profBio').value,
+        searchable: $('#profSearchable').checked
+      });
+      msg.textContent = '✅ Saved.'; msg.style.color = 'var(--ok)';
+      renderAuthUI();
+    } catch (err) { msg.textContent = (err && err.message) || String(err); msg.style.color = 'var(--danger)'; }
+  }
+  if (t.id === 'signOutBtn') {
+    await Social.signOut();
+    renderAuthUI();
+    try { renderRides(); } catch(_) {}
+    try { renderSavedRoutes(); } catch(_) {}
+    toast('Signed out.');
+  }
+  if (t.id === 'resyncBtn') {
+    localStorage.removeItem(K.cloudMigrated);
+    const r = await Social.autoMigrateLocalData();
+    toast(`Re-synced ${r.rides} rides + ${r.routes} routes.`, 4000);
+    renderAuthUI();
+  }
+  if (t.id === 'friendsGoSignInBtn') switchTo('account');
+});
+
+/* ---- Friends UI ---- */
+function renderFriendsUI() {
+  const list = $('#friendsList');
+  const req = $('#friendRequestsList');
+  if (!list || !req) return;
+  // Friends
+  if (Social.friends.length === 0) list.innerHTML = '<span class="tiny muted">No friends yet — search a handle above.</span>';
+  else list.innerHTML = Social.friends.map(f => `
+    <div class="friend-row">
+      <div class="friend-avatar">${initialsFor(f)}</div>
+      <div class="friend-body">
+        <div class="friend-name">${escHtml(f.display_name || f.username)}</div>
+        <div class="friend-sub">@${escHtml(f.username)}${f.bike ? ' · ' + escHtml(f.bike) : ''}</div>
+      </div>
+      <button class="ghost" data-unfriend="${f.id}">Unfriend</button>
+    </div>`).join('');
+  // Requests (incoming)
+  if (Social.pendingIn.length === 0) req.innerHTML = '<span class="tiny muted">No pending requests.</span>';
+  else req.innerHTML = Social.pendingIn.map(f => `
+    <div class="friend-row">
+      <div class="friend-avatar">${initialsFor(f)}</div>
+      <div class="friend-body">
+        <div class="friend-name">${escHtml(f.display_name || f.username)}</div>
+        <div class="friend-sub">@${escHtml(f.username)} — wants to ride together</div>
+      </div>
+      <button data-accept="${f.id}">Accept</button><button class="ghost" data-decline="${f.id}">Decline</button>
+    </div>`).join('');
+}
+
+document.addEventListener('click', async (e) => {
+  const t = e.target;
+  if (t.matches('[data-unfriend]')) {
+    if (!confirm('Unfriend this rider?')) return;
+    await Social.removeFriend(t.dataset.unfriend);
+    toast('Unfriended.');
+  } else if (t.matches('[data-accept]')) {
+    await Social.acceptFriendRequest(t.dataset.accept);
+    toast('Friend added.');
+  } else if (t.matches('[data-decline]')) {
+    await Social.declineFriendRequest(t.dataset.decline);
+    toast('Request declined.');
+  } else if (t.matches('[data-send-req]')) {
+    try { await Social.sendFriendRequest(t.dataset.sendReq); t.textContent = 'Request sent'; t.disabled = true; }
+    catch (err) { toast((err && err.message) || 'Request failed.'); }
+  }
+});
+
+if ($('#friendSearchBtn')) $('#friendSearchBtn').addEventListener('click', async () => {
+  const q = ($('#friendSearchInput').value || '').trim();
+  const host = $('#friendSearchResults');
+  host.innerHTML = '<span class="tiny muted">Searching…</span>';
+  try {
+    const rows = await Social.searchUsers(q);
+    if (!rows.length) { host.innerHTML = '<span class="tiny muted">No matching riders found.</span>'; return; }
+    const friendIds = new Set(Social.friends.map(f => f.id));
+    const outIds = new Set(Social.pendingOut.map(f => f.id));
+    host.innerHTML = rows.map(p => {
+      let btn;
+      if (friendIds.has(p.id)) btn = '<button class="ghost" disabled>Friends</button>';
+      else if (outIds.has(p.id)) btn = '<button class="ghost" disabled>Request sent</button>';
+      else btn = `<button data-send-req="${p.id}">Add friend</button>`;
+      return `<div class="friend-row">
+        <div class="friend-avatar">${initialsFor(p)}</div>
+        <div class="friend-body">
+          <div class="friend-name">${escHtml(p.display_name || p.username)}</div>
+          <div class="friend-sub">@${escHtml(p.username)}${p.bike ? ' · ' + escHtml(p.bike) : ''}</div>
+        </div>${btn}
+      </div>`;
+    }).join('');
+  } catch (e) { host.innerHTML = '<span class="tiny" style="color:var(--danger)">' + escHtml(e.message || e) + '</span>'; }
+});
+if ($('#friendSearchInput')) $('#friendSearchInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#friendSearchBtn').click(); } });
+
+/* ---- Events UI ---- */
+function renderEventsUI() {
+  const host = $('#eventsList');
+  if (!host) return;
+  if (!Social.isAuthed()) { host.innerHTML = '<span class="tiny muted">Sign in to see events.</span>'; return; }
+  const evs = Social.events || [];
+  if (!evs.length) { host.innerHTML = '<span class="tiny muted">No upcoming events. Create one, or wait for a friend to invite you.</span>'; return; }
+  host.innerHTML = evs.map(e => {
+    const when = new Date(e.starts_at);
+    const dateStr = when.toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    const hp = e.host_profile || {};
+    const hostName = hp.display_name || hp.username || '—';
+    const isHost = e.host === Social.myId();
+    const mine = e.my_rsvp;
+    const visBadge = e.visibility === 'public' ? '<span class="badge-pill pub">Public</span>' : '<span class="badge-pill fri">Friends</span>';
+    return `
+      <div class="event-card" data-evt="${e.id}">
+        <div class="evt-head">
+          <div style="flex:1;min-width:0">
+            <div class="evt-name">${escHtml(e.name)}</div>
+            <div class="evt-when">📅 ${dateStr}</div>
+            <div class="evt-host">Host: @${escHtml(hp.username || '')}${isHost ? ' · you' : ''}</div>
+          </div>
+          ${visBadge}
+        </div>
+        ${e.notes ? `<div class="tiny muted mt-12">${escHtml(e.notes)}</div>` : ''}
+        <div class="evt-meta">
+          <span>📝 ${e.going_count || 0}/${e.max_riders} going</span>
+          ${e.meet_label ? `<span>📍 ${escHtml(e.meet_label)}</span>` : ''}
+        </div>
+        <div class="evt-actions">
+          <button class="${mine === 'going' ? 'going' : 'primary'}" data-rsvp="going" data-evt="${e.id}">${mine === 'going' ? '✓ Going' : 'I\'m in'}</button>
+          <button class="${mine === 'maybe' ? 'going' : ''}" data-rsvp="maybe" data-evt="${e.id}">Maybe</button>
+          <button data-rsvp="declined" data-evt="${e.id}">Pass</button>
+          <button class="" data-open-chat="${e.id}">💬 Chat</button>
+        </div>
+        <div class="evt-chat" id="evtChat-${e.id}" style="display:none">
+          <div class="chat-log" id="chatLog-${e.id}"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput-${e.id}" placeholder="Say something…" maxlength="1000">
+            <button class="btn" data-send-chat="${e.id}">Send</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', async (e) => {
+  const t = e.target;
+  if (t.id === 'createEventBtn') {
+    $('#eventCreateModal').style.display = '';
+    const dt = new Date(Date.now() + 3600*1000); // 1h from now
+    dt.setSeconds(0, 0);
+    const pad = n => String(n).padStart(2, '0');
+    const v = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+    if ($('#evtWhen')) $('#evtWhen').value = v;
+  }
+  if (t.id === 'evtCancelBtn') $('#eventCreateModal').style.display = 'none';
+  if (t.id === 'refreshEventsBtn') { await Social.loadEvents(); renderEventsUI(); }
+  if (t.id === 'evtUseCurLocBtn') {
+    if (!navigator.geolocation) { toast('No GPS.'); return; }
+    navigator.geolocation.getCurrentPosition(p => {
+      $('#evtMeet').value = `${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
+      $('#evtMeet').dataset.lat = p.coords.latitude;
+      $('#evtMeet').dataset.lng = p.coords.longitude;
+      toast('Location captured.');
+    }, err => toast('GPS error: ' + err.message));
+  }
+  if (t.id === 'evtSaveBtn') {
+    try {
+      const name = ($('#evtName').value || '').trim();
+      if (!name) { toast('Give your event a name.'); return; }
+      const whenStr = $('#evtWhen').value;
+      if (!whenStr) { toast('Pick a date/time.'); return; }
+      let lat = parseFloat($('#evtMeet').dataset.lat || 'NaN');
+      let lng = parseFloat($('#evtMeet').dataset.lng || 'NaN');
+      const meetText = ($('#evtMeet').value || '').trim();
+      if (!isFinite(lat) || !isFinite(lng)) {
+        // Try parsing "lat, lng"
+        const m = meetText.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
+        if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+        else {
+          // Geocode via Nominatim
+          try {
+            const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(meetText));
+            const j = await resp.json();
+            if (j && j[0]) { lat = parseFloat(j[0].lat); lng = parseFloat(j[0].lon); }
+          } catch(_) {}
+        }
+      }
+      if (!isFinite(lat) || !isFinite(lng)) { toast('Could not find meet-point location.'); return; }
+      await Social.createEvent({
+        name,
+        notes: ($('#evtNotes').value || '').trim(),
+        starts_at: new Date(whenStr).toISOString(),
+        meet_lat: lat, meet_lng: lng,
+        meet_label: meetText,
+        max_riders: parseInt($('#evtMax').value || '20', 10),
+        visibility: $('#evtVis').value
+      });
+      $('#eventCreateModal').style.display = 'none';
+      $('#evtName').value = ''; $('#evtNotes').value = ''; $('#evtMeet').value = '';
+      delete $('#evtMeet').dataset.lat; delete $('#evtMeet').dataset.lng;
+      await Social.loadEvents(); renderEventsUI();
+      toast('Event created.');
+    } catch (err) { toast('Event error: ' + (err.message || err), 5000); }
+  }
+  if (t.matches('[data-rsvp]')) {
+    try { await Social.rsvp(t.dataset.evt, t.dataset.rsvp); }
+    catch (err) { toast('RSVP failed: ' + (err.message || err)); }
+  }
+  if (t.matches('[data-open-chat]')) {
+    const eid = t.dataset.openChat;
+    const pane = document.getElementById('evtChat-' + eid);
+    if (!pane) return;
+    if (pane.style.display === '') {
+      pane.style.display = 'none';
+      await Social.unsubscribeChat();
+      return;
+    }
+    pane.style.display = '';
+    const log = document.getElementById('chatLog-' + eid);
+    log.innerHTML = '<span class="tiny muted">Loading…</span>';
+    const msgs = await Social.loadEventMessages(eid);
+    log.innerHTML = '';
+    msgs.forEach(m => appendChatMsg(log, m));
+    await Social.subscribeChat(eid, (m) => appendChatMsg(log, m));
+  }
+  if (t.matches('[data-send-chat]')) {
+    const eid = t.dataset.sendChat;
+    const input = document.getElementById('chatInput-' + eid);
+    const body = (input.value || '').trim();
+    if (!body) return;
+    try { await Social.sendChat(eid, body); input.value = ''; }
+    catch (err) { toast('Send failed: ' + (err.message || err)); }
+  }
+});
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && t.id && t.id.startsWith('chatInput-') && e.key === 'Enter') {
+    e.preventDefault();
+    const eid = t.id.replace('chatInput-', '');
+    const btn = document.querySelector(`[data-send-chat="${eid}"]`);
+    if (btn) btn.click();
+  }
+});
+function appendChatMsg(log, m) {
+  const mine = m.user_id === Social.myId();
+  const who = (m.profiles && (m.profiles.display_name || m.profiles.username)) || 'rider';
+  const t = new Date(m.created_at || Date.now()).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+  const el = document.createElement('div');
+  el.className = 'chat-msg' + (mine ? ' me' : '');
+  el.innerHTML = `<div class="c-who">${escHtml(who)}</div><div class="c-body">${escHtml(m.body)}</div><div class="c-time">${t}</div>`;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ---- Friends leaderboard render ---- */
+async function renderFriendsLeaderboard() {
+  const host = $('#chalFriendsBoard');
+  if (!host) return;
+  if (!Social.isAuthed()) { host.innerHTML = '<span class="tiny muted">Sign in on the Account tab to see the friends leaderboard.</span>'; return; }
+  host.innerHTML = '<span class="tiny muted">Loading…</span>';
+  try {
+    const rows = await Social.friendsLeaderboardThisWeek();
+    if (!rows.length) { host.innerHTML = '<span class="tiny muted">No ride data this week yet. Share some rides or invite friends.</span>'; return; }
+    host.innerHTML = rows.map((r, i) => {
+      const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      const isMe = r.owner === Social.myId();
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankCls}">#${i+1}</div>
+        <div class="lb-label">
+          <div class="lb-name">${escHtml(r.display_name || r.username || 'Rider')}${isMe ? ' <span class="badge-pill pub">You</span>' : ''}</div>
+          <div class="lb-meta">@${escHtml(r.username || '')}</div>
+        </div>
+        <div class="lb-val">${r.miles.toFixed(1)} mi</div>
+      </div>`;
+    }).join('');
+  } catch (e) { host.innerHTML = '<span class="tiny muted">Could not load leaderboard.</span>'; }
+}
+
+/* ---- Tab-entry refreshes ---- */
+(function hookTabChange(){
+  const origTabs = document.querySelectorAll('nav.tabs button');
+  origTabs.forEach(b => b.addEventListener('click', async () => {
+    const v = b.dataset.view;
+    if (v === 'account') renderAuthUI();
+    if (v === 'friends') { renderAuthUI(); if (Social.isAuthed()) { await Social.loadFriends(); renderFriendsUI(); } }
+    if (v === 'group')   { renderAuthUI(); if (Social.isAuthed()) { await Social.loadEvents(); renderEventsUI(); } }
+    if (v === 'challenges') { if (Social.isAuthed()) renderFriendsLeaderboard(); }
+  }));
+})();
+
+/* ---- Boot: attempt session restore + initial UI ---- */
+(async function bootSocial(){
+  try {
+    await Social.getClient();
+    renderAuthUI();
+    if (Social.isAuthed()) {
+      await Social.loadProfile();
+      await Social.onSignedIn();
+    }
+  } catch (e) { console.warn('Social boot failed', e); }
+})();
+
 // Expose for debugging
-window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, RouteCache, groupSyncStart, groupSyncStop, Spotify, generateRidePlaylist, findPOIs, renderChallenges, computeChallengeStats };
+window.BDS = { State, map, checkBadges, drawDNA, calculateBadDecisionScore, findGasStops, renderDnaEvolution, renderVoiceNotes, SupaCfg, BDS_BACKEND, Social, RouteCache, groupSyncStart, groupSyncStop, Spotify, generateRidePlaylist, findPOIs, renderChallenges, computeChallengeStats };
 
 })();
 </script>
