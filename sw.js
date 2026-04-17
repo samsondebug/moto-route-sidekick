@@ -1,7 +1,7 @@
 // Bad Decision Sidekick — Service Worker v6 (V4 Reel Builder build)
 // Cache-first app shell. Network-first APIs with stale tile fallback. LRU tile cap.
 
-const VERSION = 'bds-v6-2026-04-17-reel';
+const VERSION = 'bds-v7-2026-04-17-osm-proxy';
 const SHELL_CACHE = VERSION + '-shell';
 const TILE_CACHE  = VERSION + '-tiles';
 const API_CACHE   = VERSION + '-api';
@@ -75,7 +75,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
 
   // Tiles: cache-first, network fallback, LRU trim in background
-  if (url.hostname.includes('tile.openstreetmap.org')) {
+  // V4: match both same-origin proxy path (/osm/*) and legacy direct-to-OSM requests
+  const isTile = (url.origin === self.location.origin && url.pathname.startsWith('/osm/'))
+              || url.hostname.includes('tile.openstreetmap.org');
+  if (isTile) {
     e.respondWith((async () => {
       const cache = await caches.open(TILE_CACHE);
       const hit = await cache.match(req);

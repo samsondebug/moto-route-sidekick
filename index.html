@@ -1135,7 +1135,8 @@ const switchTo = v => { const b = document.querySelector(`nav.tabs button[data-v
 
 /* ======================== MAP ======================== */
 const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([30.2672, -97.7431], 9);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// V4: Tiles proxied through same-origin /osm/* to satisfy COEP require-corp (Safari-safe)
+L.tileLayer('/osm/{z}/{x}/{y}.png', {
   maxZoom: 18, attribution: '© OSM contributors'
 }).addTo(map);
 let waypointMarkers = [], routeLine = null, breadcrumbLine = null, liveMarker = null, groupMarkers = {};
@@ -2144,7 +2145,7 @@ $('#precacheBtn').addEventListener('click', async () => {
     const tx = (lng, z) => Math.floor((lng + 180) / 360 * Math.pow(2, z));
     const xMin = tx(bounds.w, z), xMax = tx(bounds.e, z);
     const yMin = tn(bounds.n, z), yMax = tn(bounds.s, z);
-    for (let x = xMin; x <= xMax; x++) for (let y = yMin; y <= yMax; y++) urls.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+    for (let x = xMin; x <= xMax; x++) for (let y = yMin; y <= yMax; y++) urls.push(`/osm/${z}/${x}/${y}.png`);
   }
   if (urls.length > 1500) { toast('Area too big — zoom in to plan a smaller route, then cache.'); return; }
   if (navigator.serviceWorker && navigator.serviceWorker.controller) {
