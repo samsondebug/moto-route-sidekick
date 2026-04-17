@@ -844,7 +844,7 @@ a:hover{text-decoration:underline}
   <div class="card">
     <h3>About</h3>
     <p><strong>Bad Decision Sidekick V3</strong> — Built for the twisties. A single-file PWA with live GPS, weather along the route, twisty scoring, offline maps, maintenance tracking, telemetry, photos, badges, group rooms, GPX import/export, crash detection, wake lock, multi-bike, and one-tap Ride DNA share cards.</p>
-    <p class="tiny muted">v3.0 · <span id="buildId">2026.04.17</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
+    <p class="tiny muted">v4.0 · <span id="buildId">2026.04.17b</span> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></p>
   </div>
 </section>
 
@@ -2701,12 +2701,18 @@ $('#undoWaypointBtn').addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', e => {
-  // only on Plan view, never when typing
+  // Skip when typing in a field
   const active = document.activeElement;
   if (active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName)) return;
   if (active && active.isContentEditable) return;
-  const planActive = document.querySelector('section#view-plan.active');
-  if (!planActive) return;
+  // Don't hijack modifier combos (copy/paste/save/etc)
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  // Shortcuts fire when a planning context is visible — Ride (map + waypointing) or Plan
+  const currentView = document.querySelector('section.view.active')?.id || '';
+  const planContext = currentView === 'view-plan' || currentView === 'view-ride';
+  if (!planContext) return;
+  // Don't fire while a ride is live (map clicks are disabled; keys should feel inert too)
+  if (State.liveRide) return;
   const k = e.key.toLowerCase();
   if (k === 'u') { e.preventDefault(); $('#undoWaypointBtn').click(); }
   else if (k === 'r') { e.preventDefault(); recalcRoute(); toast('Recalculating route…'); }
@@ -2822,16 +2828,32 @@ async function findGasStops() {
   if (!geo || geo.length < 2) { toast('Plan a route first.'); return; }
   const btn = $('#findGasBtn');
   btn.disabled = true; btn.textContent = 'Searching OSM…';
+  // V4: multi-mirror Overpass — try each until one returns
+  const OVERPASS_MIRRORS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.fr/api/interpreter',
+    'https://overpass.private.coffee/api/interpreter'
+  ];
   try {
     // Sample every ~5mi along the route
     const samples = sampleAlong(geo, 5);
     // Build an Overpass query: union of amenity=fuel nodes around each sample (1500m radius)
     const clauses = samples.slice(0, 14).map(p => `node["amenity"="fuel"](around:1500,${p[0]},${p[1]});`).join('\n');
     const q = `[out:json][timeout:20];(${clauses});out body 60;`;
-    const res = await fetchWithTimeout('https://overpass-api.de/api/interpreter', {
-      method: 'POST', body: 'data=' + encodeURIComponent(q),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }, 25000);
+    let res = null, lastErr = null;
+    for (const url of OVERPASS_MIRRORS) {
+      try {
+        res = await fetchWithTimeout(url, {
+          method: 'POST', body: 'data=' + encodeURIComponent(q),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }, 20000);
+        if (res && res.ok) break;
+        lastErr = new Error('mirror returned ' + (res && res.status));
+        res = null;
+      } catch(err) { lastErr = err; }
+    }
+    if (!res) throw lastErr || new Error('all Overpass mirrors unavailable');
     const j = await res.json();
     const stops = (j.elements || []).map(e => ({
       id: e.id, lat: e.lat, lng: e.lon,
